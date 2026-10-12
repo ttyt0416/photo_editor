@@ -1,0 +1,15 @@
+<!DOCTYPE lensdatabase SYSTEM "lensfun-database.dtd">
+<lensdatabase version="2">
+ <camera><maker>Test Camera</maker><model>Known RAW Sensor</model><mount>Test Mount</mount><cropfactor>1.5</cropfactor></camera>
+ <lens><maker>Test Optics</maker><model>Known Prime 35mm</model><mount>Test Mount</mount><cropfactor>1.5</cropfactor><aspect-ratio>1.5</aspect-ratio><calibration>
+  <distortion model="poly5" focal="35" k1="0.02" k2="0.005"/>
+  <distortion model="poly5" focal="50" k1="0.01" k2="0.002"/>
+  <tca model="linear" focal="35" kr="1.001" kb="0.999"/>
+  <vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.2" k2="0.03" k3="0"/>
+ </calibration></lens>
+ <lens><maker>Test Optics</maker><model>Poly3 Test</model><mount>Test Mount</mount><cropfactor>1.5</cropfactor><center x="0.02" y="-0.01"/><calibration><distortion model="poly3" focal="35" k1="0.02"/></calibration></lens>
+ <lens><maker>Test Optics</maker><model>PTLens Test</model><mount>Test Mount</mount><cropfactor>1.5</cropfactor><calibration><distortion model="ptlens" focal="35" a="0.001" b="0.002" c="-0.001"/></calibration></lens>
+ <lens><maker>Test Optics</maker><model>ACM Test</model><mount>Test Mount</mount><cropfactor>1.5</cropfactor><calibration><distortion model="acm" focal="35" k1="0.01" k2="0.001" k3="0.0001" k4="0.0002" k5="-0.0001"/></calibration></lens>
+ <lens><maker>Test Optics</maker><model>Unsupported Test</model><cropfactor>1.5</cropfactor><calibration><distortion model="future-model" focal="35"/></calibration></lens>
+ <lens><maker>Test Optics</maker><model>Folded Test</model><cropfactor>1.5</cropfactor><calibration><distortion model="poly5" focal="35" k1="-5" k2="0"/></calibration></lens>
+</lensdatabase>

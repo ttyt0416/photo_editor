@@ -1,0 +1,402 @@
+[
+  {
+    "file": "raw-color-linear-3c-16-ill17-cc-match.dng",
+    "channels": 3,
+    "variant": "match",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-3c-16-ill17.dng",
+    "source_sha256": "36c30245b6f5932214ade353ece2c62081559a00bbe02d6183fb43b4da91fd97"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-cc-default-signatures.dng",
+    "channels": 3,
+    "variant": "default-signatures",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-3c-16-ill17.dng",
+    "source_sha256": "216c83642facaac5d751dff0939e0c8c16a8b5760d105eabcc64d9711e91739c"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-cc-mismatch.dng",
+    "channels": 3,
+    "variant": "mismatch",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-3c-16-ill17.dng",
+    "source_sha256": "2f48198b6d31d733317a08a9bff562a2e623440d2fe83e7f82b5c67ef095180b"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-cc-identity.dng",
+    "channels": 3,
+    "variant": "identity",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-3c-16-ill17.dng",
+    "source_sha256": "81d5344e7a068b1115bd45dfd0a850f5cb0c370045a09b964bd05ceebbb1f715"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-cc-missing-second.dng",
+    "channels": 3,
+    "variant": "missing-second",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-3c-16-ill17.dng",
+    "source_sha256": "36c30245b6f5932214ade353ece2c62081559a00bbe02d6183fb43b4da91fd97"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-cc-match.dng",
+    "channels": 4,
+    "variant": "match",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-4c-32-ill21.dng",
+    "source_sha256": "bfcb8eb56122f03b591c3b7771f26eec4372fe9182cc456cf3c9d5c7cb7c0ce3"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-cc-default-signatures.dng",
+    "channels": 4,
+    "variant": "default-signatures",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-4c-32-ill21.dng",
+    "source_sha256": "bcf136a12a264c7903c2eead5c6b7b91647977a76a5deaeef75af59da5977cc6"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-cc-mismatch.dng",
+    "channels": 4,
+    "variant": "mismatch",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-4c-32-ill21.dng",
+    "source_sha256": "154cbbb41a5036d7242d13bc77b785a9095d6840251978df3a602f6af5bb8d98"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-cc-identity.dng",
+    "channels": 4,
+    "variant": "identity",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-4c-32-ill21.dng",
+    "source_sha256": "b2ef57bf1cb3c56cfc12a12f1767afca5a64b17a227f250e017e49bbb6d7b702"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-cc-missing-second.dng",
+    "channels": 4,
+    "variant": "missing-second",
+    "cfa": false,
+    "dual": false,
+    "xy": false,
+    "source": "raw-color/linear-4c-32-ill21.dng",
+    "source_sha256": "bfcb8eb56122f03b591c3b7771f26eec4372fe9182cc456cf3c9d5c7cb7c0ce3"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-3c-32-ill17-21-analog-cc-match.dng",
+    "channels": 3,
+    "variant": "match",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-3c-32-ill17-21-analog.dng",
+    "source_sha256": "dd1dea2f29f93aedfc117a74c099df7bbce3f37f0b3cd38850b16af90ff58686"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-3c-32-ill17-21-analog-cc-default-signatures.dng",
+    "channels": 3,
+    "variant": "default-signatures",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-3c-32-ill17-21-analog.dng",
+    "source_sha256": "561119abbc01d5d5a91115bdac92808ee6cc06992df2df58a43171c696ed4d58"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-3c-32-ill17-21-analog-cc-mismatch.dng",
+    "channels": 3,
+    "variant": "mismatch",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-3c-32-ill17-21-analog.dng",
+    "source_sha256": "0b345cffa549987d8d5ad85e478ceff5885419dd1ed1b20cca27fbdd221d1a73"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-3c-32-ill17-21-analog-cc-identity.dng",
+    "channels": 3,
+    "variant": "identity",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-3c-32-ill17-21-analog.dng",
+    "source_sha256": "fee4423817650bbffe8f4933f1b30f4cd1572977e70fc44213510418f6522dbd"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-3c-32-ill17-21-analog-cc-missing-second.dng",
+    "channels": 3,
+    "variant": "missing-second",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-3c-32-ill17-21-analog.dng",
+    "source_sha256": "dff25851f81818779a3e3313328f79574114d80a33de6af845572f3f0296cd5c"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-4c-32-ill21-17-analog-cc-match.dng",
+    "channels": 4,
+    "variant": "match",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-4c-32-ill21-17-analog.dng",
+    "source_sha256": "9282a91542bafd85b76b84b6466ed1523dc76e92ee042e985817dcd7018eef89"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-4c-32-ill21-17-analog-cc-default-signatures.dng",
+    "channels": 4,
+    "variant": "default-signatures",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-4c-32-ill21-17-analog.dng",
+    "source_sha256": "10d4c22d633d53096ac20950f1734054d1c265ec5d9078ec50c7111a77d67631"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-4c-32-ill21-17-analog-cc-mismatch.dng",
+    "channels": 4,
+    "variant": "mismatch",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-4c-32-ill21-17-analog.dng",
+    "source_sha256": "c1215cf3ec08bf35f144f41e487e6bb4a7f5bcb196ed60762ef6f012f56ff0a6"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-4c-32-ill21-17-analog-cc-identity.dng",
+    "channels": 4,
+    "variant": "identity",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-4c-32-ill21-17-analog.dng",
+    "source_sha256": "ad63035a27f5c883b848b92f37b246cd9180b5b04751ea88e662742d0879ca7f"
+  },
+  {
+    "file": "raw-analog-raw-dual-linear-4c-32-ill21-17-analog-cc-missing-second.dng",
+    "channels": 4,
+    "variant": "missing-second",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-analog/raw-dual-linear-4c-32-ill21-17-analog.dng",
+    "source_sha256": "a6396b6b2cae7c877fd7872a4ae2da4c8683fa5eb70a5bfd599d559b710c12c4"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-3c-32-ill17-21-analog-xyD65-cc-match.dng",
+    "channels": 3,
+    "variant": "match",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-3c-32-ill17-21-analog-xyD65.dng",
+    "source_sha256": "9123ae49f797e4515c1f48b07f9f1e65bf2499c715c5214394af77db2f59c998"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-3c-32-ill17-21-analog-xyD65-cc-default-signatures.dng",
+    "channels": 3,
+    "variant": "default-signatures",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-3c-32-ill17-21-analog-xyD65.dng",
+    "source_sha256": "cf871a5121d8e076db302c7bf5de0369c635eae7993742534bced59b3f112475"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-3c-32-ill17-21-analog-xyD65-cc-mismatch.dng",
+    "channels": 3,
+    "variant": "mismatch",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-3c-32-ill17-21-analog-xyD65.dng",
+    "source_sha256": "06c5e454e77267c03385a5e4895a1b2acb90be9e612237f3436b744fd4ea9fec"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-3c-32-ill17-21-analog-xyD65-cc-identity.dng",
+    "channels": 3,
+    "variant": "identity",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-3c-32-ill17-21-analog-xyD65.dng",
+    "source_sha256": "4fc26ced61dda65afa0988068a0f1ba8b401a1f18ae462286c1d6f289ad9a82d"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-3c-32-ill17-21-analog-xyD65-cc-missing-second.dng",
+    "channels": 3,
+    "variant": "missing-second",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-3c-32-ill17-21-analog-xyD65.dng",
+    "source_sha256": "f42690f836e597f970c33a955403b455f5e93926e7b7dbf3b5fadc9165ec2b3d"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-4c-32-ill21-17-unit-xyA-cc-match.dng",
+    "channels": 4,
+    "variant": "match",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-4c-32-ill21-17-unit-xyA.dng",
+    "source_sha256": "719d38473d076446e3f3184337f1c6de6b78100d882a69f51224957d985118f9"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-4c-32-ill21-17-unit-xyA-cc-default-signatures.dng",
+    "channels": 4,
+    "variant": "default-signatures",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-4c-32-ill21-17-unit-xyA.dng",
+    "source_sha256": "9c362c081e63179b89d2e9a4e82de22ccaf36a35953a17718d05b48d94e82f0c"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-4c-32-ill21-17-unit-xyA-cc-mismatch.dng",
+    "channels": 4,
+    "variant": "mismatch",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-4c-32-ill21-17-unit-xyA.dng",
+    "source_sha256": "158279977510027623bd1328772c2ae96c29fbfff6b73284044cb9f9fbe34aae"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-4c-32-ill21-17-unit-xyA-cc-identity.dng",
+    "channels": 4,
+    "variant": "identity",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-4c-32-ill21-17-unit-xyA.dng",
+    "source_sha256": "7905d4c872f1ae7bd999e4156d5634dceb8459a02a17bf52c2b64446d21c6841"
+  },
+  {
+    "file": "raw-white-raw-dual-linear-4c-32-ill21-17-unit-xyA-cc-missing-second.dng",
+    "channels": 4,
+    "variant": "missing-second",
+    "cfa": false,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-linear-4c-32-ill21-17-unit-xyA.dng",
+    "source_sha256": "fa5243e9c3ec935af36d1e5393e120ab7328ee33f3af5fdf54afbbbb0759be09"
+  },
+  {
+    "file": "raw-white-raw-dual-cfa-4c-16-ill17-21-analog-xyD65-cc-match.dng",
+    "channels": 4,
+    "variant": "match",
+    "cfa": true,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-cfa-4c-16-ill17-21-analog-xyD65.dng",
+    "source_sha256": "65973d3cb866162cded74906c1d51c53571df829f9727d33a3d075d31492f27d"
+  },
+  {
+    "file": "raw-white-raw-dual-cfa-4c-16-ill17-21-analog-xyD65-cc-default-signatures.dng",
+    "channels": 4,
+    "variant": "default-signatures",
+    "cfa": true,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-cfa-4c-16-ill17-21-analog-xyD65.dng",
+    "source_sha256": "aa174831691e5a12cd57c72392e298e23e0716c643e632d7f1b4b3911dc7e432"
+  },
+  {
+    "file": "raw-white-raw-dual-cfa-4c-16-ill17-21-analog-xyD65-cc-mismatch.dng",
+    "channels": 4,
+    "variant": "mismatch",
+    "cfa": true,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-cfa-4c-16-ill17-21-analog-xyD65.dng",
+    "source_sha256": "64f5295b8d790d63d753e70ad84672a4ed2ff0fae2677a22cdfc5a679d8bf880"
+  },
+  {
+    "file": "raw-white-raw-dual-cfa-4c-16-ill17-21-analog-xyD65-cc-identity.dng",
+    "channels": 4,
+    "variant": "identity",
+    "cfa": true,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-cfa-4c-16-ill17-21-analog-xyD65.dng",
+    "source_sha256": "a277fb343d7ddd6c103fd8029f2e47093f9ec2c2d26135aa1c73e6118bd9ff31"
+  },
+  {
+    "file": "raw-white-raw-dual-cfa-4c-16-ill17-21-analog-xyD65-cc-missing-second.dng",
+    "channels": 4,
+    "variant": "missing-second",
+    "cfa": true,
+    "dual": true,
+    "xy": true,
+    "source": "raw-white/raw-dual-cfa-4c-16-ill17-21-analog-xyD65.dng",
+    "source_sha256": "a0e9ccc592e8bf8d92087d02121b4e6fa7c1165f9cc7750f41438d91fc4252f2"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-cc-match.dng",
+    "channels": 4,
+    "variant": "match",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-dual/linear-4c-16-ill23-22.dng",
+    "source_sha256": "4b3db46352d997b3bf64abe00f005995d5ab9729918a98e3373146c34d068e2d"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-cc-default-signatures.dng",
+    "channels": 4,
+    "variant": "default-signatures",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-dual/linear-4c-16-ill23-22.dng",
+    "source_sha256": "6d9cad25ae14373bfc0022c284600c289c7cf24900a24154ac271b5b1abf4776"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-cc-mismatch.dng",
+    "channels": 4,
+    "variant": "mismatch",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-dual/linear-4c-16-ill23-22.dng",
+    "source_sha256": "c7cb6113f3b65f7bf0eb021ad9cc2af1b43c54894fb7b828ce9118e4006fb007"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-cc-identity.dng",
+    "channels": 4,
+    "variant": "identity",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-dual/linear-4c-16-ill23-22.dng",
+    "source_sha256": "809882c865eedbc53f2452b14f88b326b0c77587a73cfc8befa49ccf57b0a7ba"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-cc-missing-second.dng",
+    "channels": 4,
+    "variant": "missing-second",
+    "cfa": false,
+    "dual": true,
+    "xy": false,
+    "source": "raw-dual/linear-4c-16-ill23-22.dng",
+    "source_sha256": "65ad4c8ee3e35a4bc603dc7258d7a2da4fc6d443f1522e214bf2a73bf65aa2b7"
+  }
+]

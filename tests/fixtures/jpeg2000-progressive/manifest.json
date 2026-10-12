@@ -1,0 +1,362 @@
+[
+  {
+    "file": "LRCP-False.jp2",
+    "limit": 1,
+    "output": "LRCP-False.jp2-quality1.rgba8",
+    "sha256": "ef8f7884912dacd7ac3c1e1d55d4329ac0e76f78237bc2fe02d58ae64a986b4b"
+  },
+  {
+    "file": "LRCP-False.jp2",
+    "limit": 2,
+    "output": "LRCP-False.jp2-quality2.rgba8",
+    "sha256": "ef8f7884912dacd7ac3c1e1d55d4329ac0e76f78237bc2fe02d58ae64a986b4b"
+  },
+  {
+    "file": "LRCP-False.jp2",
+    "limit": 3,
+    "output": "LRCP-False.jp2-quality3.rgba8",
+    "sha256": "ef8f7884912dacd7ac3c1e1d55d4329ac0e76f78237bc2fe02d58ae64a986b4b"
+  },
+  {
+    "file": "LRCP-True.jp2",
+    "limit": 1,
+    "output": "LRCP-True.jp2-quality1.rgba8",
+    "sha256": "098421eb6097693a2b1dd00de48977f1820368c9beef73e5d4a9974ee7545dd3"
+  },
+  {
+    "file": "LRCP-True.jp2",
+    "limit": 2,
+    "output": "LRCP-True.jp2-quality2.rgba8",
+    "sha256": "098421eb6097693a2b1dd00de48977f1820368c9beef73e5d4a9974ee7545dd3"
+  },
+  {
+    "file": "LRCP-True.jp2",
+    "limit": 3,
+    "output": "LRCP-True.jp2-quality3.rgba8",
+    "sha256": "098421eb6097693a2b1dd00de48977f1820368c9beef73e5d4a9974ee7545dd3"
+  },
+  {
+    "file": "LRCP-False.j2k",
+    "limit": 1,
+    "output": "LRCP-False.j2k-quality1.rgba8",
+    "sha256": "7514fb94e40326a1b2a7b034dd85d2492a0dcc80e8490ab014302ce6a12b08dc"
+  },
+  {
+    "file": "LRCP-False.j2k",
+    "limit": 2,
+    "output": "LRCP-False.j2k-quality2.rgba8",
+    "sha256": "7514fb94e40326a1b2a7b034dd85d2492a0dcc80e8490ab014302ce6a12b08dc"
+  },
+  {
+    "file": "LRCP-False.j2k",
+    "limit": 3,
+    "output": "LRCP-False.j2k-quality3.rgba8",
+    "sha256": "7514fb94e40326a1b2a7b034dd85d2492a0dcc80e8490ab014302ce6a12b08dc"
+  },
+  {
+    "file": "LRCP-True.j2k",
+    "limit": 1,
+    "output": "LRCP-True.j2k-quality1.rgba8",
+    "sha256": "6f2cfd56614ae52674aba4421030a4656940cde08988c3cd8598438b7ed736e4"
+  },
+  {
+    "file": "LRCP-True.j2k",
+    "limit": 2,
+    "output": "LRCP-True.j2k-quality2.rgba8",
+    "sha256": "6f2cfd56614ae52674aba4421030a4656940cde08988c3cd8598438b7ed736e4"
+  },
+  {
+    "file": "LRCP-True.j2k",
+    "limit": 3,
+    "output": "LRCP-True.j2k-quality3.rgba8",
+    "sha256": "6f2cfd56614ae52674aba4421030a4656940cde08988c3cd8598438b7ed736e4"
+  },
+  {
+    "file": "RLCP-False.jp2",
+    "limit": 1,
+    "output": "RLCP-False.jp2-quality1.rgba8",
+    "sha256": "fe54b1c0764797e320b14ff7f49925dbfa8ddb49132a0252a6b9a89c86da95d5"
+  },
+  {
+    "file": "RLCP-False.jp2",
+    "limit": 2,
+    "output": "RLCP-False.jp2-quality2.rgba8",
+    "sha256": "fe54b1c0764797e320b14ff7f49925dbfa8ddb49132a0252a6b9a89c86da95d5"
+  },
+  {
+    "file": "RLCP-False.jp2",
+    "limit": 3,
+    "output": "RLCP-False.jp2-quality3.rgba8",
+    "sha256": "fe54b1c0764797e320b14ff7f49925dbfa8ddb49132a0252a6b9a89c86da95d5"
+  },
+  {
+    "file": "RLCP-True.jp2",
+    "limit": 1,
+    "output": "RLCP-True.jp2-quality1.rgba8",
+    "sha256": "f0249e986c4aa1717d5f4e5d615777d2af9cc087a72ad1b0be69648b0e9b19aa"
+  },
+  {
+    "file": "RLCP-True.jp2",
+    "limit": 2,
+    "output": "RLCP-True.jp2-quality2.rgba8",
+    "sha256": "f0249e986c4aa1717d5f4e5d615777d2af9cc087a72ad1b0be69648b0e9b19aa"
+  },
+  {
+    "file": "RLCP-True.jp2",
+    "limit": 3,
+    "output": "RLCP-True.jp2-quality3.rgba8",
+    "sha256": "f0249e986c4aa1717d5f4e5d615777d2af9cc087a72ad1b0be69648b0e9b19aa"
+  },
+  {
+    "file": "RLCP-False.j2k",
+    "limit": 1,
+    "output": "RLCP-False.j2k-quality1.rgba8",
+    "sha256": "a4065de2bd51924818b50019605728d772ada4766460cc1bd808632739b3245a"
+  },
+  {
+    "file": "RLCP-False.j2k",
+    "limit": 2,
+    "output": "RLCP-False.j2k-quality2.rgba8",
+    "sha256": "a4065de2bd51924818b50019605728d772ada4766460cc1bd808632739b3245a"
+  },
+  {
+    "file": "RLCP-False.j2k",
+    "limit": 3,
+    "output": "RLCP-False.j2k-quality3.rgba8",
+    "sha256": "a4065de2bd51924818b50019605728d772ada4766460cc1bd808632739b3245a"
+  },
+  {
+    "file": "RLCP-True.j2k",
+    "limit": 1,
+    "output": "RLCP-True.j2k-quality1.rgba8",
+    "sha256": "61aac8d4abcf0abbb03773b3229241384c44b963441073f93189e6d3f7c9cc05"
+  },
+  {
+    "file": "RLCP-True.j2k",
+    "limit": 2,
+    "output": "RLCP-True.j2k-quality2.rgba8",
+    "sha256": "61aac8d4abcf0abbb03773b3229241384c44b963441073f93189e6d3f7c9cc05"
+  },
+  {
+    "file": "RLCP-True.j2k",
+    "limit": 3,
+    "output": "RLCP-True.j2k-quality3.rgba8",
+    "sha256": "61aac8d4abcf0abbb03773b3229241384c44b963441073f93189e6d3f7c9cc05"
+  },
+  {
+    "file": "RPCL-False.jp2",
+    "limit": 1,
+    "output": "RPCL-False.jp2-quality1.rgba8",
+    "sha256": "14009f8aa89d59118cb4470de193ea7ee5763959ff0118125b77eee775604065"
+  },
+  {
+    "file": "RPCL-False.jp2",
+    "limit": 2,
+    "output": "RPCL-False.jp2-quality2.rgba8",
+    "sha256": "14009f8aa89d59118cb4470de193ea7ee5763959ff0118125b77eee775604065"
+  },
+  {
+    "file": "RPCL-False.jp2",
+    "limit": 3,
+    "output": "RPCL-False.jp2-quality3.rgba8",
+    "sha256": "14009f8aa89d59118cb4470de193ea7ee5763959ff0118125b77eee775604065"
+  },
+  {
+    "file": "RPCL-True.jp2",
+    "limit": 1,
+    "output": "RPCL-True.jp2-quality1.rgba8",
+    "sha256": "0ceb1d695dbe11e7401a325a88b5feb09b206494880e44fe064d44b65c42fbce"
+  },
+  {
+    "file": "RPCL-True.jp2",
+    "limit": 2,
+    "output": "RPCL-True.jp2-quality2.rgba8",
+    "sha256": "0ceb1d695dbe11e7401a325a88b5feb09b206494880e44fe064d44b65c42fbce"
+  },
+  {
+    "file": "RPCL-True.jp2",
+    "limit": 3,
+    "output": "RPCL-True.jp2-quality3.rgba8",
+    "sha256": "0ceb1d695dbe11e7401a325a88b5feb09b206494880e44fe064d44b65c42fbce"
+  },
+  {
+    "file": "RPCL-False.j2k",
+    "limit": 1,
+    "output": "RPCL-False.j2k-quality1.rgba8",
+    "sha256": "583f4758cd06f5c9dad75d1ca410ad455ddd88a637bd78428426c04a6ecff621"
+  },
+  {
+    "file": "RPCL-False.j2k",
+    "limit": 2,
+    "output": "RPCL-False.j2k-quality2.rgba8",
+    "sha256": "583f4758cd06f5c9dad75d1ca410ad455ddd88a637bd78428426c04a6ecff621"
+  },
+  {
+    "file": "RPCL-False.j2k",
+    "limit": 3,
+    "output": "RPCL-False.j2k-quality3.rgba8",
+    "sha256": "583f4758cd06f5c9dad75d1ca410ad455ddd88a637bd78428426c04a6ecff621"
+  },
+  {
+    "file": "RPCL-True.j2k",
+    "limit": 1,
+    "output": "RPCL-True.j2k-quality1.rgba8",
+    "sha256": "4cab6af6adaae03a37c9020de56e28cdaeaf97b1f06df75123729d02eb393e5a"
+  },
+  {
+    "file": "RPCL-True.j2k",
+    "limit": 2,
+    "output": "RPCL-True.j2k-quality2.rgba8",
+    "sha256": "4cab6af6adaae03a37c9020de56e28cdaeaf97b1f06df75123729d02eb393e5a"
+  },
+  {
+    "file": "RPCL-True.j2k",
+    "limit": 3,
+    "output": "RPCL-True.j2k-quality3.rgba8",
+    "sha256": "4cab6af6adaae03a37c9020de56e28cdaeaf97b1f06df75123729d02eb393e5a"
+  },
+  {
+    "file": "PCRL-False.jp2",
+    "limit": 1,
+    "output": "PCRL-False.jp2-quality1.rgba8",
+    "sha256": "da880999c17aa56afe512a64a0eeb78551739e1dd54360e7fe2d2f62304ed061"
+  },
+  {
+    "file": "PCRL-False.jp2",
+    "limit": 2,
+    "output": "PCRL-False.jp2-quality2.rgba8",
+    "sha256": "da880999c17aa56afe512a64a0eeb78551739e1dd54360e7fe2d2f62304ed061"
+  },
+  {
+    "file": "PCRL-False.jp2",
+    "limit": 3,
+    "output": "PCRL-False.jp2-quality3.rgba8",
+    "sha256": "da880999c17aa56afe512a64a0eeb78551739e1dd54360e7fe2d2f62304ed061"
+  },
+  {
+    "file": "PCRL-True.jp2",
+    "limit": 1,
+    "output": "PCRL-True.jp2-quality1.rgba8",
+    "sha256": "219183d19ea0510aea724ccca7e827e7bb34e87ab63267272bf16497b32979cc"
+  },
+  {
+    "file": "PCRL-True.jp2",
+    "limit": 2,
+    "output": "PCRL-True.jp2-quality2.rgba8",
+    "sha256": "219183d19ea0510aea724ccca7e827e7bb34e87ab63267272bf16497b32979cc"
+  },
+  {
+    "file": "PCRL-True.jp2",
+    "limit": 3,
+    "output": "PCRL-True.jp2-quality3.rgba8",
+    "sha256": "219183d19ea0510aea724ccca7e827e7bb34e87ab63267272bf16497b32979cc"
+  },
+  {
+    "file": "PCRL-False.j2k",
+    "limit": 1,
+    "output": "PCRL-False.j2k-quality1.rgba8",
+    "sha256": "27703b539a4f81b0aa369bfeb4e18678b9062413fcd8853aa502dafab3e6ad9a"
+  },
+  {
+    "file": "PCRL-False.j2k",
+    "limit": 2,
+    "output": "PCRL-False.j2k-quality2.rgba8",
+    "sha256": "27703b539a4f81b0aa369bfeb4e18678b9062413fcd8853aa502dafab3e6ad9a"
+  },
+  {
+    "file": "PCRL-False.j2k",
+    "limit": 3,
+    "output": "PCRL-False.j2k-quality3.rgba8",
+    "sha256": "27703b539a4f81b0aa369bfeb4e18678b9062413fcd8853aa502dafab3e6ad9a"
+  },
+  {
+    "file": "PCRL-True.j2k",
+    "limit": 1,
+    "output": "PCRL-True.j2k-quality1.rgba8",
+    "sha256": "1987c9598eaee880b25d56cd3d30c7a308e8caba401040a8f8b3b7184ae114fd"
+  },
+  {
+    "file": "PCRL-True.j2k",
+    "limit": 2,
+    "output": "PCRL-True.j2k-quality2.rgba8",
+    "sha256": "1987c9598eaee880b25d56cd3d30c7a308e8caba401040a8f8b3b7184ae114fd"
+  },
+  {
+    "file": "PCRL-True.j2k",
+    "limit": 3,
+    "output": "PCRL-True.j2k-quality3.rgba8",
+    "sha256": "1987c9598eaee880b25d56cd3d30c7a308e8caba401040a8f8b3b7184ae114fd"
+  },
+  {
+    "file": "CPRL-False.jp2",
+    "limit": 1,
+    "output": "CPRL-False.jp2-quality1.rgba8",
+    "sha256": "73be6a06259588f98dd3e9eb523a701f4f570f5b8f4f9edda8873441f87187b1"
+  },
+  {
+    "file": "CPRL-False.jp2",
+    "limit": 2,
+    "output": "CPRL-False.jp2-quality2.rgba8",
+    "sha256": "73be6a06259588f98dd3e9eb523a701f4f570f5b8f4f9edda8873441f87187b1"
+  },
+  {
+    "file": "CPRL-False.jp2",
+    "limit": 3,
+    "output": "CPRL-False.jp2-quality3.rgba8",
+    "sha256": "73be6a06259588f98dd3e9eb523a701f4f570f5b8f4f9edda8873441f87187b1"
+  },
+  {
+    "file": "CPRL-True.jp2",
+    "limit": 1,
+    "output": "CPRL-True.jp2-quality1.rgba8",
+    "sha256": "cf2885715971aaa552be895be777833ca0b337543d09db9cf47921699eca0bd7"
+  },
+  {
+    "file": "CPRL-True.jp2",
+    "limit": 2,
+    "output": "CPRL-True.jp2-quality2.rgba8",
+    "sha256": "cf2885715971aaa552be895be777833ca0b337543d09db9cf47921699eca0bd7"
+  },
+  {
+    "file": "CPRL-True.jp2",
+    "limit": 3,
+    "output": "CPRL-True.jp2-quality3.rgba8",
+    "sha256": "cf2885715971aaa552be895be777833ca0b337543d09db9cf47921699eca0bd7"
+  },
+  {
+    "file": "CPRL-False.j2k",
+    "limit": 1,
+    "output": "CPRL-False.j2k-quality1.rgba8",
+    "sha256": "3c21195b499c97315cd3eca476887e00487e76b98321481cc42e498c9f172953"
+  },
+  {
+    "file": "CPRL-False.j2k",
+    "limit": 2,
+    "output": "CPRL-False.j2k-quality2.rgba8",
+    "sha256": "3c21195b499c97315cd3eca476887e00487e76b98321481cc42e498c9f172953"
+  },
+  {
+    "file": "CPRL-False.j2k",
+    "limit": 3,
+    "output": "CPRL-False.j2k-quality3.rgba8",
+    "sha256": "3c21195b499c97315cd3eca476887e00487e76b98321481cc42e498c9f172953"
+  },
+  {
+    "file": "CPRL-True.j2k",
+    "limit": 1,
+    "output": "CPRL-True.j2k-quality1.rgba8",
+    "sha256": "cdc1cec61bb790be7c121a803053fabdb05f845b5fb76dbcec07bdb1732f9539"
+  },
+  {
+    "file": "CPRL-True.j2k",
+    "limit": 2,
+    "output": "CPRL-True.j2k-quality2.rgba8",
+    "sha256": "cdc1cec61bb790be7c121a803053fabdb05f845b5fb76dbcec07bdb1732f9539"
+  },
+  {
+    "file": "CPRL-True.j2k",
+    "limit": 3,
+    "output": "CPRL-True.j2k-quality3.rgba8",
+    "sha256": "cdc1cec61bb790be7c121a803053fabdb05f845b5fb76dbcec07bdb1732f9539"
+  }
+]

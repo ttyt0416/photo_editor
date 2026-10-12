@@ -1,0 +1,1 @@
+Own 45 single-illuminant sensor DNGs: 3/4 camera channels, 16/32-bit linear, constant RGB/Cyan, CMYG and reordered four-color CFA, byte order/crop/orientation, SHORT/RATIONAL AsShotNeutral and known 3x3/4x3 matrices. Independent encoder generate_raw_color_inputs.py. Synthetic CFA interiors are compared; real cameras/edge quality/dual profiles/ICC remain unverified.

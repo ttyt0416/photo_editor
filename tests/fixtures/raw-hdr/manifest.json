@@ -1,0 +1,23 @@
+[
+  {
+    "file": "linear-32-o1-hdr.dng",
+    "template": "linear-32-o1.dng",
+    "source_sha256": "6b45cdbdb143add64b3a4b458a7627240874f2bae7aa1dbeceecd2227e541aa0",
+    "sample_min": 0.0,
+    "sample_max": 3.4028234663852886e+38
+  },
+  {
+    "file": "linear-32-o6-crop-hdr.dng",
+    "template": "linear-32-o6-crop.dng",
+    "source_sha256": "f065492970f32f3fcaf69f96b14632c81925323861d83bd80e444af3559bd4d7",
+    "sample_min": 0.0,
+    "sample_max": 3.4028234663852886e+38
+  },
+  {
+    "file": "mono-32-o6-hdr.dng",
+    "template": "mono-32-o6.dng",
+    "source_sha256": "eeb5cc2d5d9694b8bed0d5ad0792c20fa1ce546b84d8aa2db901826a369ef143",
+    "sample_min": 0.0,
+    "sample_max": 3.4028234663852886e+38
+  }
+]

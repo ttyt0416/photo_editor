@@ -1,0 +1,758 @@
+[
+  {
+    "file": "raw-color-linear-3c-16-ill17-analog-xyA.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-3c-16-ill17-analog.dng",
+    "source_sha256": "ea7c6aeffb26c6dd8c7b2b7146990dce6cbf25c0761d760df93f71c49fd9be48"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-analog-xyD65.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-3c-16-ill17-analog.dng",
+    "source_sha256": "cbe6efdb31c4fc5b35c993ccf844fb43d22de49a6183be95a92128d5a65bda6b"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-unit-xyA.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-3c-16-ill17-unit.dng",
+    "source_sha256": "1d44c1cc15a78414b6493b8eee2561e4d98ff1e773be2da911301cf6bcbf5f7a"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-unit-xyA-noab.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-3c-16-ill17-unit.dng",
+    "source_sha256": "34f38e2586a721ba6802efa9146a78221c11d255f36a51753f113b6d2a8d41f1"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-unit-xyD65.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-3c-16-ill17-unit.dng",
+    "source_sha256": "9036a25a405034d2dcbaa18443d67a5094aabd377aabce4db843a64f56b3bce2"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-unit-xyD65-noab.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-3c-16-ill17-unit.dng",
+    "source_sha256": "e072e62a658039ad577bbc94caadd1cafec490e1fe0760bd353018e57009a176"
+  },
+  {
+    "file": "raw-color-linear-4c-16-ill23-analog-xyA.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-4c-16-ill23-analog.dng",
+    "source_sha256": "017abc3839d7498e60359ae78f309ab6b172f3e1f9c9637fb99ffa64cf171499"
+  },
+  {
+    "file": "raw-color-linear-4c-16-ill23-analog-xyD65.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-4c-16-ill23-analog.dng",
+    "source_sha256": "b372b8439a748c27159f88c83f2e22ff7e472416dc35aa45016bf3d6b3a66c1f"
+  },
+  {
+    "file": "raw-color-linear-4c-16-ill23-unit-xyA.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-4c-16-ill23-unit.dng",
+    "source_sha256": "b199c11d245372596b7ce3e8d5a6edf26b8f87edc37b725d46c92faf97c09051"
+  },
+  {
+    "file": "raw-color-linear-4c-16-ill23-unit-xyA-noab.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-4c-16-ill23-unit.dng",
+    "source_sha256": "9d5866f7b42a3273d7c704bf366686ba788153ad55b6d548b6a4d1178dfe8553"
+  },
+  {
+    "file": "raw-color-linear-4c-16-ill23-unit-xyD65.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-4c-16-ill23-unit.dng",
+    "source_sha256": "5cb090644d197afd6036258774a51025cb5f43dc8dd5bbe94aa85005aa945b79"
+  },
+  {
+    "file": "raw-color-linear-4c-16-ill23-unit-xyD65-noab.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-4c-16-ill23-unit.dng",
+    "source_sha256": "d399c3faf58f4fcc97c3263959459d91ffb2f29201e8d4d4d32d903719c324a8"
+  },
+  {
+    "file": "raw-color-linear-3c-32-ill21-analog-xyA.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-3c-32-ill21-analog.dng",
+    "source_sha256": "e0889a8be11bbcc42959bc904c7de3b184b3713fe9384de0343600540605ff0e"
+  },
+  {
+    "file": "raw-color-linear-3c-32-ill21-analog-xyD65.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-3c-32-ill21-analog.dng",
+    "source_sha256": "797ec9a2d6b43f3b5b220609c0de81b99e8906d41fb3c90ba581f58b8d18c667"
+  },
+  {
+    "file": "raw-color-linear-3c-32-ill21-unit-xyA.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-3c-32-ill21-unit.dng",
+    "source_sha256": "8e27057986259be0af6818faacac8cf486296d38ff362df46a4d9cc0e5b6a8c8"
+  },
+  {
+    "file": "raw-color-linear-3c-32-ill21-unit-xyA-noab.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-3c-32-ill21-unit.dng",
+    "source_sha256": "3dc3c000c91afb40fa6f1bdbd1139b724f04300bc76b40c0a94072f0c8d59d7a"
+  },
+  {
+    "file": "raw-color-linear-3c-32-ill21-unit-xyD65.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-3c-32-ill21-unit.dng",
+    "source_sha256": "4f96b62bfcea5b9555172fdd191a670e2dd353cbe92e25eaabe10781364040b4"
+  },
+  {
+    "file": "raw-color-linear-3c-32-ill21-unit-xyD65-noab.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-3c-32-ill21-unit.dng",
+    "source_sha256": "00997744464dfdb9b020197d01dc26de88ad956a2fadb943fa74d63ce4ce4d61"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-analog-xyA.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-4c-32-ill21-analog.dng",
+    "source_sha256": "748aed630c1480310da6f183a471f3b05ab99f5e9a716af9479ed81d651ea8b9"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-analog-xyD65.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-4c-32-ill21-analog.dng",
+    "source_sha256": "25c51ab5e175e2076c3af7500c5150f1b001e3661bff6afe882b85f31d778e88"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-unit-xyA.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-4c-32-ill21-unit.dng",
+    "source_sha256": "a8777a495cc9801ce34ca6109da7589d74426ff3b89e8b1f91d244ea3d49bb26"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-unit-xyA-noab.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-linear-4c-32-ill21-unit.dng",
+    "source_sha256": "51e9ba3bbfb51421a58bea5596a28fecacdd60f110ded31f485fb6a1236994ca"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-unit-xyD65.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-4c-32-ill21-unit.dng",
+    "source_sha256": "b80a6826b4c0b929005bc69893aa3a1dfad3e9650d3d0b974f482e4d62f7f4ea"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-unit-xyD65-noab.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-linear-4c-32-ill21-unit.dng",
+    "source_sha256": "ac34212d7f97ab42b504851b1b7776825abd13340790283c8c6572af732f929f"
+  },
+  {
+    "file": "raw-color-cfa-4c-16-ill213451-analog-xyA.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-cfa-4c-16-ill213451-analog.dng",
+    "source_sha256": "577c73b76d6cf1a76d565f9905f93d54244c631cc08275007838ee9249a02359"
+  },
+  {
+    "file": "raw-color-cfa-4c-16-ill213451-analog-xyD65.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": false,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-cfa-4c-16-ill213451-analog.dng",
+    "source_sha256": "09ddb2515128bf464767c790d8c40dfa948286b0945bb2304a95bc2a0af948f2"
+  },
+  {
+    "file": "raw-color-cfa-4c-16-ill213451-unit-xyA.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-cfa-4c-16-ill213451-unit.dng",
+    "source_sha256": "afe47554caf24165c19fa7a9a5a95d5f2a6f602da6a1f2eaf8858de4fadf3522"
+  },
+  {
+    "file": "raw-color-cfa-4c-16-ill213451-unit-xyA-noab.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-color-cfa-4c-16-ill213451-unit.dng",
+    "source_sha256": "592631aad958f5b08a9c29d51d8d5572759b93795384859992205251f563dc7f"
+  },
+  {
+    "file": "raw-color-cfa-4c-16-ill213451-unit-xyD65.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": false,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-cfa-4c-16-ill213451-unit.dng",
+    "source_sha256": "68256ebc10db35fd6fbb0491666b2b306a66b1f24efa13cfc50dc6cf116fb82d"
+  },
+  {
+    "file": "raw-color-cfa-4c-16-ill213451-unit-xyD65-noab.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": false,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-color-cfa-4c-16-ill213451-unit.dng",
+    "source_sha256": "b7353332ea1cfa03b563421c4952c7eb16a33c0bcb8ce6631966e3da352f4c49"
+  },
+  {
+    "file": "raw-dual-linear-3c-32-ill17-21-analog-xyA.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": true,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-linear-3c-32-ill17-21-analog.dng",
+    "source_sha256": "31a59ad30b1202025d82299f0bfca5d3af31c3ecc11a037eceb8d5dc05343d18"
+  },
+  {
+    "file": "raw-dual-linear-3c-32-ill17-21-analog-xyD65.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": true,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-linear-3c-32-ill17-21-analog.dng",
+    "source_sha256": "1fac6e601017ea0f76cf4e6a9500417a3f252782639776e04060a9a3fcd3e6bd"
+  },
+  {
+    "file": "raw-dual-linear-3c-32-ill17-21-unit-xyA.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-linear-3c-32-ill17-21-unit.dng",
+    "source_sha256": "1e394680c23b9ec73b69af76a29b55bc3df01a28e3dd1f7e0ad4106d9e7f1ff1"
+  },
+  {
+    "file": "raw-dual-linear-3c-32-ill17-21-unit-xyA-noab.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-linear-3c-32-ill17-21-unit.dng",
+    "source_sha256": "082b9295725db2d260ecc11301b4decac39fafa642121aa291d01c932de3ca21"
+  },
+  {
+    "file": "raw-dual-linear-3c-32-ill17-21-unit-xyD65.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-linear-3c-32-ill17-21-unit.dng",
+    "source_sha256": "a6adab936472fd2723c651dffe340f720bde35fc5746d8306d3843b9bebcbe75"
+  },
+  {
+    "file": "raw-dual-linear-3c-32-ill17-21-unit-xyD65-noab.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-linear-3c-32-ill17-21-unit.dng",
+    "source_sha256": "b958406cd4f96e64556eb4a354874eec1d15d3dd7d4078dc4c2293ac93cf64f5"
+  },
+  {
+    "file": "raw-dual-linear-4c-32-ill21-17-analog-xyA.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-linear-4c-32-ill21-17-analog.dng",
+    "source_sha256": "c703db99b397f73bea35c70ae2f7b4f6d39bed85feb132c06ea891c60285816c"
+  },
+  {
+    "file": "raw-dual-linear-4c-32-ill21-17-analog-xyD65.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-linear-4c-32-ill21-17-analog.dng",
+    "source_sha256": "29c1fffc7d39cc2e22f42ead8c7bef520f96dea8b00e6ed8acb5b389b6ed03b7"
+  },
+  {
+    "file": "raw-dual-linear-4c-32-ill21-17-unit-xyA.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-linear-4c-32-ill21-17-unit.dng",
+    "source_sha256": "d21cfca1bbc484017387c2c23194450b7561f7c966d3fe6fc0874296771a922d"
+  },
+  {
+    "file": "raw-dual-linear-4c-32-ill21-17-unit-xyA-noab.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-linear-4c-32-ill21-17-unit.dng",
+    "source_sha256": "a89397bbdbe7b30d5efee7daffd0acae32500187f33bf9f62df614a4df00981b"
+  },
+  {
+    "file": "raw-dual-linear-4c-32-ill21-17-unit-xyD65.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-linear-4c-32-ill21-17-unit.dng",
+    "source_sha256": "c42feee39c78a2134f27a6b47a4bbf9e2db9e728fb50f6a500c53b788a83551d"
+  },
+  {
+    "file": "raw-dual-linear-4c-32-ill21-17-unit-xyD65-noab.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-linear-4c-32-ill21-17-unit.dng",
+    "source_sha256": "d13a38839516ddc121430b50dea758b7dee72b6988466eb92fc35f35a0d0c435"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-analog-xyA.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-linear-4c-16-ill23-22-analog.dng",
+    "source_sha256": "13bc2487ffa741a29eefac8943e31c0dce0d5b7898aead3c401958d191731db4"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-analog-xyD65.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-linear-4c-16-ill23-22-analog.dng",
+    "source_sha256": "e47d68b3e237e8f050180e4edf1c06000f2e29d43b15ea1fd5b0848e8de4eda5"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-unit-xyA.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-linear-4c-16-ill23-22-unit.dng",
+    "source_sha256": "9dde4a24f14d2af49ebeee350cbbb72ce6aa9d8636084eb151956bb122b52fa5"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-unit-xyA-noab.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-linear-4c-16-ill23-22-unit.dng",
+    "source_sha256": "b4a235c622efca2d3baf0e536f66c68e5bd24a8786b5fae84d069458e5ff01a5"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-unit-xyD65.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-linear-4c-16-ill23-22-unit.dng",
+    "source_sha256": "3b5b2b4ee6886360852a372dd0b3b25d52ccc746da6d00a0503cc93146e63d2a"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-unit-xyD65-noab.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-linear-4c-16-ill23-22-unit.dng",
+    "source_sha256": "7099760d005d6027d9f71e57c179d16b0b9acea37ac82252a6c56fd4db28d106"
+  },
+  {
+    "file": "raw-dual-cfa-4c-16-ill17-21-analog-xyA.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": true,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-cfa-4c-16-ill17-21-analog.dng",
+    "source_sha256": "fffcc1fbe3e9e516204a1c733aa5b0909d848ccf50e08c73298aed004b2c4272"
+  },
+  {
+    "file": "raw-dual-cfa-4c-16-ill17-21-analog-xyD65.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": true,
+    "unit": false,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-cfa-4c-16-ill17-21-analog.dng",
+    "source_sha256": "d3f4c527103f7b72f9b880e2e286a964a7fb95a4f118243fe210a33bb2343d36"
+  },
+  {
+    "file": "raw-dual-cfa-4c-16-ill17-21-unit-xyA.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": true,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-cfa-4c-16-ill17-21-unit.dng",
+    "source_sha256": "b4beed7f84be595fe18db8bbe5348dbc7fb38f2c73696302b69a30fa34e257dc"
+  },
+  {
+    "file": "raw-dual-cfa-4c-16-ill17-21-unit-xyA-noab.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": true,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.44757,
+      0.40745
+    ],
+    "source": "raw-dual-cfa-4c-16-ill17-21-unit.dng",
+    "source_sha256": "eb4e19558a23b3238a022ea76602fcd43e83df9d33ed38d0768052e470a9743b"
+  },
+  {
+    "file": "raw-dual-cfa-4c-16-ill17-21-unit-xyD65.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": true,
+    "unit": true,
+    "analog": true,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-cfa-4c-16-ill17-21-unit.dng",
+    "source_sha256": "bcef019adc78201337f78228e81808cbad2c33d3df40a4a71180e563a0c7dc7c"
+  },
+  {
+    "file": "raw-dual-cfa-4c-16-ill17-21-unit-xyD65-noab.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": true,
+    "unit": true,
+    "analog": false,
+    "xy": [
+      0.31271,
+      0.32902
+    ],
+    "source": "raw-dual-cfa-4c-16-ill17-21-unit.dng",
+    "source_sha256": "9b9bbcb4c34ef222392c874e474843ebe7be945f4787b24de328a020d751d336"
+  }
+]

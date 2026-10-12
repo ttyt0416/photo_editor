@@ -1,0 +1,209 @@
+{
+  "repository": "https://github.com/libjxl/conformance",
+  "commit": "b1d0f990b03e57bf6d137c365cd5dc8b470b9191",
+  "files": {
+    "LICENSE": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/LICENSE",
+      "size": 1508,
+      "sha256": "8405932022a556380c2d8c272eff154a923feb197233f348ce5f7334fb0a5ede"
+    },
+    "alpha_triangles/test.json": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/alpha_triangles/test.json",
+      "size": 553,
+      "sha256": "5f1cd610e9533b589896b91c2e6f0ee87ba12a94b36f7cd51a8f92cd089073c0"
+    },
+    "alpha_triangles/input.jxl": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/alpha_triangles/input.jxl",
+      "size": 61,
+      "sha256": "19ac7752a23ad2b22814064cb6b62a581b48be18ed73b5ccc2340888c114d2c9"
+    },
+    "alpha_triangles/reference.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19",
+      "size": 732,
+      "sha256": "80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19"
+    },
+    "alpha_triangles/source": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/alpha_triangles/source",
+      "size": 95,
+      "sha256": "12bdbaf058675ce892c56d7cffc1518a1cb50c2310532ebef62d4919b3abbcb5"
+    },
+    "alpha_nonpremultiplied/test.json": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/alpha_nonpremultiplied/test.json",
+      "size": 553,
+      "sha256": "a1d53ce1679cc7ff146433feb7920a27b14a62ce7e72c07acf627fe7e7765969"
+    },
+    "alpha_nonpremultiplied/input.jxl": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/alpha_nonpremultiplied/input.jxl",
+      "size": 30,
+      "sha256": "15acbe3edbfd5a75c7609726ae60526ffc812642b5dd6be8475f0b990ce9b1db"
+    },
+    "alpha_nonpremultiplied/reference.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19",
+      "size": 732,
+      "sha256": "80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19"
+    },
+    "alpha_premultiplied/test.json": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/alpha_premultiplied/test.json",
+      "size": 551,
+      "sha256": "25e183fea4c96583f1d17f63e7547392f6d4f7f7047509c5ba1e42f8e1245fde"
+    },
+    "alpha_premultiplied/input.jxl": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/alpha_premultiplied/input.jxl",
+      "size": 8772,
+      "sha256": "5028e630dc358bf4031cbf06e8a80f2bfbfa21fd0d088af74d83b473d3dd540a"
+    },
+    "alpha_premultiplied/reference.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19",
+      "size": 732,
+      "sha256": "80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19"
+    },
+    "sunset_logo/test.json": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/sunset_logo/test.json",
+      "size": 555,
+      "sha256": "54a0324f62e3ceee867913ec976c59aaa73a70fbb9c733168cba3f0c1b2c34b9"
+    },
+    "sunset_logo/input.jxl": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/sunset_logo/input.jxl",
+      "size": 218,
+      "sha256": "6617480923e1fdef555e165a1e7df9ca648068dd0bdbc41a22c0e4213392d834"
+    },
+    "sunset_logo/reference.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19",
+      "size": 732,
+      "sha256": "80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19"
+    },
+    "sunset_logo/source": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/sunset_logo/source",
+      "size": 95,
+      "sha256": "12bdbaf058675ce892c56d7cffc1518a1cb50c2310532ebef62d4919b3abbcb5"
+    },
+    "lossless_pfm/test.json": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/lossless_pfm/test.json",
+      "size": 509,
+      "sha256": "7086f95f318178163c561e375a2db06be92083a5bb0cb78cb0076a3506b6d3e9"
+    },
+    "lossless_pfm/input.jxl": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/lossless_pfm/input.jxl",
+      "size": 774294,
+      "sha256": "61ae52b5851ab2e156aec1d22502e8e1ec0cdf6bc0d6a3956ac6d7d6d2969d5e"
+    },
+    "lossless_pfm/reference.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51",
+      "size": 536,
+      "sha256": "d7f9e32ac2a06a7e3865a828e865dafb7cf1947584d3c06ec97a660c59786b51"
+    },
+    "grayscale_jpeg/test.json": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/grayscale_jpeg/test.json",
+      "size": 772,
+      "sha256": "7da1ab64ebc42af8464a5158a48a6a0f47baf22c9e330363839458d9c794aaac"
+    },
+    "grayscale_jpeg/input.jxl": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/grayscale_jpeg/input.jxl",
+      "size": 7799,
+      "sha256": "346cc92b55864b0efb9f85cdddd02b586473ff18b03718e5a02fa03cb3e86844"
+    },
+    "grayscale_jpeg/reference.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/78001f4bf342ecf417b8dac5e3c7cf8da3ee25701951bc2a7e0868bc6dc81cac",
+      "size": 912,
+      "sha256": "78001f4bf342ecf417b8dac5e3c7cf8da3ee25701951bc2a7e0868bc6dc81cac"
+    },
+    "alpha_nonpremultiplied/reference_image.npy.zlib": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/cad070b944d8aff6b7865c211e44bc469b08addf5b4a19d11fdc4ef2f7494d1b",
+      "original_sha256": "cad070b944d8aff6b7865c211e44bc469b08addf5b4a19d11fdc4ef2f7494d1b",
+      "original_size": 16777298,
+      "sha256": "5dd826c1f840836ffe6daf60543f4ac7341e68fddb46d6a767896a42db1d853b",
+      "size": 4182075
+    },
+    "alpha_premultiplied/reference_image.npy.zlib": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/073c1d942ba408f94f6c0aed2fef3d442574899901c616afa060dbd8044bbdb9",
+      "original_sha256": "073c1d942ba408f94f6c0aed2fef3d442574899901c616afa060dbd8044bbdb9",
+      "original_size": 16777298,
+      "sha256": "8f8bb54e6603753edffaefdcd7e417c8aa7f7c5da164f3bccc1e07f3e1ceb229",
+      "size": 11319325
+    },
+    "alpha_triangles/reference_image.npy.zlib": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/1d8471e3b7f0768f408b5e5bf5fee0de49ad6886d846712b1aaa702379722e2b",
+      "original_sha256": "1d8471e3b7f0768f408b5e5bf5fee0de49ad6886d846712b1aaa702379722e2b",
+      "original_size": 16777298,
+      "sha256": "c48e646cdaeff55f355a1fcfdc003113647e82733eaeec8163a0258f75f2e878",
+      "size": 3833293
+    },
+    "grayscale_jpeg/reference_image.npy.zlib": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/c0b86989e287649b944f1734ce182d1c1ac0caebf12cec7d487d9793f51f5b8f",
+      "original_sha256": "c0b86989e287649b944f1734ce182d1c1ac0caebf12cec7d487d9793f51f5b8f",
+      "original_size": 160080,
+      "sha256": "d167f2bbf6b80cf624e1c2bd289b034c52b626a4d3f83647543a26e049042c0a",
+      "size": 63721
+    },
+    "lossless_pfm/reference_image.npy.zlib": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/1eac3ced5c60ef8a3a602f54c6a9d28162dfee51cd85b8dd7e52f6e3212bbb52",
+      "original_sha256": "1eac3ced5c60ef8a3a602f54c6a9d28162dfee51cd85b8dd7e52f6e3212bbb52",
+      "original_size": 3000080,
+      "sha256": "46da990c560318cee3b4df32b0cf0b5011b29a71519b04781bcdf7509a9241aa",
+      "size": 1218904
+    },
+    "sunset_logo/reference_image.npy.zlib": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/bf1c1d5626ced3746df867cf3e3a25f3d17512c2e837b5e3a04743660e42ad81",
+      "original_sha256": "bf1c1d5626ced3746df867cf3e3a25f3d17512c2e837b5e3a04743660e42ad81",
+      "original_size": 20490705,
+      "sha256": "f4489abc76567c2132304a6a8b7f1b6a3ac5a0cb772ab3bb460b7be0333b51cc",
+      "size": 5281627
+    }
+  },
+  "cases": {
+    "alpha_nonpremultiplied": {
+      "shape": [
+        1,
+        1024,
+        1024,
+        4
+      ],
+      "npy_data_offset": 82
+    },
+    "alpha_premultiplied": {
+      "shape": [
+        1,
+        1024,
+        1024,
+        4
+      ],
+      "npy_data_offset": 82
+    },
+    "alpha_triangles": {
+      "shape": [
+        1,
+        1024,
+        1024,
+        4
+      ],
+      "npy_data_offset": 82
+    },
+    "grayscale_jpeg": {
+      "shape": [
+        1,
+        200,
+        200,
+        1
+      ],
+      "npy_data_offset": 80
+    },
+    "lossless_pfm": {
+      "shape": [
+        1,
+        500,
+        500,
+        3
+      ],
+      "npy_data_offset": 80
+    },
+    "sunset_logo": {
+      "shape": [
+        1,
+        1386,
+        924,
+        4
+      ],
+      "npy_data_offset": 81
+    }
+  }
+}

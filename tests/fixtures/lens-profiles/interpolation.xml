@@ -1,0 +1,108 @@
+<lensdatabase version="2">
+  <camera>
+    <maker>Test Camera</maker>
+    <model>Known RAW Sensor</model>
+    <mount>Test Mount</mount>
+    <cropfactor>1.5</cropfactor>
+  </camera>
+  <lens>
+    <maker>Test Optics</maker>
+    <model>Interpolated poly3</model>
+    <mount>Test Mount</mount>
+    <cropfactor>1.5</cropfactor>
+    <center x="0.02" y="-0.01" />
+    <calibration>
+      <distortion model="poly3" focal="20" real-focal="19.8" k1="0.01" />
+      <tca model="linear" focal="20" kr="1.001" kb="0.999" />
+      <vignetting model="pa" focal="20" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="poly3" focal="35" real-focal="34.72" k1="0.012" />
+      <tca model="linear" focal="35" kr="1.0019999999999998" kb="0.9985" />
+      <vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="poly3" focal="50" real-focal="49.7" k1="0.014" />
+      <tca model="linear" focal="50" kr="1.003" kb="0.998" />
+      <vignetting model="pa" focal="50" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="poly3" focal="85" real-focal="84.66" k1="0.016" />
+      <tca model="linear" focal="85" kr="1.0039999999999998" kb="0.9975" />
+      <vignetting model="pa" focal="85" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+    </calibration>
+    <calibration cropfactor="2" aspect-ratio="1.5">
+      <distortion model="poly5" focal="20" k1="0.04" k2="0.002" />
+      <distortion model="poly5" focal="85" k1="0.04" k2="0.002" />
+    </calibration>
+  </lens>
+  <lens>
+    <maker>Test Optics</maker>
+    <model>Known Prime 35mm</model>
+    <mount>Test Mount</mount>
+    <cropfactor>1.5</cropfactor>
+    <center x="0.02" y="-0.01" />
+    <calibration>
+      <distortion model="poly5" focal="20" real-focal="19.8" k1="0.01" k2="0.002" />
+      <tca model="poly3" focal="20" vr="1.002" vb="0.999" cr="0.001" cb="-0.0005" br="0.0005" bb="-0.0002" />
+      <vignetting model="pa" focal="20" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="poly5" focal="35" real-focal="34.72" k1="0.012" k2="0.0022" />
+      <tca model="poly3" focal="35" vr="1.003" vb="0.9985" cr="0.0011" cb="-0.00045" br="0.00055" bb="-0.00018" />
+      <vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="poly5" focal="50" real-focal="49.7" k1="0.014" k2="0.0024000000000000002" />
+      <tca model="poly3" focal="50" vr="1.004" vb="0.998" cr="0.0012000000000000001" cb="-0.0004" br="0.0006000000000000001" bb="-0.00016" />
+      <vignetting model="pa" focal="50" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="poly5" focal="85" real-focal="84.66" k1="0.016" k2="0.0026" />
+      <tca model="poly3" focal="85" vr="1.005" vb="0.9975" cr="0.0013" cb="-0.00035" br="0.00065" bb="-0.00014" />
+      <vignetting model="pa" focal="85" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+    </calibration>
+    <calibration cropfactor="2" aspect-ratio="1.5">
+      <distortion model="poly5" focal="20" k1="0.04" k2="0.002" />
+      <distortion model="poly5" focal="85" k1="0.04" k2="0.002" />
+    </calibration>
+  </lens>
+  <lens>
+    <maker>Test Optics</maker>
+    <model>Interpolated ptlens</model>
+    <mount>Test Mount</mount>
+    <cropfactor>1.5</cropfactor>
+    <center x="0.02" y="-0.01" />
+    <calibration>
+      <distortion model="ptlens" focal="20" real-focal="19.8" a="0.0005" b="0.001" c="-0.0005" />
+      <tca model="poly3" focal="20" vr="1.002" vb="0.999" cr="0.001" cb="-0.0005" br="0.0005" bb="-0.0002" />
+      <vignetting model="pa" focal="20" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="ptlens" focal="35" real-focal="34.72" a="0.0006000000000000001" b="0.0011" c="-0.0004" />
+      <tca model="poly3" focal="35" vr="1.003" vb="0.9985" cr="0.0011" cb="-0.00045" br="0.00055" bb="-0.00018" />
+      <vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="ptlens" focal="50" real-focal="49.7" a="0.0007" b="0.0012000000000000001" c="-0.00030000000000000003" />
+      <tca model="poly3" focal="50" vr="1.004" vb="0.998" cr="0.0012000000000000001" cb="-0.0004" br="0.0006000000000000001" bb="-0.00016" />
+      <vignetting model="pa" focal="50" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="ptlens" focal="85" real-focal="84.66" a="0.0008" b="0.0013" c="-0.00019999999999999998" />
+      <tca model="poly3" focal="85" vr="1.005" vb="0.9975" cr="0.0013" cb="-0.00035" br="0.00065" bb="-0.00014" />
+      <vignetting model="pa" focal="85" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+    </calibration>
+    <calibration cropfactor="2" aspect-ratio="1.5">
+      <distortion model="poly5" focal="20" k1="0.04" k2="0.002" />
+      <distortion model="poly5" focal="85" k1="0.04" k2="0.002" />
+    </calibration>
+  </lens>
+  <lens>
+    <maker>Test Optics</maker>
+    <model>Interpolated acm</model>
+    <mount>Test Mount</mount>
+    <cropfactor>1.5</cropfactor>
+    <center x="0.02" y="-0.01" />
+    <calibration>
+      <distortion model="acm" focal="20" real-focal="19.8" k1="0.01" k2="0.001" k3="0.0001" k4="0.0002" k5="-0.0001" />
+      <tca model="acm" focal="20" alpha0="1.002" beta0="0.999" alpha1="0.001" beta1="-0.0005" alpha2="0.0001" beta2="-5e-05" alpha3="1e-05" beta3="-5e-06" alpha4="1e-06" beta4="-5e-07" alpha5="1e-07" beta5="-5e-08" />
+      <vignetting model="pa" focal="20" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="acm" focal="35" real-focal="34.72" k1="0.012" k2="0.0012000000000000001" k3="0.00012" k4="0.00021" k5="-9e-05" />
+      <tca model="acm" focal="35" alpha0="1.003" beta0="0.9985" alpha1="0.0011" beta1="-0.00055" alpha2="0.00011" beta2="-5.5e-05" alpha3="1.1000000000000001e-05" beta3="-5.500000000000001e-06" alpha4="1.1e-06" beta4="-5.5e-07" alpha5="1.1e-07" beta5="-5.5e-08" />
+      <vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="acm" focal="50" real-focal="49.7" k1="0.014" k2="0.0014" k3="0.00014000000000000001" k4="0.00022" k5="-8e-05" />
+      <tca model="acm" focal="50" alpha0="1.004" beta0="0.998" alpha1="0.0012000000000000001" beta1="-0.0006000000000000001" alpha2="0.00012000000000000002" beta2="-6.000000000000001e-05" alpha3="1.2e-05" beta3="-6e-06" alpha4="1.2000000000000002e-06" beta4="-6.000000000000001e-07" alpha5="1.2000000000000002e-07" beta5="-6.000000000000001e-08" />
+      <vignetting model="pa" focal="50" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+      <distortion model="acm" focal="85" real-focal="84.66" k1="0.016" k2="0.0016" k3="0.00016" k4="0.00023" k5="-7e-05" />
+      <tca model="acm" focal="85" alpha0="1.005" beta0="0.9975" alpha1="0.0013" beta1="-0.00065" alpha2="0.00013" beta2="-6.5e-05" alpha3="1.3e-05" beta3="-6.5e-06" alpha4="1.2999999999999998e-06" beta4="-6.499999999999999e-07" alpha5="1.3e-07" beta5="-6.5e-08" />
+      <vignetting model="pa" focal="85" aperture="2.8" distance="10" k1="-0.1" k2="0.01" />
+    </calibration>
+    <calibration cropfactor="2" aspect-ratio="1.5">
+      <distortion model="poly5" focal="20" k1="0.04" k2="0.002" />
+      <distortion model="poly5" focal="85" k1="0.04" k2="0.002" />
+    </calibration>
+  </lens>
+</lensdatabase>

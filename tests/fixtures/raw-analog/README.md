@@ -1,0 +1,1 @@
+Own18 color DNG AnalogBalance fixtures: non-unity/identity gains, single/dual CM, three/four camera channels, 16/32-bit linear/CMYG CFA, byte order/crop/orientation. Known hardware gains are applied to our stored samples and camera-neutral tags, with identity controls. AsShotWhiteXY, CC/Forward/Reduction/look profiles and real-camera/ICC coverage are separate goals.

@@ -1,0 +1,1 @@
+Own54 DNG AsShotWhiteXY fixtures: A/D65 xy, non-unity/identity/absent AnalogBalance, 3/4-channel single/dual profiles, linear16/32/CMYG CFA, two byte orders/crop/orientation. Hardware sensor bytes come from our raw-analog sources unchanged; camera-neutral tags are replaced with known xy rationals. Real-camera/CC/Forward/Reduction/ICC coverage remains separate.

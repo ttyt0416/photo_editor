@@ -1,0 +1,17 @@
+<lensdatabase version="2">
+<camera><maker>Test Camera</maker><model>Known RAW Sensor</model><mount>Test Mount</mount><cropfactor>1.5</cropfactor></camera>
+<lens><maker>Test Optics</maker><model>Known Prime 35mm</model><mount>Test Mount</mount><cropfactor>1.5</cropfactor><center x="0.02" y="-0.01"/><calibration>
+<distortion model="poly5" focal="35" k1="0.02" k2="0.005"/><tca model="linear" focal="35" kr="1.03" kb="0.97"/>
+<vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.1" k2="0.01" k3="0.001"/>
+<vignetting model="pa" focal="35" aperture="4" distance="10" k1="-0.08" k2="0.008"/>
+<vignetting model="pa" focal="35" aperture="4" distance="1000" k1="-0.07"/>
+</calibration></lens>
+<lens><maker>Test Optics</maker><model>ACM Vignette</model><cropfactor>1.5</cropfactor><calibration><distortion model="acm" focal="35" k1="0.01" k4="0.0002"/>
+<vignetting model="acm" focal="35" aperture="2.8" distance="10" alpha1="-0.15" alpha2="0.02" alpha3="0.001"/>
+</calibration></lens>
+<lens><model>Vignette Only</model><cropfactor>1.5</cropfactor><calibration><vignetting model="pa" focal="50" aperture="5.6" distance="10" k1="-0.2" k2="0.03"/></calibration></lens>
+<lens><model>Duplicate Vignette</model><calibration><distortion model="poly5" focal="35"/>
+<vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.1"/><vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.2"/><vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.3"/>
+</calibration></lens>
+<lens><model>Invalid Vignette</model><calibration><distortion model="poly5" focal="35"/><vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="NaN"/><vignetting model="pa" focal="35" aperture="4" distance="10" k1="-5"/><vignetting model="future" focal="35" aperture="2.8" distance="10"/></calibration></lens>
+</lensdatabase>

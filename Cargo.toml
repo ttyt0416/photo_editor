@@ -1,0 +1,52 @@
+[package]
+name = "photo_editor"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+eframe = { version = "0.36.2", default-features = false, features = ["default_fonts", "glow"] }
+image = "0.25.10"
+moxcms = { version = "=0.8.1", features = ["extended_range"] }
+rfd = "0.17.2"
+serde = { version = "1.0.229", features = ["derive", "rc"] }
+serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
+zip = { version = "8.6.0", default-features = false }
+tiff = "0.11.3"
+resvg = "0.47.0"
+base64 = "0.22.1"
+data-url = "0.3.2"
+percent-encoding = "2.3.2"
+roxmltree = "0.21.1"
+svgtypes = "0.16.1"
+simplecss = "0.2.2"
+gif = "0.14.2"
+jpeg-encoder = "0.7.1"
+zune-jpeg = "0.5.15"
+zune-core = "0.5.3"
+webp = { version = "0.3.1", default-features = false }
+ravif = { version = "0.13.0", default-features = false, features = ["threading"] }
+rustybuzz = "0.20.1"
+flate2 = "1.1.10"
+getrandom = "0.3.4"
+sha2 = "0.10.9"
+avif-decode = { version = "3.0.0", default-features = false }
+heif-oxide = "0.1.0"
+jxl-grid = "0.6.2"
+jxl-oxide = { version = "0.12.6", features = ["image", "moxcms"] }
+rawler = "=0.8.0"
+openjp2 = { version = "0.6.1", default-features = false, features = ["std"] }
+jpeg2k = { version = "0.10.1", default-features = false, features = ["openjp2", "image"] }
+
+[patch.crates-io]
+tiff = { path = "vendor/tiff" }
+zune-jpeg = { path = "vendor/zune-jpeg" }
+jpeg-encoder = { path = "vendor/jpeg-encoder" }
+avif-decode = { path = "vendor/avif-decode" }
+openjp2 = { path = "vendor/openjp2" }
+usvg = { path = "vendor/usvg" }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_Storage_FileSystem"] }
+
+[dev-dependencies]
+avif-parse = "2.1.0"

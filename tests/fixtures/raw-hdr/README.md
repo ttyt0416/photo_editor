@@ -1,0 +1,1 @@
+Own finite float32 HDR sensor DNG variants. Encoded by generate_raw_hdr_inputs.py from our original fixtures; source sensor values, camera matrix and byte order are independently parsed. Linear RGB/mono, crop and orientation, tiny/zero/maximum finite samples. Not a real camera or CFA fidelity claim.

@@ -1,0 +1,167 @@
+[
+  {
+    "file": "metadata-le.dng",
+    "base": "linear-16-o1.dng",
+    "invalid": false,
+    "expected": {
+      "lens_make": "Test Optics",
+      "lens_model": "Known Prime 35mm",
+      "lens_spec": [
+        [
+          35,
+          1
+        ],
+        [
+          35,
+          1
+        ],
+        [
+          14,
+          10
+        ],
+        [
+          14,
+          10
+        ]
+      ],
+      "focal_length": [
+        350,
+        10
+      ],
+      "aperture": [
+        28,
+        10
+      ],
+      "shutter": [
+        1,
+        125
+      ],
+      "iso": 400
+    },
+    "sha256": "4b1c831f19090e791969f4a24a7c70c52044f4154c86b5a1adf0b27e608e20c0",
+    "sensor_sha256": "7529ff64640b2fa8c9ecce38b0586ce31e12c0f826e6f547a753fdaddb56f6c8"
+  },
+  {
+    "file": "metadata-be.dng",
+    "base": "linear-32-o2.dng",
+    "invalid": false,
+    "expected": {
+      "lens_make": "Test Optics",
+      "lens_model": "Known Prime 35mm",
+      "lens_spec": [
+        [
+          35,
+          1
+        ],
+        [
+          35,
+          1
+        ],
+        [
+          14,
+          10
+        ],
+        [
+          14,
+          10
+        ]
+      ],
+      "focal_length": [
+        350,
+        10
+      ],
+      "aperture": [
+        28,
+        10
+      ],
+      "shutter": [
+        1,
+        125
+      ],
+      "iso": 400
+    },
+    "sha256": "b629dc1e5e67a412e0626b2b10854f8bd763cd0c43b82a5e9bf41c2e7caf4cab",
+    "sensor_sha256": "fc9a0f4c23c96e1f43fb258228ab2b83901b069bb9f83cdc184f85637cabbb67"
+  },
+  {
+    "file": "metadata-iso-long.dng",
+    "base": "linear-32-o1.dng",
+    "invalid": false,
+    "expected": {
+      "lens_make": "Test Optics",
+      "lens_model": "Known Prime 35mm",
+      "lens_spec": [
+        [
+          35,
+          1
+        ],
+        [
+          35,
+          1
+        ],
+        [
+          14,
+          10
+        ],
+        [
+          14,
+          10
+        ]
+      ],
+      "focal_length": [
+        350,
+        10
+      ],
+      "aperture": [
+        28,
+        10
+      ],
+      "shutter": [
+        1,
+        125
+      ],
+      "iso": 70000
+    },
+    "sha256": "6507f54561b51a6d1753a5c5ff3eb3256c475d08019b8ea9b2e8aa84a2235114",
+    "sensor_sha256": "2c3178c52bead765fca2a29fc69fc04db2d5fb4d26c08f80e227b228b4a51c87"
+  },
+  {
+    "file": "metadata-invalid.dng",
+    "base": "linear-32-o1.dng",
+    "invalid": true,
+    "expected": {
+      "lens_make": "Test Optics",
+      "lens_model": null,
+      "lens_spec": [
+        [
+          35,
+          1
+        ],
+        [
+          35,
+          1
+        ],
+        [
+          14,
+          10
+        ],
+        [
+          14,
+          10
+        ]
+      ],
+      "focal_length": null,
+      "aperture": [
+        28,
+        10
+      ],
+      "shutter": [
+        1,
+        125
+      ],
+      "iso": 400
+    },
+    "sha256": "2677860df246796eac990816847db522e6c6cf83c2e280ca4476a4a430a298b4",
+    "sensor_sha256": "2c3178c52bead765fca2a29fc69fc04db2d5fb4d26c08f80e227b228b4a51c87"
+  }
+]

@@ -1,0 +1,1 @@
+Own40 CameraCalibration DNGs: signed unequal3x3/4x4 CC, single/dual CM, Unicode UTF-8 matching/default/mismatching signatures, identity/missing-second controls, AnalogBalance/AsShotNeutral/AsShotWhiteXY, sensor bytes unchanged from our own originals. Real cameras/alternate/three profiles/Forward/Reduction/look/ICC remain separate.

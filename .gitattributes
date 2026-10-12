@@ -1,0 +1,6 @@
+# Preserve source notices and binary reference fixtures byte for byte.
+* -text
+*.zlib binary
+*.rgba8 binary
+*.le binary
+*.raw binary

@@ -1,0 +1,1 @@
+Own generated fixtures: Pillow RGBA coordinate colors, EXIF orientations 1–8, APNG with separate default image and two animation frames, lossless animated WebP. Pixel goldens are ImageOps.exif_transpose or explicit first/default colors. No external artwork or GUI use. Animation playback is not implemented by these tests.

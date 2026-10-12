@@ -1,0 +1,164 @@
+[
+  {
+    "file": "raw-color-linear-3c-16-ill17-analog.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "source": "raw-color/linear-3c-16-ill17.dng",
+    "source_sha256": "c0a60c6e90ddf89bb236d77c69df75a965a5ffba583c4a6b1bf8bef83f396a8a"
+  },
+  {
+    "file": "raw-color-linear-3c-16-ill17-unit.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "source": "raw-color/linear-3c-16-ill17.dng",
+    "source_sha256": "cae8875600de74ae6bb618f2bf750ab50f75be5326012ed20a1eb0fd852da2a8"
+  },
+  {
+    "file": "raw-color-linear-4c-16-ill23-analog.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "source": "raw-color/linear-4c-16-ill23.dng",
+    "source_sha256": "3e3b7f3635e2e8519938bdea4b75241208b414212a31dfae4827e6464ef3cba5"
+  },
+  {
+    "file": "raw-color-linear-4c-16-ill23-unit.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "source": "raw-color/linear-4c-16-ill23.dng",
+    "source_sha256": "8c271648806984294e3c74976e4dfa18a9822bc77556c211b8c50b1b93e9c669"
+  },
+  {
+    "file": "raw-color-linear-3c-32-ill21-analog.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "source": "raw-color/linear-3c-32-ill21.dng",
+    "source_sha256": "82474f5047d497ea920533f8feafde95038f2a26bed0aa769559133d6ae4c973"
+  },
+  {
+    "file": "raw-color-linear-3c-32-ill21-unit.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "source": "raw-color/linear-3c-32-ill21.dng",
+    "source_sha256": "193c453718cc7041527664553b1df373fb93bda49dac86f34a931ca7c6ac12ee"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-analog.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": false,
+    "source": "raw-color/linear-4c-32-ill21.dng",
+    "source_sha256": "122b9b3f5314a6f044c7cb514cfb1e5e27cae995d03378066d3cb708c084e6a4"
+  },
+  {
+    "file": "raw-color-linear-4c-32-ill21-unit.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": false,
+    "unit": true,
+    "source": "raw-color/linear-4c-32-ill21.dng",
+    "source_sha256": "09e9b527a6cdefda34b6101e353b8b12c5ba6ca258ebf4a40d67afc19b811726"
+  },
+  {
+    "file": "raw-color-cfa-4c-16-ill213451-analog.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": false,
+    "unit": false,
+    "source": "raw-color/cfa-4c-16-ill213451.dng",
+    "source_sha256": "907fc6b8c8d9fa9e48a5e15fc203a26c64777d6bfc4696cfbfc684b1874efc4c"
+  },
+  {
+    "file": "raw-color-cfa-4c-16-ill213451-unit.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": false,
+    "unit": true,
+    "source": "raw-color/cfa-4c-16-ill213451.dng",
+    "source_sha256": "852036f18e97b9f6ffc0c0c515d963563a022425536e4cff1d2cc8742ee1e7e3"
+  },
+  {
+    "file": "raw-dual-linear-3c-32-ill17-21-analog.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": true,
+    "unit": false,
+    "source": "raw-dual/linear-3c-32-ill17-21.dng",
+    "source_sha256": "3d6722fa553b60a4c5af2aef0094cb25fd592476049c3dd641b3372506b15ba7"
+  },
+  {
+    "file": "raw-dual-linear-3c-32-ill17-21-unit.dng",
+    "channels": 3,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "source": "raw-dual/linear-3c-32-ill17-21.dng",
+    "source_sha256": "2aea9530d8e5870fc180cbd346aa525468330c035180d6d4e654af1a06baf58e"
+  },
+  {
+    "file": "raw-dual-linear-4c-32-ill21-17-analog.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": false,
+    "source": "raw-dual/linear-4c-32-ill21-17.dng",
+    "source_sha256": "2b1d6cce43652a2879088fcd2e2588fcf10cb0081f4c3e26db865a6496a2aa55"
+  },
+  {
+    "file": "raw-dual-linear-4c-32-ill21-17-unit.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "source": "raw-dual/linear-4c-32-ill21-17.dng",
+    "source_sha256": "148150a10e302c7b8cca44a9218f2623fe692af81e1f3e76a8e9696560a9ffe9"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-analog.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": false,
+    "source": "raw-dual/linear-4c-16-ill23-22.dng",
+    "source_sha256": "6206a5e44fb4f9eb8ec1af0115cee6b5433fd54072332c067bc443ed10feab13"
+  },
+  {
+    "file": "raw-dual-linear-4c-16-ill23-22-unit.dng",
+    "channels": 4,
+    "cfa": false,
+    "dual": true,
+    "unit": true,
+    "source": "raw-dual/linear-4c-16-ill23-22.dng",
+    "source_sha256": "707eda720be7a21f29bdb1be286ecf1ba5918b7ecae88e0d11f3434e511600b6"
+  },
+  {
+    "file": "raw-dual-cfa-4c-16-ill17-21-analog.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": true,
+    "unit": false,
+    "source": "raw-dual/cfa-4c-16-ill17-21.dng",
+    "source_sha256": "9fa3ce0458b283d26df2ddb66326cf0b01e0c0457d4004789d79279491306c93"
+  },
+  {
+    "file": "raw-dual-cfa-4c-16-ill17-21-unit.dng",
+    "channels": 4,
+    "cfa": true,
+    "dual": true,
+    "unit": true,
+    "source": "raw-dual/cfa-4c-16-ill17-21.dng",
+    "source_sha256": "19b9c8ce829e9a72a5340ec95c51afc2b690e877eb1f2b556b213a455b2a7288"
+  }
+]

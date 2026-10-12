@@ -1,0 +1,1 @@
+Own 18 dual-illuminant DNGs: A/D65 and D50/D75, reversed profile slots, known unequal 3x3/4x3 matrices, linear16/32 and constant CMYG CFA, two byte orders/crop/orientation and four-channel WB. Synthetic profiles are not evidence of real-camera/ICC/complete DNG support.

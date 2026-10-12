@@ -1,0 +1,42 @@
+[
+  {
+    "file": "png-exif1.png",
+    "expected": "png-exif1-expected.png"
+  },
+  {
+    "file": "png-exif2.png",
+    "expected": "png-exif2-expected.png"
+  },
+  {
+    "file": "png-exif3.png",
+    "expected": "png-exif3-expected.png"
+  },
+  {
+    "file": "png-exif4.png",
+    "expected": "png-exif4-expected.png"
+  },
+  {
+    "file": "png-exif5.png",
+    "expected": "png-exif5-expected.png"
+  },
+  {
+    "file": "png-exif6.png",
+    "expected": "png-exif6-expected.png"
+  },
+  {
+    "file": "png-exif7.png",
+    "expected": "png-exif7-expected.png"
+  },
+  {
+    "file": "png-exif8.png",
+    "expected": "png-exif8-expected.png"
+  },
+  {
+    "file": "default-image.apng",
+    "expected": "default-image-expected.png"
+  },
+  {
+    "file": "animated.webp",
+    "expected": "animated-expected.png"
+  }
+]

@@ -1,0 +1,386 @@
+[
+  {
+    "file": "7x5-yuv422p-losslessFalse.jp2",
+    "reference": "7x5-yuv422p-losslessFalse.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 8,
+    "dy": 1,
+    "alpha": false,
+    "lossless": false
+  },
+  {
+    "file": "7x5-yuv422p-losslessTrue.jp2",
+    "reference": "7x5-yuv422p-losslessTrue.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 8,
+    "dy": 1,
+    "alpha": false,
+    "lossless": true
+  },
+  {
+    "file": "7x5-yuva422p-losslessFalse.jp2",
+    "reference": "7x5-yuva422p-losslessFalse.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 8,
+    "dy": 1,
+    "alpha": true,
+    "lossless": false
+  },
+  {
+    "file": "7x5-yuva422p-losslessTrue.jp2",
+    "reference": "7x5-yuva422p-losslessTrue.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 8,
+    "dy": 1,
+    "alpha": true,
+    "lossless": true
+  },
+  {
+    "file": "7x5-yuv422p16le-losslessFalse.jp2",
+    "reference": "7x5-yuv422p16le-losslessFalse.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 16,
+    "dy": 1,
+    "alpha": false,
+    "lossless": false
+  },
+  {
+    "file": "7x5-yuv422p16le-losslessTrue.jp2",
+    "reference": "7x5-yuv422p16le-losslessTrue.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 16,
+    "dy": 1,
+    "alpha": false,
+    "lossless": true
+  },
+  {
+    "file": "7x5-yuva422p16le-losslessFalse.jp2",
+    "reference": "7x5-yuva422p16le-losslessFalse.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 16,
+    "dy": 1,
+    "alpha": true,
+    "lossless": false
+  },
+  {
+    "file": "7x5-yuva422p16le-losslessTrue.jp2",
+    "reference": "7x5-yuva422p16le-losslessTrue.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 16,
+    "dy": 1,
+    "alpha": true,
+    "lossless": true
+  },
+  {
+    "file": "7x5-yuv420p-losslessFalse.jp2",
+    "reference": "7x5-yuv420p-losslessFalse.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 8,
+    "dy": 2,
+    "alpha": false,
+    "lossless": false
+  },
+  {
+    "file": "7x5-yuv420p-losslessTrue.jp2",
+    "reference": "7x5-yuv420p-losslessTrue.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 8,
+    "dy": 2,
+    "alpha": false,
+    "lossless": true
+  },
+  {
+    "file": "7x5-yuva420p-losslessFalse.jp2",
+    "reference": "7x5-yuva420p-losslessFalse.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 8,
+    "dy": 2,
+    "alpha": true,
+    "lossless": false
+  },
+  {
+    "file": "7x5-yuva420p-losslessTrue.jp2",
+    "reference": "7x5-yuva420p-losslessTrue.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 8,
+    "dy": 2,
+    "alpha": true,
+    "lossless": true
+  },
+  {
+    "file": "7x5-yuv420p16le-losslessFalse.jp2",
+    "reference": "7x5-yuv420p16le-losslessFalse.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 16,
+    "dy": 2,
+    "alpha": false,
+    "lossless": false
+  },
+  {
+    "file": "7x5-yuv420p16le-losslessTrue.jp2",
+    "reference": "7x5-yuv420p16le-losslessTrue.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 16,
+    "dy": 2,
+    "alpha": false,
+    "lossless": true
+  },
+  {
+    "file": "7x5-yuva420p16le-losslessFalse.jp2",
+    "reference": "7x5-yuva420p16le-losslessFalse.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 16,
+    "dy": 2,
+    "alpha": true,
+    "lossless": false
+  },
+  {
+    "file": "7x5-yuva420p16le-losslessTrue.jp2",
+    "reference": "7x5-yuva420p16le-losslessTrue.jp2.rgba32.le",
+    "size": [
+      7,
+      5
+    ],
+    "precision": 16,
+    "dy": 2,
+    "alpha": true,
+    "lossless": true
+  },
+  {
+    "file": "64x48-yuv422p-losslessFalse.jp2",
+    "reference": "64x48-yuv422p-losslessFalse.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 8,
+    "dy": 1,
+    "alpha": false,
+    "lossless": false
+  },
+  {
+    "file": "64x48-yuv422p-losslessTrue.jp2",
+    "reference": "64x48-yuv422p-losslessTrue.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 8,
+    "dy": 1,
+    "alpha": false,
+    "lossless": true
+  },
+  {
+    "file": "64x48-yuva422p-losslessFalse.jp2",
+    "reference": "64x48-yuva422p-losslessFalse.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 8,
+    "dy": 1,
+    "alpha": true,
+    "lossless": false
+  },
+  {
+    "file": "64x48-yuva422p-losslessTrue.jp2",
+    "reference": "64x48-yuva422p-losslessTrue.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 8,
+    "dy": 1,
+    "alpha": true,
+    "lossless": true
+  },
+  {
+    "file": "64x48-yuv422p16le-losslessFalse.jp2",
+    "reference": "64x48-yuv422p16le-losslessFalse.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 16,
+    "dy": 1,
+    "alpha": false,
+    "lossless": false
+  },
+  {
+    "file": "64x48-yuv422p16le-losslessTrue.jp2",
+    "reference": "64x48-yuv422p16le-losslessTrue.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 16,
+    "dy": 1,
+    "alpha": false,
+    "lossless": true
+  },
+  {
+    "file": "64x48-yuva422p16le-losslessFalse.jp2",
+    "reference": "64x48-yuva422p16le-losslessFalse.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 16,
+    "dy": 1,
+    "alpha": true,
+    "lossless": false
+  },
+  {
+    "file": "64x48-yuva422p16le-losslessTrue.jp2",
+    "reference": "64x48-yuva422p16le-losslessTrue.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 16,
+    "dy": 1,
+    "alpha": true,
+    "lossless": true
+  },
+  {
+    "file": "64x48-yuv420p-losslessFalse.jp2",
+    "reference": "64x48-yuv420p-losslessFalse.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 8,
+    "dy": 2,
+    "alpha": false,
+    "lossless": false
+  },
+  {
+    "file": "64x48-yuv420p-losslessTrue.jp2",
+    "reference": "64x48-yuv420p-losslessTrue.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 8,
+    "dy": 2,
+    "alpha": false,
+    "lossless": true
+  },
+  {
+    "file": "64x48-yuva420p-losslessFalse.jp2",
+    "reference": "64x48-yuva420p-losslessFalse.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 8,
+    "dy": 2,
+    "alpha": true,
+    "lossless": false
+  },
+  {
+    "file": "64x48-yuva420p-losslessTrue.jp2",
+    "reference": "64x48-yuva420p-losslessTrue.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 8,
+    "dy": 2,
+    "alpha": true,
+    "lossless": true
+  },
+  {
+    "file": "64x48-yuv420p16le-losslessFalse.jp2",
+    "reference": "64x48-yuv420p16le-losslessFalse.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 16,
+    "dy": 2,
+    "alpha": false,
+    "lossless": false
+  },
+  {
+    "file": "64x48-yuv420p16le-losslessTrue.jp2",
+    "reference": "64x48-yuv420p16le-losslessTrue.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 16,
+    "dy": 2,
+    "alpha": false,
+    "lossless": true
+  },
+  {
+    "file": "64x48-yuva420p16le-losslessFalse.jp2",
+    "reference": "64x48-yuva420p16le-losslessFalse.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 16,
+    "dy": 2,
+    "alpha": true,
+    "lossless": false
+  },
+  {
+    "file": "64x48-yuva420p16le-losslessTrue.jp2",
+    "reference": "64x48-yuva420p16le-losslessTrue.jp2.rgba32.le",
+    "size": [
+      64,
+      48
+    ],
+    "precision": 16,
+    "dy": 2,
+    "alpha": true,
+    "lossless": true
+  }
+]

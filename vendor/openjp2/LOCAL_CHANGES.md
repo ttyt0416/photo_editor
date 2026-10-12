@@ -1,0 +1,15 @@
+# Local changes to openjp2 0.6.1
+
+The original BSD-2-Clause source notices and LICENSE remain unchanged. Existing application patches guard null tile allocations before deallocation in src/tcd.rs and make the ICCProfileRef lifetime explicit in src/types.rs.
+
+Sequential unit 90 adds Stream::new_writer<W: Write + Seek + 'static> in src/stream.rs. It builds the existing owned buffered Rust writer state, with zero initial stream length and offset. The application passes an owned clone of its atomic temporary file and flushes the stream before sync/replace. No unsafe callback or target-path recreation is added. The existing codec/compression implementation is unchanged.
+
+Application QA: JP2/J2K RGB/RGBA 8/16-bit reversible/irreversible outputs, tiny/single-column images, separate C OpenJPEG pixel comparison, stream flush, error/atomic destination preservation and actual output previews. This is not full JPEG2000 conformance or large-document performance certification.
+
+Sequential unit 91 adds the missing RPCL internal ProgressionOrder variant, C enum conversion, step sequence and spelling in src/j2k.rs. Existing packet iteration already implements RPCL; the omitted conversion caused an assertion during encoder setup. All five packet orders, full/partial quality layers and separate C OpenJPEG decoding are covered by application fixtures. No standard C OpenJPEG source was copied for this patch.
+
+Sequential unit 94 adds a safe Codec::set_jp2_display_resolution_ppi(Option<u16>) for JP2 encoders before start_compress. None preserves original output; zero/J2K/decoders are rejected. A private optional field emits one 26-byte res /resd box inside the existing JP2 header writer, using exact ppi/254 *10^4 pixels/metre. C parameter/image ABI structures are unchanged. Application QA independently parses the resolution and compares codestream bytes/pixels, RGB/gray/alpha 16-bit, disabled metadata/J2K and atomic errors. No external implementation code was copied; original notices remain unchanged.
+
+Sequential unit115 copies an encoder image ICC payload into the JP2 color writer state instead of setting method2 with no bytes (which asserted during COLR writing). For method2 RGB/GRAY profiles, automatic CDEF uses the ICC data-space signature for color channel count, preserving declared alpha. Profiles are copied into existing owned storage; public C ABI and original license notices are unchanged. Application regressions reproduce the missing-payload assertion before the fix, then compare ICC/no-ICC RGB/gray alpha and lossless/lossy output using an independent C decoder.
+
+The same regression then exposed loss of small-image quality: the added ICC box consumed the image compression-rate budget. A private J2K field defaults to zero and JP2 sets it to the ICC bytes replacing the four-byte EnumCS value. Rate allocation subtracts only this additional metadata before converting the stream header cost, keeping the original no-ICC and raw-J2K behavior. Tests require identical ICC/no-ICC decoded samples for both irreversible and reversible coding.

@@ -1,0 +1,20 @@
+<lensdatabase version="2">
+<camera><maker>Test Camera</maker><model>Known RAW Sensor</model><mount>Test Mount</mount><cropfactor>1.5</cropfactor></camera>
+<lens><maker>Test Optics</maker><model>Known Prime 35mm</model><mount>Test Mount</mount><cropfactor>1.5</cropfactor><center x="0.02" y="-0.01"/><calibration>
+<distortion model="poly5" focal="35" k1="0.02" k2="0.005"/>
+<tca model="linear" focal="35" kr="1.03" kb="0.97"/>
+</calibration></lens>
+<lens><maker>Test Optics</maker><model>Poly3 TCA</model><cropfactor>1.5</cropfactor><calibration>
+<distortion model="ptlens" focal="35" a="0.001" b="0.002" c="-0.001"/>
+<tca model="poly3" focal="35" vr="1.005" vb="0.997" cr="0.004" cb="-0.002" br="0.001" bb="-0.0005"/>
+</calibration></lens>
+<lens><maker>Test Optics</maker><model>ACM TCA</model><cropfactor>1.5</cropfactor><calibration>
+<distortion model="acm" focal="35" k1="0.01" k2="0.001" k3="0.0001" k4="0.0002" k5="-0.0001"/>
+<tca model="acm" focal="35" alpha0="1.002" beta0="0.999" alpha1="0.01" beta1="-0.003" alpha2="0.001" beta2="0.0005" alpha3="0.0001" beta3="-0.00002" alpha4="0.0002" beta4="-0.0001" alpha5="-0.0001" beta5="0.0002"/>
+</calibration></lens>
+<lens><maker>Test Optics</maker><model>TCA Only</model><cropfactor>1.5</cropfactor><calibration><tca model="linear" focal="70" kr="1.02" kb="0.99"/></calibration></lens>
+<lens><model>Unsupported TCA</model><calibration><distortion model="poly5" focal="35"/><tca model="future" focal="35"/></calibration></lens>
+<lens><model>Duplicate TCA</model><calibration><distortion model="poly5" focal="35"/><tca model="linear" focal="35" kr="1.1"/><tca model="linear" focal="35" kr="1.2"/></calibration></lens>
+<lens><model>Folded TCA</model><calibration><distortion model="poly5" focal="35"/><tca model="poly3" focal="35" br="-5"/></calibration></lens>
+<lens><model>Invalid TCA</model><calibration><distortion model="poly5" focal="35"/><tca model="linear" focal="35" kr="NaN"/></calibration></lens>
+</lensdatabase>

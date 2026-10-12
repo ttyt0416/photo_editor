@@ -1,0 +1,1 @@
+Own 65x47 RGBA samples; independently encoded by Pillow/C OpenJPEG 2.5.4, all five progression orders, JP2/J2K, reversible/irreversible, three quality layers. Expected full/partial results are C decoded. No external images. Complete ISO/other modes/ICC/large files remain separate.

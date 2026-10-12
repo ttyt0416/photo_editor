@@ -1,0 +1,200 @@
+[
+  {
+    "file": "linear-3c-16-ill17-21.dng",
+    "channels": 3,
+    "depth": 16,
+    "lights": [
+      17,
+      21
+    ],
+    "cfa": false,
+    "source_sha256": "0383685253aaee7f58ed98cc6549b10c3925ecd0cac6b8f6e665e8ad4619907b"
+  },
+  {
+    "file": "linear-3c-16-ill21-17.dng",
+    "channels": 3,
+    "depth": 16,
+    "lights": [
+      21,
+      17
+    ],
+    "cfa": false,
+    "source_sha256": "2cd7cfd2d98aad69fa986635ae2317e216df4d6df9490d8f48288712a0e09e4c"
+  },
+  {
+    "file": "linear-3c-32-ill17-21.dng",
+    "channels": 3,
+    "depth": 32,
+    "lights": [
+      17,
+      21
+    ],
+    "cfa": false,
+    "source_sha256": "56df1be14f6891fbf84fa6635be9ad98f25b695413f2359e5d5055df7805ddae"
+  },
+  {
+    "file": "linear-3c-32-ill21-17.dng",
+    "channels": 3,
+    "depth": 32,
+    "lights": [
+      21,
+      17
+    ],
+    "cfa": false,
+    "source_sha256": "083f6ba795803fd9c811811b9e501ffcd4b052d4aa592908a983e99aa4fc5888"
+  },
+  {
+    "file": "linear-4c-16-ill17-21.dng",
+    "channels": 4,
+    "depth": 16,
+    "lights": [
+      17,
+      21
+    ],
+    "cfa": false,
+    "source_sha256": "0f507139f5b8e937905aadb0ee690f8ab4cf6364cbb1d028e7e751a272c18635"
+  },
+  {
+    "file": "linear-4c-16-ill21-17.dng",
+    "channels": 4,
+    "depth": 16,
+    "lights": [
+      21,
+      17
+    ],
+    "cfa": false,
+    "source_sha256": "e7b619836cce6a8fb4836d9826997c19d19cb2afbe31c06d9b46e347a7397dd8"
+  },
+  {
+    "file": "linear-4c-32-ill17-21.dng",
+    "channels": 4,
+    "depth": 32,
+    "lights": [
+      17,
+      21
+    ],
+    "cfa": false,
+    "source_sha256": "f8c55a33dd525424a8d6e7cb1800519ccdab3430e90be4fb9f4ddcf1f86390c6"
+  },
+  {
+    "file": "linear-4c-32-ill21-17.dng",
+    "channels": 4,
+    "depth": 32,
+    "lights": [
+      21,
+      17
+    ],
+    "cfa": false,
+    "source_sha256": "85ea69bca235d902dc4d0e41adecb95a0cbee9107496a29ef51c0f18f8517b0c"
+  },
+  {
+    "file": "linear-3c-16-ill23-22.dng",
+    "channels": 3,
+    "depth": 16,
+    "lights": [
+      23,
+      22
+    ],
+    "cfa": false,
+    "source_sha256": "26ea0271bd0563d998c89c83a0c7a9280574478e1c65282b1e6cf1a734aad49c"
+  },
+  {
+    "file": "linear-3c-16-ill22-23.dng",
+    "channels": 3,
+    "depth": 16,
+    "lights": [
+      22,
+      23
+    ],
+    "cfa": false,
+    "source_sha256": "83e125e95fd91f63247c59b11fb913dfa97f21aa09f45d219c88176abe19d053"
+  },
+  {
+    "file": "linear-3c-32-ill23-22.dng",
+    "channels": 3,
+    "depth": 32,
+    "lights": [
+      23,
+      22
+    ],
+    "cfa": false,
+    "source_sha256": "ed2619cabc8d8270a4abfda3698d24cd86fae3ea3af603aeae6133eb81d3f850"
+  },
+  {
+    "file": "linear-3c-32-ill22-23.dng",
+    "channels": 3,
+    "depth": 32,
+    "lights": [
+      22,
+      23
+    ],
+    "cfa": false,
+    "source_sha256": "688e8b5f7578d0f0e3dd51c572ff6c47af6bf4d1ba0e086ed238d1d868f9ddbe"
+  },
+  {
+    "file": "linear-4c-16-ill23-22.dng",
+    "channels": 4,
+    "depth": 16,
+    "lights": [
+      23,
+      22
+    ],
+    "cfa": false,
+    "source_sha256": "f102d0d9af3f284d5613fd3a78261c3b6ad71b1390e989fc25335a6ae7df0359"
+  },
+  {
+    "file": "linear-4c-16-ill22-23.dng",
+    "channels": 4,
+    "depth": 16,
+    "lights": [
+      22,
+      23
+    ],
+    "cfa": false,
+    "source_sha256": "fc5d144e59e4a734e9741366c42c56c67b669b3348e69ba6aa12969201c61bbd"
+  },
+  {
+    "file": "linear-4c-32-ill23-22.dng",
+    "channels": 4,
+    "depth": 32,
+    "lights": [
+      23,
+      22
+    ],
+    "cfa": false,
+    "source_sha256": "1979b67c647d638f650ca6462b9d5478234a939771c75295a7bb312a193ca79c"
+  },
+  {
+    "file": "linear-4c-32-ill22-23.dng",
+    "channels": 4,
+    "depth": 32,
+    "lights": [
+      22,
+      23
+    ],
+    "cfa": false,
+    "source_sha256": "833c0965ef7e9ebc868cc3023f5f56b55c421f1994e26381437e54dae53c929e"
+  },
+  {
+    "file": "cfa-4c-16-ill17-21.dng",
+    "channels": 4,
+    "depth": 16,
+    "lights": [
+      17,
+      21
+    ],
+    "cfa": true,
+    "source_sha256": "60f869624aadf16c08450d9a9a24fbf6e7ee8f37b2263ed05d28f6629df195ea"
+  },
+  {
+    "file": "cfa-4c-16-ill21-17.dng",
+    "channels": 4,
+    "depth": 16,
+    "lights": [
+      21,
+      17
+    ],
+    "cfa": true,
+    "source_sha256": "e3a400872a2ca7c2e6d5444145d0a28fb22faa37b0d2b5de7379fc9b900ea62e"
+  }
+]

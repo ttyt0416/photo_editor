@@ -1,0 +1,7 @@
+/target/
+/qa-output/*
+!/qa-output/sequential/
+/qa-output/sequential/*
+!/qa-output/sequential/verification.md
+__pycache__/
+*.py[cod]

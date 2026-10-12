@@ -1,0 +1,17 @@
+<lensdatabase version="2">
+<lens><maker>Test Optics</maker><model>PA Zoom</model><cropfactor>1.5</cropfactor><focal min="20" max="85"/><center x="0.02" y="-0.01"/><calibration>
+<distortion model="poly5" focal="20" k1="0.01" k2="0.002"/><distortion model="poly5" focal="35" k1="0.012" k2="0.0022"/><distortion model="poly5" focal="50" k1="0.014" k2="0.0024"/><distortion model="poly5" focal="85" k1="0.016" k2="0.0026"/>
+<vignetting model="pa" focal="20" aperture="2.8" distance="1" k1="-0.12" k2="0.02" k3="0.001"/>
+<vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.1" k2="0.015" k3="0.001"/>
+<vignetting model="pa" focal="50" aperture="4" distance="10" k1="-0.08" k2="0.01" k3="0.001"/>
+<vignetting model="pa" focal="85" aperture="5.6" distance="1000" k1="-0.05" k2="0.005"/>
+</calibration><calibration cropfactor="2"><vignetting model="pa" focal="35" aperture="2.8" distance="10" k1="-0.2"/></calibration></lens>
+<lens><maker>Test Optics</maker><model>ACM Zoom</model><cropfactor>1.5</cropfactor><focal min="20" max="85"/><calibration>
+<distortion model="acm" focal="20" k1="0.01"/><distortion model="acm" focal="35" k1="0.012"/><distortion model="acm" focal="50" k1="0.014"/><distortion model="acm" focal="85" k1="0.016"/>
+<vignetting model="acm" focal="20" aperture="2.8" distance="1" alpha1="-0.1" alpha2="0.015" alpha3="0.001"/>
+<vignetting model="acm" focal="35" aperture="2.8" distance="10" alpha1="-0.12" alpha2="0.02" alpha3="0.001"/>
+<vignetting model="acm" focal="50" aperture="4" distance="10" alpha1="-0.14" alpha2="0.02" alpha3="0.001"/>
+<vignetting model="acm" focal="85" aperture="5.6" distance="1000" alpha1="-0.16" alpha2="0.025" alpha3="0.002"/>
+</calibration></lens>
+<lens><model>Single focal brightness</model><cropfactor>1.5</cropfactor><calibration><vignetting model="pa" focal="35" aperture="2.8" distance="1" k1="-0.1"/><vignetting model="pa" focal="35" aperture="4" distance="10" k1="-0.05"/></calibration></lens>
+</lensdatabase>
