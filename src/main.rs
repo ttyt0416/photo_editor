@@ -56,6 +56,7 @@ mod jpeg2000_input;
 mod jpeg2000_output;
 mod jpeg2000_xmp;
 mod jpeg_output;
+mod jxl_color;
 mod jxl_input;
 mod jxl_metadata;
 mod panels;

@@ -5,6 +5,13 @@ fn error(e: impl std::fmt::Display) -> String {
     format!("JPEG XL 파일을 열 수 없습니다: {e}")
 }
 pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
+    read_impl(path, true)
+}
+#[cfg(test)]
+pub(crate) fn read_native(path: &Path) -> Result<crate::codecs::Decoded, String> {
+    read_impl(path, false)
+}
+fn read_impl(path: &Path, working: bool) -> Result<crate::codecs::Decoded, String> {
     let mut metadata_notes = vec![];
     let (mut file, source_metadata) =
         crate::jxl_metadata::open(path, &mut metadata_notes).map_err(error)?;
@@ -45,7 +52,6 @@ pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
         .chain(alpha.map(|a| a.bit_depth))
         .collect::<Vec<_>>();
     let mut notes=vec!["JPEG XL는 대표 이미지 한 장으로 엽니다. 애니메이션·추가 채널·레이어 편집은 아직 지원하지 않습니다.".into()];
-    notes.push("JPEG XL의 출력 색상 프로파일은 현재 화면과 내보내기에 적용되지 않습니다.".into());
     notes.extend(metadata_notes);
     if image.pixel_format().has_black() {
         image.request_color_encoding(jxl_oxide::EnumColourEncoding::srgb(
@@ -120,6 +126,11 @@ pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
     if associated {
         notes.push("미리 곱해진 JPEG XL 알파를 편집용 독립 색상/알파로 변환했습니다.".into());
     }
+    let pixels = if working {
+        crate::jxl_color::apply(pixels, &image.rendered_icc(), gray, &mut notes)
+    } else {
+        pixels
+    };
     let float = depth
         .iter()
         .any(|d| matches!(d, BitDepth::FloatSample { .. }) || d.bits_per_sample() > 16)

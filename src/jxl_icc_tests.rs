@@ -58,7 +58,7 @@ fn jxl_original_rgb_gray_icc_exact_history_project_metadata_and_native_pixels() 
                 input.extend(boxed(b"xml ", xmp));
             }
             std::fs::write(&path, &input).unwrap();
-            let decoded = crate::jxl_input::read(&path).unwrap();
+            let decoded = crate::jxl_input::read_native(&path).unwrap();
             assert_eq!(decoded.source_icc.as_ref().unwrap(), &profile);
             let pixels = decoded.pixels.to_rgba32f();
             let raw = format!("{name}-{metadata}.rgba32f.le");

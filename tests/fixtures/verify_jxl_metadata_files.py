@@ -59,7 +59,7 @@ for case in cases:
     baseline = (ROOT / f"tests/fixtures/jxl/{case['name']}/input.jxl").read_bytes()
     assert codestream(data) == codestream(baseline)
     raw = np.fromfile(OUT / case['raw'], dtype='<f4').reshape(case['h'], case['w'], 4)
-    official = np.frombuffer(zlib.decompress((ROOT / f"qa-output/jxl/{case['name']}.rgba32.le.zlib").read_bytes()), dtype='<f4').reshape(case['h'], case['w'], 4)
+    official = np.frombuffer(zlib.decompress((ROOT / f"qa-output/jxl-color/{case['name']}.dst.zlib").read_bytes()), dtype='<f4').reshape(case['h'], case['w'], 4)
     decoded = np.fromfile(OUT / case['decoded'], dtype='<f4').reshape(case['h'], case['w'], 4)
     np.testing.assert_array_equal(decoded, official)
     composite = official.copy()

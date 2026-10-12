@@ -152,7 +152,7 @@ mod tests {
         ] {
             let input = root.join(name).join("input.jxl");
             let original = std::fs::read(&input).unwrap();
-            let decoded = decode(&input, "jxl").unwrap().unwrap();
+            let decoded = crate::jxl_input::read_native(&input).unwrap();
             assert!(decoded.notes.iter().any(|n| n.contains("대표 이미지")));
             let shape = manifest["cases"][name]["shape"].as_array().unwrap();
             let h = shape[1].as_u64().unwrap() as u32;
@@ -241,9 +241,10 @@ mod tests {
             measurements.insert(name.into(),serde_json::json!({"width":w,"height":h,"reference_channels":channels,"depth":depth,"peak":maxima,"rms":sums.iter().map(|sum|(sum/f64::from(w*h)).sqrt()).collect::<Vec<_>>() }));
             let opened = crate::files::open(&input).unwrap();
             let layer = opened.document.active_layer().unwrap();
-            assert_eq!(layer.bit_depth, depth);
-            if depth > 8 {
-                assert_eq!(layer.precision.as_deref().unwrap(), &rgba);
+            let working = crate::jxl_input::read(&input).unwrap().pixels;
+            assert_eq!(layer.bit_depth, crate::precision::bit_depth(&working));
+            if layer.bit_depth > 8 {
+                assert_eq!(layer.precision.as_deref().unwrap(), &working.to_rgba32f());
             }
             if name == "lossless_pfm" {
                 let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("qa-output/jxl");

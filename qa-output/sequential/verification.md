@@ -845,3 +845,14 @@ Python Brotli1.1.0의 자체 품질0/5/11×window10/22/24·18압축 기준을 SH
 GRAY의 original.icc·decoder rendered.icc·reference.icc는 서로 다르다. 원시 픽셀을 다른 기준 색 공간과 바로 비교하지 않고 실제 렌더링 ICC의 sRGB parametric curve와 선형 기준 ICC를 각각 해석해 비교했다. peak0.0014725167/RMS가 corpus0.004/0.0001 조건 안에 들며 RGB도 기준 오차 안에 든다. 이 결과를 전체 JXL/ICC 색 관리 완료로 표시하지 않는다. 첫 테스트의 grayscale_jpeg가 ICC 없음이라는 가정과 원래 bench가 메타데이터 없음이라는 가정은 실제 헤더/박스를 보고 수정했다. 대문자 README 표 이름으로 받은404 경로도 실제 소문자 경로 목록을 확인해 고쳤다. 재현 코드: src/jxl_icc_tests.rs, tests/fixtures/fetch_jxl_icc_references.py, tests/fixtures/verify_jxl_icc_projects.py.
 
 전체492통과/0실패/1제외(82.60초), fmt/clippy·개발/release 빌드 성공. 기존12JXL EXIF/XMP·18Brotli JXL/36PNG·공식6기준·라이선스308/528/18 독립 검사 통과. 생성 출력은 정리한다. 직전124커밋c95f6c3f2f991a551f2da780da2eae44237ee759의 GitHub main 일치를 확인했다. 다음126은 JXL 렌더링 ICC의 작업 sRGB 연결이며 전체 ICC/HDR/출력·TIFF EXIF·확장 XMP/IPTC·전체 목표는 유지한다.
+## 126. JPEG XL 실제 렌더링 ICC → 작업 sRGB
+
+원본 original_icc와 복원 rendered_icc를 구분한다. 잠금 jxl-oxide의 기본 복원 후 알파를 분리하고 실제 rendered ICC의 XYZ 행렬/명암 곡선을 작업 자산 sRGB ICC로 변환한다. request_color_encoding은 HDR에서 자동 SDR 톤 매핑을 켜므로 사용하지 않는다. 원본 ICC 보관·JXL 자체 방향은 기존 경로를 유지한다. https://docs.rs/jxl-oxide/0.12.6/jxl_oxide/ 의 API와 잠금 코덱/색변환 소스를 확인했다.
+
+moxcms 일반 float 변환의 회색 표 곡선이 native -0.039968..1.0495를 제한하는 오류를 독립 비교로 재현했다. 파싱한 ICC 곡선/행렬을 f64로 직접 평가하며 표 곡선 범위 밖은 끝단 선형 기울기를 연장한다. 목적지의 실제 직렬화 ICC 계수를 사용한다. RGB/GRAY 행렬·TRC만 지원하며 복합 장치 LUT/PQ/HLG/전체 ICC를 완료 처리하지 않는다. 변환 실패 시 원본 픽셀/ICC와 안내를 유지한다.
+
+고정8libjxl입력5059392픽셀+51합성HDR/음수/알파 샘플의 독립 NumPy ICC 태그/행렬/곡선 수식 비교: SDR절대/HDR상대 max0.000087957926<0.0008. 알파 비트·원본 ICC·프로젝트 CRC/픽셀·EXR float 왕복을 확인했다. 원시 코덱의 corpus 적합성 비교는 read_native로 별도 유지하며 실제 열기/메타데이터 래퍼는 작업 sRGB 결과와 비교한다. 회색 표 곡선 입력도32비트/음수/1초과가 남는지 검사했다. src/jxl_color_tests.rs와 tests/fixtures/verify_jxl_working_color.py에 재현 코드를 보관한다.
+
+fmt/clippy·전체494통과/0실패/1제외(136.26초)·개발/release 빌드 성공. 기존6JXL 기준·4ICC입력·12메타데이터·18Brotli/36PNG·Windows라이선스308/528/18 독립 검사 통과. 최신 성공 Cargo artifact 그래프를 사용하는 캐시 정리를 추가했으며 삭제 대상을 워크스페이스 안에서 확인하고 링크/정션을 거부한다. 다음127은 공통 float RGB ICC의 HDR/음수 입력 연결이다.
+
+126 정리 결과: 이전 debug/오래된 release·생성 QA/Python 캐시19958파일10960314392바이트 삭제, 최신 release 캐시만 유지. 첫 재사용 검사에서 해시 없는 openjp2 라이브러리의 fingerprint/dep-info 누락을 발견해 보존하도록 수정했다. 다시 정리한 뒤 release 재빌드의 모든 compiler-artifact가 fresh이며 보고된 파일이 존재함을 확인했다. 성공 빌드 기록 외 임시 검증 기록도 삭제했다.
