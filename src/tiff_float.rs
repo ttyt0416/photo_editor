@@ -10,8 +10,8 @@ use tiff::{
     tags::Tag,
 };
 
-// The generic TIFF adapter lacks gray alpha/Gray32F and leaves associated RGB
-// samples premultiplied. Handle those cases; other TIFFs use the common path.
+// The generic TIFF adapter lacks float16, gray alpha/Gray32F and leaves
+// associated RGB samples premultiplied. Other TIFFs use the common path.
 pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let mut reader = BufReader::new(File::open(path).map_err(|e| e.to_string())?);
     let signature = reader.fill_buf().map_err(|e| e.to_string())?;
@@ -30,21 +30,23 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let color = decoder.colortype().map_err(|e| e.to_string())?;
     let (gray, channels, bits) = match color {
         tiff::ColorType::Gray(bits @ (2 | 4)) => (true, 1, bits),
-        tiff::ColorType::Gray(32) => (true, 1, 32),
+        tiff::ColorType::Gray(bits @ (16 | 32)) => (true, 1, bits),
         tiff::ColorType::Multiband {
             bit_depth: bits @ (8 | 16 | 32),
             num_samples: 2,
         } => (true, 2, bits),
         tiff::ColorType::RGBA(bits @ (8 | 16 | 32)) => (false, 4, bits),
+        tiff::ColorType::RGB(16) => (false, 3, 16),
         _ => return Ok(None),
     };
     let formats = decoder
         .find_tag_unsigned_vec::<u16>(Tag::SampleFormat)
         .map_err(|e| e.to_string())?;
-    let formats_ok = if bits == 32 {
-        formats
-            .as_deref()
-            .is_some_and(|v| !v.is_empty() && v.iter().all(|v| *v == 3))
+    let floating = formats
+        .as_deref()
+        .is_some_and(|v| !v.is_empty() && v.iter().all(|v| *v == 3));
+    let formats_ok = if bits == 32 || floating {
+        floating && matches!(bits, 16 | 32)
     } else {
         formats
             .as_deref()
@@ -53,13 +55,16 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     if !formats_ok {
         return Ok(None);
     }
-    let white_alpha = gray
-        && channels == 2
+    if (channels == 1 && bits == 16 || channels == 3) && !floating {
+        return Ok(None);
+    }
+    let white_native = gray
+        && bits >= 8
         && decoder
             .find_tag_unsigned::<u16>(Tag::PhotometricInterpretation)
             .map_err(|e| e.to_string())?
             == Some(0);
-    let associated = if channels > 1 {
+    let associated = if matches!(channels, 2 | 4) {
         match decoder
             .find_tag_unsigned_vec::<u16>(Tag::ExtraSamples)
             .map_err(|e| e.to_string())?
@@ -73,7 +78,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     } else {
         false
     };
-    if !gray && !associated {
+    if !gray && !associated && !(floating && bits == 16) {
         return Ok(None);
     }
     let (width, height) = decoder.dimensions().map_err(|e| e.to_string())?;
@@ -95,7 +100,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         );
     }
     let mut decoded = DecodingResult::F32(vec![]);
-    let layout = if white_alpha {
+    let layout = if white_native {
         decoder.read_image_to_buffer_uninverted(&mut decoded)
     } else {
         decoder.read_image_to_buffer(&mut decoded)
@@ -151,6 +156,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let (values, sample_bytes) = match &decoded {
         DecodingResult::U8(v) if bits == 8 => (v.len(), 1),
         DecodingResult::U16(v) if bits == 16 => (v.len(), 2),
+        DecodingResult::F16(v) if bits == 16 && v.iter().all(|v| v.is_finite()) => (v.len(), 2),
         DecodingResult::F32(v) if bits == 32 && v.iter().all(|v| v.is_finite()) => (v.len(), 4),
         _ => return Err("TIFF의 샘플 형식 또는 부동소수점 값이 잘못되었습니다.".into()),
     };
@@ -180,7 +186,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let mut pixels = Rgba32FImage::new(width, height);
     for (x, y, target) in pixels.enumerate_pixels_mut() {
         let index = y as usize * row_stride + x as usize * if separate { 1 } else { channels };
-        let alpha = if channels == 1 {
+        let alpha = if matches!(channels, 1 | 3) {
             1.
         } else {
             sample(&decoded, index + component_stride * (channels - 1))
@@ -199,12 +205,12 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
             let value = if associated {
                 if alpha == 0. {
                     0.
-                } else if white_alpha {
+                } else if white_native {
                     ((alpha - native) / alpha) as f32
                 } else {
                     (native / alpha) as f32
                 }
-            } else if white_alpha {
+            } else if white_native {
                 (1. - native) as f32
             } else {
                 native as f32
@@ -242,7 +248,9 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     };
     let mut dynamic = DynamicImage::ImageRgba32F(pixels);
     dynamic.apply_orientation(orientation);
-    notes.push(if gray && bits == 32 {
+    notes.push(if floating && bits == 16 {
+        "16비트 부동소수점 TIFF의 음수·HDR·알파를 32비트 작업 버퍼에 유지합니다.".into()
+    } else if gray && bits == 32 {
         "32비트 회색조 TIFF의 음수·HDR 값을 RGB 작업 버퍼에 유지합니다.".into()
     } else if gray {
         format!("{bits}비트 회색조 TIFF의 알파와 색을 32비트 작업 버퍼에 유지합니다.")
@@ -263,6 +271,7 @@ fn sample(data: &DecodingResult, index: usize) -> Option<f64> {
     match data {
         DecodingResult::U8(v) => v.get(index).map(|v| f64::from(*v) / 255.),
         DecodingResult::U16(v) => v.get(index).map(|v| f64::from(*v) / 65535.),
+        DecodingResult::F16(v) => v.get(index).map(|v| v.to_f64()),
         DecodingResult::F32(v) => v.get(index).map(|v| f64::from(*v)),
         _ => None,
     }

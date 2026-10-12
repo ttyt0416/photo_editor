@@ -958,3 +958,14 @@ NumPy 비트 배열과 독립 Python classic/BigTIFF IFD 작성기로256입력13
 fmt/clippy release all-targets·전체509통과/0실패/1제외(36.18초)·release 빌드 성공. 기존white-alpha384/GRAY출력240/GRAY UINT알파256·30ICC·라이선스308/528/18 독립 검사 통과. 직전135커밋b5460b3876ebecc9174890b3046c4f0fa143ac79의 GitHub main 일치 확인. 전체 TIFF/추가 정밀도·색 구조/ICC·원본 촬영EXIF·확장XMP/IPTC·전체 목표는 유지하며 다음 번호는137이다.
 
 136 정리:19606생성/오래된 캐시 파일1455374921바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+
+## 137. IEEE binary16 TIFF 입력
+
+기존 일반 어댑터가 거부하는 float16을 실제 입력에서 재현했다. 제한된 TIFF 디코더의 F16 샘플을 f64로 읽고 흰색 반전·연관 알파 분리 뒤 float32 작업층으로 변환한다. 단일 회색/GRAY알파/RGB/RGBA·별도 평면·ICC/방향/원본 ICC·XMP/프로젝트에 연결한다. 기존 UINT16 회색/RGB·비연관 RGBA와32비트 RGB 일반 경로는 유지한다. 흰색 Gray32F도 원시 읽기 후 같은 반전 계산을 사용하며 기존80사례를 독립 비교했다.
+
+NumPy binary16/tifffile432입력22032픽셀(9색/알파/흰색 구조×3프로파일×2평면×2TIFF구조×2바이트순서×raw/Deflate,방향1/6/8)을 SHA로 고정했다. 최소 subnormal/정규값·최대65504·음수/HDR/signed zero/알파0·분수·1/숨은 색을 포함한다. 독립 실제 샘플→f64반전·알파 분리→f32반올림·GRAY곡선/RGB행렬 수식 최대 오차0.000087942287<0.0008. identity/알파 정확 비트·ICC/XMP/프로젝트 CRC·OpenCV EXR/자동TIFF가 일치한다. NaN/±무한대·잘림·범위 밖 알파를4색 구조에서 거부했다. associated 저장 반올림은 실제 저장된 값에서 계산하며 원래 곱셈 전 색을 완벽히 복구한다고 주장하지 않는다. binary16 출력은 추가하지 않았다.
+
+최초 테스트 컴파일은 잘못된 디코더 메서드명/Result의Debug제약 때문에 실패했고, 실제 find_tag API/err()로 수정했다. 이후 새2검사·독립432입력 검사·fmt/clippy release all-targets·전체511통과/0실패/1제외(37.57초)·release 빌드 성공. 기존Gray80/White알파384/패킹256/Gray출력240/라이선스308/528/18 독립 검사 통과. 직전136커밋8ffbad10ed069a1b16f4d8af05670d79fa76b08a의 원격 main 일치를 확인한 상태에서 시작했다. 전체 TIFF/64비트·색 구조/ICC·촬영EXIF·확장XMP/IPTC·기존 전체 목표를 유지한다. 다음138은64비트 부동소수점 TIFF 입력이다.
+
+137 정리:21786생성/오래된 캐시 파일1460508026바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제. 정리 스크립트는 프로세스에만 적용되는 ExecutionPolicy Bypass로 실행했다.
