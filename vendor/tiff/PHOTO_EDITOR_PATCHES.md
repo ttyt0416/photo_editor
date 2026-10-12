@@ -17,3 +17,9 @@ Local TIFF patches used by Photo Editor (crate remains pinned at 0.11.3):
   The fix preserves file chunk offsets and predictor/compression handling.
   Direct per-plane dimensions and 864 independent strip/tile float16/64 and
   UINT32 cases exercise all planes and right/bottom edges (step140).
+- `Decoder::read_palette_indices_to_buffer` explicitly reads palette indices
+  through the ordinary unsigned-gray decompression/layout/limits path. It
+  preserves the original IFD and restores interpretation on success/error.
+  Standard `colortype`/read methods continue rejecting unsupported palettes.
+  The app expands original uint16 ColorMap entries and manages RGB ICC itself;
+  tests include 240 independent inputs and state restoration (step141).

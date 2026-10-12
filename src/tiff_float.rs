@@ -27,6 +27,13 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let mut decoder = Decoder::new(reader)
         .map_err(|e| e.to_string())?
         .with_limits(limits);
+    if decoder
+        .find_tag_unsigned::<u16>(Tag::PhotometricInterpretation)
+        .map_err(|e| e.to_string())?
+        == Some(3)
+    {
+        return crate::tiff_palette::read(&mut decoder).map(Some);
+    }
     let color = decoder.colortype().map_err(|e| e.to_string())?;
     let (gray, channels, bits) = match color {
         tiff::ColorType::Gray(bits @ (2 | 4)) => (true, 1, bits),
@@ -291,7 +298,7 @@ fn sample(data: &DecodingResult, index: usize) -> Option<f64> {
     }
 }
 
-fn asset(
+pub(super) fn asset(
     decoder: &mut Decoder<BufReader<File>>,
     tag: Tag,
     label: &str,

@@ -1505,6 +1505,27 @@ impl<R: Read + Seek> Decoder<R> {
         decoded
     }
 
+    /// Reads palette indices as unsigned samples, without color-map expansion.
+    /// This local API preserves the IFD and restores interpretation on error.
+    pub fn read_palette_indices_to_buffer(
+        &mut self,
+        result: &mut DecodingResult,
+    ) -> TiffResult<BufferLayoutPreference> {
+        let interpretation = self.image.photometric_interpretation;
+        if interpretation != PhotometricInterpretation::RGBPalette {
+            return Err(TiffError::UnsupportedError(
+                TiffUnsupportedError::InterpretationWithBits(
+                    interpretation,
+                    vec![self.image.bits_per_sample],
+                ),
+            ));
+        }
+        self.image.photometric_interpretation = PhotometricInterpretation::BlackIsZero;
+        let decoded = self.read_image_to_buffer(result);
+        self.image.photometric_interpretation = interpretation;
+        decoded
+    }
+
     /// Decodes the entire image into a provided buffer.
     ///
     /// Returns a [`TiffError::UsageError`] if the chunk is smaller than the size indicated with a

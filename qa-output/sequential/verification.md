@@ -1002,3 +1002,16 @@ NumPy uint32/tifffile432입력22032픽셀을 SHA로 고정했다.9구조×3프�
 수정 뒤 새2검사·독립864입력/27원시기준·fmt/clippy release all-targets·전체517통과/0실패/1제외(60.32초)·release 빌드 성공. 기존binary16/64/UINT32 각432·기존Predictor3의24·라이선스308/528/18 독립 검사 통과. 직전139커밋8f34a2c5a18a863fb5175b313d3d56d199ee1621의 GitHub main 일치 확인. 전체 TIFF/다른 압축·팔레트/추가 색 구조·ICC·촬영EXIF/확장XMP/IPTC·기존 전체 목표를 유지한다. 다음141은 TIFF 팔레트 입력이다.
 
 140 정리:30463생성/오래된 캐시 파일1498659194바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+
+## 141. 팔레트 TIFF의16비트 RGB 작업층
+
+잠금 TIFF의 colortype가 Palette를 거부하므로 Photometric3을 먼저 확인하고 제한된 명시적 native index API로 읽는다. 같은 압축/행·평면/타일·할당 한도를 유지하며 일시적인 BlackIsZero 해석을 성공/오류 모두 복원한다. IFD 원문은 수정하지 않는다. unsigned1/2/4/8/16의 단일 색 번호와 정확한3×2^bits의 uint16 ColorMap을 검증해16비트 RGB로 확장한다. RGB ICC/방향·원본 ICC/XMP/프로젝트에 연결한다. 단일 팔레트는16비트 작업층을 유지하며 추가 알파는 이번 단계에서 명시적으로 거부한다. TransferFunction은 아직 적용하지 않는다는 안내를 표시한다.
+
+[TIFF6 원문/ITU 보관](https://www.itu.int/itudoc/itu-t/com16/tiff-fx/docs/tiff6.pdf)의 ColorMap16비트/각R·G·B배열/색 번호 의미와 baseline4/8·FillOrder의 제한을 확인했다. baseline전체 적합성을 주장하지 않으며1/2/16은 추가 입력 범위다. 기본FillOrder1과 무압축1비트FillOrder2를 지원하고 다른 순서는 현재 거부한다. profile 없는16비트 색은 그대로 유지한다. 행렬/TRC ICC는 정밀 계산 뒤 작업16비트 범위0–1로 제한/반올림하며 미지원 ICC는 기존 공통 엔진/실패 안내를 사용한다. native 팔레트 구조 편집/출력/광색역HDR 색 보존을 완료한 것으로 표시하지 않는다.
+
+독립 IFD/NumPy 작성기240입력77520픽셀(5색번호정밀도×3ICC×2TIFF구조×2바이트순서×strip/tile×raw/Deflate)을 SHA로 고정했다. 전체16비트색표의0/최대색번호·7행 스트립·부분16×16타일·방향1/6/8을 포함한다. 독립 zlib/비트배열/고정 번호 수식/uint16 ColorMap·ICC 수식 및 원문 ICC/XMP/프로젝트 CRC·OpenCV PNG16 프로젝트 자산/작업TIFF16 정확 비트가 일치한다. 최초 기존 SDR 변환의 오차0.001539204559>0.0008을 재현했고 정밀 변환 후0.000014650494<0.0008이다. 손상/없는표·잘림·API성공/할당실패 상태복원/FillOrder2도 확인했다.
+
+최초 빌드는 존재하지 않는Rgba16Image/TransferFunction별칭 때문에 실패해 ImageBuffer/Tag301로 수정했다. ICC수정 전 실행 중이던 전체 결과는 근거로 쓰지 않고 다시 실행했다. 수정 뒤 fmt/clippy release all-targets·vendor decoder 서식·전체519통과/0실패/1제외(59.47초)·release 빌드 성공. 기존타일864/회색패킹256/RGB출력52/라이선스308/528/18 독립 검사 통과. 직전140커밋c0ef9ccef514981b40fbf2e07c095836f3619e33의 GitHub main 일치 확인. 팔레트알파/출력·전체 TIFF/ICC/TransferFunction·촬영EXIF/확장XMP/IPTC·기존 전체 목표를 유지한다. 다음142는 팔레트 알파 입력이다.
+
+141 정리:31197생성/오래된 캐시 파일1502337621바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.

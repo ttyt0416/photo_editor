@@ -82,6 +82,7 @@ mod svg_paths;
 mod text_canvas;
 mod tiff_float;
 mod tiff_output;
+mod tiff_palette;
 mod tonal_contrast;
 mod transform;
 mod vector;
