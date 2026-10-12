@@ -12,7 +12,7 @@ calculates ICC matrix/gamma/sRGB, checks project metadata/CRC and uses OpenCV
 to inspect stored PNG16 layer assets. Working TIFF16 samples must be identical.
 
 TIFF6 baseline palette indices are 4/8-bit. Other index widths here are extra
-supported inputs, not a full TIFF conformance claim. Single-channel palettes are
-supported; palette alpha, palette output, TransferFunction/colorimetry and other
+supported inputs, not a full TIFF conformance claim. Single-channel palettes use RGB16; step142 adds matching-depth unsigned
+palette alpha in float32 layers. Palette output, TransferFunction/colorimetry and other
 codec variants remain goals. FillOrder1 is used; a separate Rust test checks
 uncompressed 1-bit FillOrder2 and decoder state restoration after errors.
