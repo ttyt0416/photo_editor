@@ -11,6 +11,7 @@ pub struct Decoded {
 pub fn decode(path: &Path, extension: &str) -> Result<Option<Decoded>, String> {
     let mut notes = Vec::new();
     let mut source_icc = None;
+    let mut source_metadata = crate::source_metadata::Metadata::default();
     let bytes = || -> Result<Vec<u8>, String> {
         if std::fs::metadata(path).map_err(|e| e.to_string())?.len()
             > crate::document::MAX_PIXELS * 16
@@ -82,6 +83,7 @@ pub fn decode(path: &Path, extension: &str) -> Result<Option<Decoded>, String> {
         "jxl" => return crate::jxl_input::read(path).map(Some),
         "jp2" | "j2k" | "jpc" | "jpf" | "jpx" => {
             let encoded = bytes()?;
+            source_metadata = crate::jpeg2000_xmp::read(&encoded, &mut notes);
             let decoded = jpeg2k::Image::from_bytes(&encoded).map_err(|e| e.to_string())?;
             if decoded.has_icc_profile()
                 && matches!(crate::jpeg2000_icc::profile(&encoded), Ok(None))
@@ -101,7 +103,7 @@ pub fn decode(path: &Path, extension: &str) -> Result<Option<Decoded>, String> {
         pixels: image,
         notes,
         source_icc,
-        source_metadata: Default::default(),
+        source_metadata,
     }))
 }
 

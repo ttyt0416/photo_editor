@@ -39,6 +39,11 @@ pub fn save(
     if !codestream && options.jp2_resolution_enabled && options.jp2_resolution == 0 {
         return Err("JP2 출력 해상도는1ppi 이상이어야 합니다.".into());
     }
+    let xmp = if codestream {
+        None
+    } else {
+        crate::xmp_output::prepare(doc, options.include_xmp)?
+    };
     crate::document::validate_size(doc.width, doc.height)?;
     if options.jp2_tile != 0
         && u64::from(doc.width.div_ceil(options.jp2_tile))
@@ -190,7 +195,9 @@ pub fn save(
         {
             return Err("JPEG2000 인코딩에 실패했습니다.".into());
         }
-        stream.flush().map_err(|e| e.to_string())
+        stream.flush().map_err(|e| e.to_string())?;
+        drop(stream);
+        crate::jpeg2000_xmp::append(file, xmp.as_deref())
     })
 }
 #[cfg(test)]

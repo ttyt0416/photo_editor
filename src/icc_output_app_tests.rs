@@ -100,6 +100,10 @@ fn icc_output_native_checkbox_formats_toggle_preview_key_cancel_and_history() {
     click(&mut app, &ctx, &mut clock, "작업 색상 프로파일 포함");
     assert!(app.export_options.jp2_icc);
     assert_ne!(app.export_options, original);
+    assert!(app.export_options.include_xmp);
+    click(&mut app, &ctx, &mut clock, "촬영 XMP 메타데이터 포함");
+    assert!(!app.export_options.include_xmp);
+    assert_ne!(app.export_options, original);
     app.export_format = files::EXPORT_FORMATS.len() + 4;
     for _ in 0..5 {
         frame(
@@ -120,6 +124,7 @@ fn icc_output_native_checkbox_formats_toggle_preview_key_cancel_and_history() {
         )
         .is_none()
     );
+    assert!(frame(&mut app, &ctx, &mut clock, vec![], "촬영 XMP 메타데이터 포함").is_none());
     click(&mut app, &ctx, &mut clock, "취소");
     assert!(!app.export_dialog);
     assert!(std::sync::Arc::ptr_eq(

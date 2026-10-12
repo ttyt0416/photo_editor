@@ -528,6 +528,38 @@ mod tests {
         assert!(std::sync::Arc::ptr_eq(&before, &doc.layers[0].pixels));
     }
     #[test]
+    fn jp2_xmp_preview_matches_metadata_file_size_and_unchanged_pixels() {
+        let root = root("jp2-xmp");
+        let mut doc = source();
+        doc.source_metadata.xmp = Some(std::sync::Arc::new(b"<r xmlns:t='http://ns.adobe.com/tiff/1.0/' t:Orientation='6' t:ImageWidth='7' t:ImageLength='5'><creator>camera</creator></r>".to_vec()));
+        let metadata = doc.source_metadata.xmp.clone().unwrap();
+        let original = doc.layers[0].pixels.clone();
+        let mut baseline = None;
+        for include in [false, true] {
+            let mut key = key(files::EXPORT_FORMATS.len() + 3);
+            key.options.include_xmp = include;
+            let preview = generate(&doc, &key, &root).unwrap();
+            let path = root.join(format!("include-{include}.jp2"));
+            files::export_by_index(&doc, &path, key.format, &key.options).unwrap();
+            let restored = files::open(&path).unwrap().document;
+            assert_eq!(preview.bytes, std::fs::metadata(path).unwrap().len());
+            assert_eq!(restored.source_metadata.xmp.is_some(), include);
+            assert_eq!(preview.images[1], restored.composite());
+            if let Some((pixels, bytes)) = &baseline {
+                assert_eq!(&preview.images[1], pixels);
+                assert!(preview.bytes > *bytes);
+            } else {
+                baseline = Some((preview.images[1].clone(), preview.bytes));
+            }
+            no_temporary(&root);
+        }
+        assert!(std::sync::Arc::ptr_eq(
+            &metadata,
+            doc.source_metadata.xmp.as_ref().unwrap()
+        ));
+        assert!(std::sync::Arc::ptr_eq(&original, &doc.layers[0].pixels));
+    }
+    #[test]
     fn all_export_previews_match_actual_file_bytes_and_decoded_pixels_without_source_changes() {
         let root = root("formats");
         let doc = source();

@@ -12625,7 +12625,7 @@ impl PhotoEditor {
                 if self.export_format < files::EXPORT_FORMATS.len() && matches!(format,image::ImageFormat::Png|image::ImageFormat::Jpeg|image::ImageFormat::Tiff|image::ImageFormat::WebP) {
                     ui.checkbox(&mut self.export_options.include_icc,"작업 sRGB 프로파일 포함");
                 }
-                if self.export_format < files::EXPORT_FORMATS.len() && matches!(format,image::ImageFormat::Png|image::ImageFormat::Jpeg|image::ImageFormat::WebP|image::ImageFormat::Tiff) {
+                if (self.export_format < files::EXPORT_FORMATS.len() && matches!(format,image::ImageFormat::Png|image::ImageFormat::Jpeg|image::ImageFormat::WebP|image::ImageFormat::Tiff)) || self.export_format == files::EXPORT_FORMATS.len()+3 {
                     ui.checkbox(&mut self.export_options.include_xmp,"촬영 XMP 메타데이터 포함");
                 }
                 if self.export_format < files::EXPORT_FORMATS.len() && matches!(format,image::ImageFormat::Png|image::ImageFormat::Jpeg|image::ImageFormat::WebP) {

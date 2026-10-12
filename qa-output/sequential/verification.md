@@ -813,3 +813,12 @@ PNG는 IHDR 뒤 iTXt/CRC, JPEG는 APP1 식별자, WebP는 VP8X XMP 플래그/XMP
 384출력38016픽셀(6XML형태·PNG8/16·JPEG·무손실/손실WebP·TIFF8/16/32·ICC/EXIF/XMP 옵션), 192포함/제외 쌍의 압축 데이터·알파/16비트/float HDR 픽셀·독립 XML 속성/구조·CRC/RIFF/APP1/IFD·프로젝트 자산을 비교했다. JPEG의 독립 디코더 차이 최대2단위를 기록했으며 포함/제외 압축 데이터는 정확 동일하다. 재현 코드: src/xmp_output_tests.rs, tests/fixtures/verify_xmp_output_files.py.
 
 전체483통과/0실패/1제외(48.51초), fmt/clippy·개발/release 빌드 성공. 기존 EXIF258출력·원본 메타데이터49입력·WebP ICC32출력·라이선스308/528/18 독립 검사 통과. 생성 출력은 정리한다. 다음122는 JP2 원본 XMP 보존/출력이며 TIFF EXIF·확장 XMP/IPTC·추가 코덱·전체 편집/색 관리/실제 창 검증은 남음.
+## 122. JP2 원본 XMP UUID 보존·프로젝트/출력
+
+[Adobe XMP Part3](https://github.com/adobe/XMP-Toolkit-SDK/blob/main/docs/XMPSpecificationPart3.pdf)의 UUID BE7ACFCB97A942E89C71999491E3AFAC를 별도 자산으로 읽는다. 기존 JP2 bounded박스 파서를 공유해 일반/확장/끝까지 길이·알 수 없는 UUID·원문16MiB 예산을 처리한다. 중복 XMP/잘린 UUID·범위 오류는 보관 실패를 알리고 픽셀을 유지한다. XMP 자체를 회전 근거로 사용하지 않는다. 프로젝트v13/이력/원본 공유는 기존 공통 메타데이터 경로를 사용한다.
+
+JP2 출력에는 기본 포함/끄기·실제 headless 토글/미리보기 옵션 키를 연결하고 J2K에 숨긴다. 출력용 기존 방향·치수만 갱신하며 인코딩 완료 후 UUID를 추가해 압축 예산과 전체 기존 파일 내용을 유지한다. rawJ2K는 손상 XMP/포함 여부의 영향을 받지 않는다. 실제 미리보기의 크기/최종 픽셀과 임시 파일 정리를 검사했다. 의존성과 외부 코드 복사는 없다.
+
+128출력1074816픽셀(17×9/129²·RGB/회색8/16·알파·손실/무손실·ICC·300ppi·128타일/4품질층RPCL·XMP포함/제외),64쌍에서 XMP 직전까지 전체 파일 내용이 정확 동일하며 별도 C OpenJPEG2.5.2의256품질층/전체 성분·앱 float 정규화가 정확 일치한다. 독립 Python UUID/네임스페이스/72KB한글·불투명 주석·프로젝트 CRC/v13 원문, 기존 외부 기준 JP2를 감싼3가지 길이/원본/이력·중복 박스의 픽셀 유지도 확인했다. 재현 코드: src/jpeg2000_xmp_tests.rs, tests/fixtures/verify_jpeg2000_xmp_files.py.
+
+전체487통과/0실패/1제외(52.66초), fmt/clippy·개발/release 빌드 성공. 기존 JP2 ICC32출력·압축 예산96출력/288품질층·XMP384출력·라이선스308/528/18 독립 검사 통과. 테스트 작성 중 Editor 위치/생성 인자·레이어 이름 필드를 실제 API와 맞춰 수정한 뒤 전체 검증했다. 생성 출력은 정리한다. 직전121커밋ce2e9b494b178ae5f31bc7993ccfcf72d35782ee의 GitHub main 일치를 확인했다. 다음123은 JXL 원본 EXIF/XMP 보존이며 압축 자산·TIFF EXIF·확장 XMP/IPTC·전체 목표는 남음.

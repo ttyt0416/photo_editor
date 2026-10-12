@@ -1,6 +1,6 @@
 use image::{DynamicImage, ImageBuffer};
 
-fn next_box(bytes: &[u8], at: usize) -> Result<([u8; 4], &[u8], usize), String> {
+pub(crate) fn next_box(bytes: &[u8], at: usize) -> Result<([u8; 4], &[u8], usize), String> {
     let fail = || "JP2 박스 길이·색상 정보가 손상되었습니다.".to_string();
     let header = bytes
         .get(at..at.checked_add(8).ok_or_else(fail)?)
