@@ -1098,3 +1098,16 @@ fmt/clippy release all-targets·전체531통과/0실패/1제외(65.24초)·relea
 fmt/clippy release all-targets·전체532통과/0실패/1제외(57.50초)·release 빌드성공. 직전147커밋0d8ea9d135267d6ce900d01dcc9a8adda0082c33의GitHub main일치확인. 다음149는TIFF IPTC 원문프로젝트보존이며 전체촬영정보/확장XMP/다른형식·기존전체목표를유지한다.
 
 148 정리:34580생성/오래된캐시파일1522333126바이트삭제·최신release363산출물모두fresh/실제파일존재확인·검증기록과빈임시파일3개삭제.
+
+
+## 149. TIFF IPTC와 Photoshop 리소스 원문 자산
+
+[Adobe 형식문서](https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/)의TIFF33723/34377을 일반/BigTIFF·generic/정수평면/회색float/팔레트 읽기에연결했다. IPTC BYTE/UNDEFINED와관행적LONG의실제파일바이트를원문그대로보관하고LONG단어해석을위해형식/바이트순서를함께기록한다. Photoshop리소스전체를별도원문자산으로보존해IPTC뿐아니라미지리소스/XMP도잃지않는다. IRB/IIM을필드편집데이터로분해하거나자동동기화하지않는다. [IPTC IIM 설명](https://iptc.org/standards/iim/)의기존필드보존을프로젝트자산으로구현한다.
+
+자산이있는문서만rphoto14·metadata/source.iptc/source.photoshop을사용하고1–13읽기/기존문서저장버전은유지한다. 필수원문형식/허용kind/단어크기·자산당16MiB·ZIP CRC·누락/구버전의새자산을검증하며 저장전실패는기존목적지를유지한다. 한태그의과대/파일밖참조/잘못된형식은다른정상자산과픽셀을유지한다. root읽기는4096항목으로제한한다. Photoshop리소스는opaque원문으로보관하며 모든내부구조적합성을주장하지않는다.
+
+독립tifffile80입력(4경로×직접BYTE/UNDEFINED/LONG/Photoshop단독/함께×TIFF구조2×바이트순서2)을SHA로고정했다. 생성기의UNDEFINED문자코드가실제로ASCII2인것을독립태그확인으로발견하고숫자7로수정한뒤검사했다. IPTCUTF8선언/한글/반복키워드/여러행설명/바이너리·Pascal이름/짝수패딩·불명/IPTC/XMP의Photoshop리소스가포함된다. 독립원시IFD/원래payload/단어형식복원/IIM/IRB파싱과프로젝트14플래그/태그형식/wordorder/CRC/깊이/원문bytes가일치한다. 공유이력자산/저장복원/원본불변을Rust로확인했다. TIFF 태그손상6종및프로젝트자산누락/과대/CRC/형식플래그/구버전/원자저장부정검사가통과했다.
+
+fmt/clippy release all-targets·전체535통과/0실패/1제외(62.54초)·release 빌드성공. 새80/촬영EXIF48/원문메타49/EXIF출력258/ICC기본구조2+6+41회귀통과. 직전148커밋eb786e7981e0a38b930c2a16142d7a352d599a5c의GitHub main일치확인. 다음150은JPEG Photoshop/IPTC 원문보존이며,필드편집/형식별메타출력/확장XMP동기화/PSD와모든기존목표를유지한다.
+
+149 정리:34678생성/오래된캐시파일1556437447바이트삭제·최신release363산출물모두fresh/실제파일존재확인·검증기록과빈임시파일3개삭제.

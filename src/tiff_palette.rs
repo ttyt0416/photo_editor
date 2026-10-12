@@ -72,7 +72,8 @@ pub fn read(
     let source_icc = crate::tiff_float::asset(decoder, Tag::IccProfile, "ICC", &mut notes);
     let xmp = crate::tiff_float::asset(decoder, Tag::Unknown(700), "XMP", &mut notes);
     let exif = crate::tiff_exif::read(path, &mut notes);
-    let source_metadata = crate::source_metadata::Metadata::from_bytes(exif, xmp, &mut notes);
+    let mut source_metadata = crate::source_metadata::Metadata::from_bytes(exif, xmp, &mut notes);
+    crate::tiff_iptc::remember(path, &mut source_metadata, &mut notes);
     let orientation = decoder
         .find_tag_unsigned::<u16>(Tag::Orientation)
         .map_err(|e| e.to_string())?

@@ -9,6 +9,15 @@ pub const MAX_BYTES: usize = 16 * 1024 * 1024;
 pub struct Metadata {
     pub exif: Option<Arc<Vec<u8>>>,
     pub xmp: Option<Arc<Vec<u8>>>,
+    pub iptc: Option<Arc<Vec<u8>>>,
+    pub iptc_tiff: Option<TiffIptc>,
+    pub photoshop: Option<Arc<Vec<u8>>>,
+}
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TiffIptc {
+    pub kind: u16,
+    pub little: bool,
 }
 #[derive(Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -17,13 +26,19 @@ pub struct Record {
     pub exif: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub xmp: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub iptc: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub iptc_tiff: Option<TiffIptc>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub photoshop: bool,
 }
 fn is_false(value: &bool) -> bool {
     !value
 }
 impl Record {
     pub fn is_empty(&self) -> bool {
-        !self.exif && !self.xmp
+        !self.exif && !self.xmp && !self.iptc && !self.photoshop && self.iptc_tiff.is_none()
     }
 }
 impl Metadata {
@@ -31,18 +46,33 @@ impl Metadata {
         Record {
             exif: self.exif.is_some(),
             xmp: self.xmp.is_some(),
+            iptc: self.iptc.is_some(),
+            iptc_tiff: self.iptc_tiff.clone(),
+            photoshop: self.photoshop.is_some(),
         }
     }
     pub fn assets(&self) -> impl Iterator<Item = (&'static str, &Arc<Vec<u8>>)> {
         [
             ("metadata/source.exif", self.exif.as_ref()),
             ("metadata/source.xmp", self.xmp.as_ref()),
+            ("metadata/source.iptc", self.iptc.as_ref()),
+            ("metadata/source.photoshop", self.photoshop.as_ref()),
         ]
         .into_iter()
         .filter_map(|(name, data)| data.map(|data| (name, data)))
     }
     pub fn valid(&self) -> bool {
         self.assets().all(|(_, data)| data.len() <= MAX_BYTES)
+            && self.iptc.is_some() == self.iptc_tiff.is_some()
+            && self
+                .iptc_tiff
+                .as_ref()
+                .is_none_or(|v| matches!(v.kind, 1 | 4 | 7))
+            && self
+                .iptc
+                .as_ref()
+                .zip(self.iptc_tiff.as_ref())
+                .is_none_or(|(bytes, format)| format.kind != 4 || bytes.len().is_multiple_of(4))
     }
     pub fn from_bytes(
         exif: Option<Vec<u8>>,
@@ -68,6 +98,7 @@ impl Metadata {
         let metadata = Self {
             exif: asset(exif, "EXIF", notes),
             xmp: asset(xmp, "XMP", notes),
+            ..Default::default()
         };
         if !metadata.record().is_empty() {
             notes.push("원본 촬영 메타데이터를 프로젝트에 보존합니다.".into());
@@ -125,7 +156,11 @@ impl Metadata {
             "XMP",
             notes,
         );
-        Self::from_bytes(exif, xmp, notes)
+        let mut metadata = Self::from_bytes(exif, xmp, notes);
+        if format == Some(image::ImageFormat::Tiff) {
+            crate::tiff_iptc::remember(path, &mut metadata, notes);
+        }
+        metadata
     }
     pub fn save<W: Write + Seek>(
         &self,
@@ -142,7 +177,15 @@ impl Metadata {
         record: Record,
         zip: &mut zip::ZipArchive<R>,
     ) -> Result<Self, String> {
-        Ok(Self {
+        if record.iptc != record.iptc_tiff.is_some()
+            || record
+                .iptc_tiff
+                .as_ref()
+                .is_some_and(|v| !matches!(v.kind, 1 | 4 | 7))
+        {
+            return Err("IPTC 원문 저장 형식이 잘못되었습니다".into());
+        }
+        let metadata = Self {
             exif: if record.exif {
                 Some(read_asset(zip, "metadata/source.exif")?)
             } else {
@@ -153,7 +196,22 @@ impl Metadata {
             } else {
                 None
             },
-        })
+            iptc: if record.iptc {
+                Some(read_asset(zip, "metadata/source.iptc")?)
+            } else {
+                None
+            },
+            iptc_tiff: record.iptc_tiff,
+            photoshop: if record.photoshop {
+                Some(read_asset(zip, "metadata/source.photoshop")?)
+            } else {
+                None
+            },
+        };
+        if !metadata.valid() {
+            return Err("IPTC 원문 저장 형식 또는 크기가 잘못되었습니다".into());
+        }
+        Ok(metadata)
     }
 }
 pub fn read_asset<R: Read + Seek>(

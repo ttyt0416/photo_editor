@@ -430,7 +430,11 @@ pub fn save_project(document: &Document, path: &Path) -> Result<(), String> {
             SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
         let manifest = Manifest {
             format: "photo-editor.project".into(),
-            version: if !document.source_metadata.record().is_empty() {
+            version: if document.source_metadata.iptc.is_some()
+                || document.source_metadata.photoshop.is_some()
+            {
+                14
+            } else if !document.source_metadata.record().is_empty() {
                 13
             } else if document.source_icc.is_some() {
                 12
@@ -884,11 +888,18 @@ pub fn load_project(path: &Path) -> Result<Document, String> {
         return Err("프로젝트 설명 파일이 너무 큽니다.".into());
     }
     let manifest: Manifest = serde_json::from_slice(&manifest_bytes).map_err(error)?;
-    if manifest.format != "photo-editor.project" || !(1..=13).contains(&manifest.version) {
+    if manifest.format != "photo-editor.project" || !(1..=14).contains(&manifest.version) {
         return Err("지원하지 않는 프로젝트 형식 또는 버전입니다.".into());
     }
     if manifest.version < 13 && !manifest.source_metadata.is_empty() {
         return Err("구버전 프로젝트에 촬영 메타데이터 자산이 포함되어 있습니다.".into());
+    }
+    if manifest.version < 14
+        && (manifest.source_metadata.iptc
+            || manifest.source_metadata.photoshop
+            || manifest.source_metadata.iptc_tiff.is_some())
+    {
+        return Err("구버전 프로젝트에 IPTC/Photoshop 원문 자산이 포함되어 있습니다".into());
     }
     if manifest.version < 12 && manifest.source_icc {
         return Err("구버전 프로젝트에 원본 ICC 자산이 포함되어 있습니다.".into());
