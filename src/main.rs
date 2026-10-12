@@ -78,6 +78,7 @@ mod tiff_output;
 mod tonal_contrast;
 mod transform;
 mod vector;
+mod webp_output;
 mod workspace;
 
 use eframe::egui;

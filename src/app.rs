@@ -12622,7 +12622,7 @@ impl PhotoEditor {
                     }
                     ui.label(if self.export_format==files::EXPORT_FORMATS.len()+4 {"J2K는 색상·알파 픽셀을 저장하는 코드스트림입니다. 색상 프로파일과 메타데이터는 포함하지 않습니다."}else if self.export_options.jp2_grayscale {"JP2는 회색조 색상 정보와 투명도 채널을 함께 저장합니다."}else{"JP2는 RGB 색상 정보와 투명도 채널을 함께 저장합니다."});
                 }
-                if self.export_format < files::EXPORT_FORMATS.len() && matches!(format,image::ImageFormat::Png|image::ImageFormat::Jpeg|image::ImageFormat::Tiff) {
+                if self.export_format < files::EXPORT_FORMATS.len() && matches!(format,image::ImageFormat::Png|image::ImageFormat::Jpeg|image::ImageFormat::Tiff|image::ImageFormat::WebP) {
                     ui.checkbox(&mut self.export_options.include_icc,"작업 sRGB 프로파일 포함");
                 }
                 if format==image::ImageFormat::Jpeg {

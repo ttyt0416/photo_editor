@@ -1,6 +1,6 @@
 # 순차 구현 검증 기록 — 2026-10-12
 
-현재까지 순차 구현 기록의 1–24/26–116번 기능을 구현하고 자동 검사했으며, 25번에서 참고 README의 46개 항목을 대응했다. 전체 개발 계획의 완료를 뜻하지 않는다. 원래 범위와 Windows 전용 결정은 DEVELOPMENT_CHECKLIST.md에 유지한다.
+현재까지 순차 구현 기록의 1–24/26–117번 기능을 구현하고 자동 검사했으며, 25번에서 참고 README의 46개 항목을 대응했다. 전체 개발 계획의 완료를 뜻하지 않는다. 원래 범위와 Windows 전용 결정은 DEVELOPMENT_CHECKLIST.md에 유지한다.
 
 검증 예제/로그 경로는 검사로 재현하는 생성 위치다. 2026-10-12 사용자 요청에 따라 부산물을 삭제했고, 이후에도 독립 검사를 마친 생성 이미지·프로젝트·로그/Python 캐시는 정리한다. 작성한 이 기록과 재현 코드·기준 입력·실행 파일은 보존한다.
 
@@ -8,7 +8,7 @@
 
 - `cargo fmt --check`: 성공.
 - `cargo clippy --all-targets --offline -- -D warnings`: 성공.
-- `cargo test --offline`: 473개 통과, 실패 0, 수동 성능 진단 1개 제외(총 474개).
+- `cargo test --offline`: 474개 통과, 실패 0, 수동 성능 진단 1개 제외(총 475개).
 - `cargo build --offline`, `cargo build --release --offline`: 성공. 두 실행 파일을 갱신했다.
 - `python tests/fixtures/verify_compressed_psd_outputs.py`: 8/16/32비트 × PSD/PSB × 무압축/RLE/ZIP/예측 24개 파일의 레이어/마스크/행 길이/예측/합성 이미지 확인.
 - `python tests/fixtures/verify_hdr_outputs.py`: 일반/RLE 행의 RGBE 픽셀·알파 배경 합성·음수 변환·최대 표현 값 확인.
@@ -16,7 +16,7 @@
 - Pillow 12.1.0: Rust PCX 출력을 독립 디코딩해 기대 RGB 픽셀과 일치 확인.
 - PNG 10단계 × 6개 필터 × 8/16비트 = 120개 조합의 픽셀·알파·정밀도 확인.
 
-release 실행 파일 SHA-256: `7f970e37cd4ce7ba49a16d5c3f80cc05d5cfdb44434b90a97e49cd778908ae0c`
+release 실행 파일 SHA-256: `91a9f70859b5daaeaaaa19d871aa7f2cce2a9e00bc2ba72886226f5a757dfb9c`
 
 ## 기능과 예제 위치
 
@@ -765,3 +765,11 @@ JP2 전용 작업 프로파일 포함 선택(기본 제외)을 연결하고 raw 
 96파일537696픽셀(RGB/회색·8/16비트·손실/무손실·ICC/해상도4조합·1×9/17×9/129×129·128타일·4품질층 RPCL), 독립 C OpenJPEG2.5.2의 전체 성분/정확 정규화 및288부분층 복원을 비교했다. 24그룹에서 모든 codestream/성분이 정확히 동일하며 ppi1/300/65535·ICC/CDEF/프로젝트 CRC/원본을 검사했다. 기존40해상도 검사의 그룹 키에서 포함 여부를 제거해 ppi변경과 포함/제외를 모두 정확 비교한다. 기존 ICC32파일 독립 비교도 통과했다. 재현 코드: src/jpeg2000_metadata_rate_tests.rs, tests/fixtures/verify_jpeg2000_metadata_rate_outputs.py.
 
 전체473통과/0실패/1제외(52.10초), fmt/clippy·개발/release 빌드 성공. 라이선스308/528/18 독립 검사도 통과했다. 처음 검사 명령에서 라이선스 검사 파일명을 잘못 지정해 종료된 뒤 실제 verify_windows_licenses.py를 실행해 통과하고 두 빌드를 완료했다. 생성 부산물은 정리한다. 첫 소스 기준 커밋 f7fba4e5e28fe603e7f100ad577ce31569c01fc7를 GitHub main에 푸시/원격 일치 확인했다. 다음117은 WebP 작업 ICC 출력이며 전체 색/메타데이터 목표는 유지한다.
+
+## 117. WebP 무손실/손실 작업 sRGB ICC 출력
+
+WebP에도 기본 포함/끄기 선택을 연결하며 현재 옵션 전체가 미리보기 키에 포함된다. 무손실은 잠금된 image0.25.10/image-webp0.2.4의 ICC API를 사용한다. 손실 인코딩은 기존 품질/속도/정확 알파 설정을 유지하고 새 단일 프레임 출력에 VP8X/ICCP를 붙인다. 기존 VP8X 플래그/치수와 ALPH/VP8 원문을 유지하며 단순 opaque VP8는 확장 헤더를 만든다. [공식 WebP 컨테이너](https://developers.google.com/speed/webp/docs/riff_container)의 순서·길이·패딩을 따른다. 외부 구현 코드를 복사하거나 의존성을 추가하지 않았다.
+
+32파일3136픽셀(1×9/17×11·opaque/alpha·무손실/손실 품질0/90/100/속도0/4/6·포함/제외), 별도 Pillow/libwebp의 정확 RGBA/알파 및16쌍 VP8/VP8L/ALPH payload·픽셀 동일·원문 프로파일/RIFF 크기·패딩/VP8X치수·ICCP순서·프로젝트 CRC를 확인했다. 원본16비트 자산은 유지하며 WebP출력 자체는8비트다. headless4형식 토글/취소·원본/이력과 기존15WebP 품질/속도 조합도 통과했다. 재현 코드: src/webp_output_tests.rs, tests/fixtures/verify_webp_icc_outputs.py.
+
+전체474통과/0실패/1제외(49.54초), fmt/clippy·개발/release 빌드 성공. 기존18ICC 출력 및308/528/18 라이선스 독립 검사도 통과했다. 생성 부산물은 정리한다. 직전116커밋64bc5165fc97162d5cd1be5b29aaf651961ea855의 GitHub main 원격 일치를 확인했다. 다음118은 원본 ICC 원문/프로젝트 보존이며 전체 색 관리/메타데이터 범위는 유지한다.

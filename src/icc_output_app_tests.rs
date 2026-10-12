@@ -50,6 +50,7 @@ fn icc_output_native_checkbox_formats_toggle_preview_key_cancel_and_history() {
         image::ImageFormat::Png,
         image::ImageFormat::Jpeg,
         image::ImageFormat::Tiff,
+        image::ImageFormat::WebP,
     ] {
         let (mut app, ctx, mut clock) = input_app(Tool::Move);
         app.export_dialog = true;

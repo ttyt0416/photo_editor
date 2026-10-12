@@ -1384,18 +1384,8 @@ pub fn export(
     }
     let image = document.composite();
     atomic_write(path, |file| {
-        if format == ImageFormat::WebP && !options.webp_lossless {
-            let mut config =
-                webp::WebPConfig::new().map_err(|_| "WebP 인코더 초기화에 실패했습니다.")?;
-            config.quality = f32::from(options.webp_quality);
-            config.method = i32::from(options.webp_method);
-            config.alpha_quality = 100;
-            config.exact = 1;
-            config.use_sharp_yuv = 1;
-            let encoded = webp::Encoder::from_rgba(image.as_raw(), image.width(), image.height())
-                .encode_advanced(&config)
-                .map_err(|e| format!("WebP 인코딩 실패: {e:?}"))?;
-            return file.write_all(&encoded).map_err(error);
+        if format == ImageFormat::WebP {
+            return crate::webp_output::write(&image, file, options);
         }
         if format == ImageFormat::Pnm {
             let mut rgb = image::RgbImage::new(image.width(), image.height());
