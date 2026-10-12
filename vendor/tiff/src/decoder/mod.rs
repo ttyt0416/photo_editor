@@ -1488,6 +1488,23 @@ impl<R: Read + Seek> Decoder<R> {
         Ok(layout)
     }
 
+    /// Reads native samples without WhiteIsZero inversion. This local API is
+    /// used when gray and alpha must be converted together in floating point.
+    /// Byte order, compression, prediction, layout and allocation limits still
+    /// follow `read_image_to_buffer`; the decoder interpretation is restored.
+    pub fn read_image_to_buffer_uninverted(
+        &mut self,
+        result: &mut DecodingResult,
+    ) -> TiffResult<BufferLayoutPreference> {
+        let interpretation = self.image.photometric_interpretation;
+        if interpretation == PhotometricInterpretation::WhiteIsZero {
+            self.image.photometric_interpretation = PhotometricInterpretation::BlackIsZero;
+        }
+        let decoded = self.read_image_to_buffer(result);
+        self.image.photometric_interpretation = interpretation;
+        decoded
+    }
+
     /// Decodes the entire image into a provided buffer.
     ///
     /// Returns a [`TiffError::UsageError`] if the chunk is smaller than the size indicated with a

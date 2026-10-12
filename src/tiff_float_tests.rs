@@ -3,6 +3,120 @@ use crate::files::{ExportOptions, export, load_project, open, save_project};
 use image::{ImageBuffer, ImageFormat};
 
 #[test]
+fn tiff_white_gray_alpha_uint_float_invert_unassociate_icc_planar_projects() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixtures = base.join("tests/fixtures/tiff-white-alpha");
+    let root = base.join("qa-output/tiff-white-alpha");
+    std::fs::create_dir_all(&root).unwrap();
+    let cases: Vec<serde_json::Value> =
+        serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(cases.len(), 384);
+    for (index, case) in cases.into_iter().enumerate() {
+        let name = case["file"].as_str().unwrap();
+        let path = fixtures.join(name);
+        let before = std::fs::read(&path).unwrap();
+        if index == 0 {
+            assert!(image::open(&path).is_err());
+        }
+        let imported = open(&path).unwrap();
+        let document = imported.document;
+        assert_eq!(document.layers[0].bit_depth, 32);
+        let pixels = document.layers[0].precision.as_ref().unwrap();
+        if case["associated"].as_bool().unwrap() || case["bits"].as_u64() == Some(32) {
+            assert!(pixels.pixels().any(|p| p[0] < 0.));
+        }
+        std::fs::write(
+            root.join(format!("{name}.f32")),
+            pixels
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        let composite = crate::precision::composite(&document);
+        std::fs::write(
+            root.join(format!("{name}.comp.f32")),
+            composite
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        save_project(&document, &root.join(format!("{name}.rphoto"))).unwrap();
+        let restored = load_project(&root.join(format!("{name}.rphoto"))).unwrap();
+        assert_eq!(
+            restored.layers[0]
+                .precision
+                .as_ref()
+                .unwrap()
+                .as_raw()
+                .iter()
+                .map(|v| v.to_bits())
+                .collect::<Vec<_>>(),
+            pixels
+                .as_raw()
+                .iter()
+                .map(|v| v.to_bits())
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(restored.source_icc, document.source_icc);
+        assert_eq!(restored.source_metadata.xmp, document.source_metadata.xmp);
+        for (ext, format) in [("tiff", ImageFormat::Tiff), ("exr", ImageFormat::OpenExr)] {
+            let output = root.join(format!("{name}-working.{ext}"));
+            export(&restored, &output, format, &Default::default()).unwrap();
+            assert_eq!(
+                crate::precision::composite(&open(&output).unwrap().document),
+                composite
+            );
+        }
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+}
+
+#[test]
+fn tiff_raw_white_read_restores_interpretation_on_success_and_limit_error() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
+    let path = base.join("tiff-white-alpha/d32-none-plan0-assoc0-big0-end0-zip0.tiff");
+    let mut decoder = Decoder::new(BufReader::new(File::open(path).unwrap())).unwrap();
+    let mut decoded = DecodingResult::F32(vec![]);
+    decoder
+        .read_image_to_buffer_uninverted(&mut decoded)
+        .unwrap();
+    assert_eq!(
+        decoder
+            .find_tag_unsigned::<u16>(Tag::PhotometricInterpretation)
+            .unwrap(),
+        Some(0)
+    );
+    assert!(
+        decoder.read_image_to_buffer(&mut decoded).is_err(),
+        "ordinary white multiband behavior must be restored"
+    );
+    let path = base.join("tiff-gray-float/none-big0-endFalse-white1-zip0.tiff");
+    let mut limits = Limits::default();
+    limits.decoding_buffer_size = 1;
+    let mut decoder = Decoder::new(BufReader::new(File::open(path).unwrap()))
+        .unwrap()
+        .with_limits(limits);
+    assert!(
+        decoder
+            .read_image_to_buffer_uninverted(&mut decoded)
+            .is_err()
+    );
+    decoder = decoder.with_limits(Limits::default());
+    decoder.read_image_to_buffer(&mut decoded).unwrap();
+    let DecodingResult::F32(values) = decoded else {
+        panic!("expected float gray")
+    };
+    assert_eq!(
+        values[0], -2.,
+        "white inversion must be restored after errors"
+    );
+}
+
+#[test]
 fn tiff_gray_integer_alpha_associated_straight_planar_icc_hidden_hdr_projects() {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"));
     let fixtures = base.join("tests/fixtures/tiff-gray-integer-alpha");

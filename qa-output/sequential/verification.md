@@ -938,3 +938,13 @@ fmt/clippy release all-targets·전체505통과/0실패/1제외(34.98초)·relea
 fmt/clippy release all-targets·전체506통과/0실패/1제외(35.50초)·release 빌드 성공. 기존RGB TIFF52/Predictor3의24·GRAY UINT알파256/UINT RGB96/자동TIFF24·Windows라이선스308/528/18 독립 검사 통과. 직전133커밋fb294ebb3ff2146dcf1dc1d1f2cee514ee1586af의 GitHub main 일치 확인. 전체 ICC·추가 TIFF/Photoshop·메타데이터/전체 목표는 유지한다. 다음135는 흰색 기준 회색 알파 입력이다.
 
 134 정리:16918생성/오래된 캐시 파일1448566926바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+## 135. 흰색 기준 Gray+Alpha UINT/float 읽기
+
+잠금 TIFF의 기본 WhiteIsZero multiband 반전은 지원되지 않는다. 로컬 read_image_to_buffer_uninverted API로 같은 압축/예측/행·평면/할당 한도 아래 원시 샘플을 읽고 성공/오류 모두 원래 해석 상태를 복원한다. 기본 읽기 API는 그대로 유지하며 실제 IFD/파일 원문을 수정하지 않는다. 앱이 명시적으로 선택한 흰색 기준2채널만 f64에서 비연관1-w 또는 연관(A-w)/A로 검정 기준 작업 값을 복원하고 alpha0연관RGB는0으로 처리한다. 부호 없는 정수에서 음수로 복원되는 값도 float32에 유지해 정수 감김을 피한다. [TIFF6 원문/ITU 보관](https://www.itu.int/itudoc/itu-t/com16/tiff-fx/docs/tiff6.pdf)의 Photometric/ExtraSamples와 associated alpha 의미를 확인했으며 흰색 회색조·범위 밖 값의 결합 수식은 이를 이용한 앱 처리 정책으로 독립 검증했다. 전체 TIFF/ISO 적합성으로 표시하지 않는다. LibTIFF의 원문 링크는403으로 읽지 못해 ITU 원문을 확인했다.
+
+독립384입력19584픽셀(UINT8/16/FLOAT32×4프로파일×연관/비연관×붙은/별도평면×classic/BigTIFF×양쪽 바이트 순서×raw/Deflate,방향1/6/8)을 SHA와 고정했다. 실제 저장된 white 샘플을 기준으로 반전/알파/GRAY곡선/sRGB 수식을 계산하며 저장의1-black 반올림·잃은 signed zero 정보를 숨기지 않는다. max SDR절대/HDR상대0.000087942747<0.0008. 알파/숨은색/identity비트·ICC/XMP·v13프로젝트/CRC·자동TIFF/EXR을 tifffile/OpenCV로 정확 비교했다. 원래 일반 디코더의 입력 거부도 첫 입력에서 재현했다. 원시 읽기 성공 뒤 기본 white multiband 오류와 할당 오류 뒤 일반 white 단일평면 반전 복원을 각각 검사했다. src/tiff_float_tests.rs, tests/fixtures/generate_tiff_white_alpha.py, tests/fixtures/verify_tiff_white_alpha.py, vendor/tiff/PHOTO_EDITOR_PATCHES.md에 재현/수정 기록을 보관한다.
+
+fmt/clippy release all-targets·전체508통과/0실패/1제외(35.95초)·release 빌드 성공. 기존Gray출력240/GRAY UINT알파256/float GRAY알파96/GRAY80/UINT RGB96/라이선스308/528/18 독립 검사 통과. 직전134커밋5304884be4bcdc0daae965fc179bb5ef00750f91의 GitHub main 일치 확인. 전체 TIFF/ICC·추가 정밀도/EXIF/IPTC·전체 목표를 유지한다. 다음136은2/4비트 회색 TIFF 입력이다.
+
+135 정리:18838생성/오래된 캐시 파일1453361979바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
