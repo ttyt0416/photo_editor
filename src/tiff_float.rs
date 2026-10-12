@@ -10,7 +10,7 @@ use tiff::{
     tags::Tag,
 };
 
-// The generic TIFF adapter has no Gray32F variant and leaves associated RGB
+// The generic TIFF adapter lacks gray alpha/Gray32F and leaves associated RGB
 // samples premultiplied. Handle those cases; other TIFFs use the common path.
 pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let mut reader = BufReader::new(File::open(path).map_err(|e| e.to_string())?);
@@ -31,9 +31,9 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let (gray, channels, bits) = match color {
         tiff::ColorType::Gray(32) => (true, 1, 32),
         tiff::ColorType::Multiband {
-            bit_depth: 32,
+            bit_depth: bits @ (8 | 16 | 32),
             num_samples: 2,
-        } => (true, 2, 32),
+        } => (true, 2, bits),
         tiff::ColorType::RGBA(bits @ (8 | 16 | 32)) => (false, 4, bits),
         _ => return Ok(None),
     };
@@ -59,7 +59,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
                 .map_err(|e| e.to_string())?
                 != Some(1)
         {
-            return Err("흰색 기준 회색조 float TIFF의 알파 변환은 아직 제공하지 않습니다.".into());
+            return Err("흰색 기준 회색조 TIFF의 알파 변환은 아직 제공하지 않습니다.".into());
         }
         match decoder
             .find_tag_unsigned_vec::<u16>(Tag::ExtraSamples)
@@ -189,8 +189,10 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     };
     let mut dynamic = DynamicImage::ImageRgba32F(pixels);
     dynamic.apply_orientation(orientation);
-    notes.push(if gray {
+    notes.push(if gray && bits == 32 {
         "32비트 회색조 TIFF의 음수·HDR 값을 RGB 작업 버퍼에 유지합니다.".into()
+    } else if gray {
+        format!("{bits}비트 회색조 TIFF의 알파와 색을 32비트 작업 버퍼에 유지합니다.")
     } else {
         format!(
             "{bits}비트 RGB TIFF의 연관 알파를 32비트 작업 버퍼로 분리해 분수·HDR 값을 유지합니다."

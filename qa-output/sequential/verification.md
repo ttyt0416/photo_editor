@@ -918,3 +918,13 @@ NumPy/tifffile의 독립96UINT8/16입력4896픽셀(두 정밀도×프로파일�
 fmt/clippy release all-targets·전체504통과/0실패/1제외(36.86초)·release 빌드 성공. 기존48RGB float/96GRAY-alpha/80GRAY TIFF·자동 TIFF24·30ICC/라이선스308/528/18 독립 검사 통과. 직전131커밋2dcc9690c1b85dc8e7e7f41ad9ff1a65714691c6의 GitHub main 일치 확인. 회색 UINT 알파·흰색 기준 회색 알파/전체 TIFF·ICC/메타데이터·전체 목표를 유지한다. 다음133은 회색 UINT 알파다.
 
 132 정리:15155생성/오래된 캐시 파일1443406887바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+## 133. 회색조 UINT8/16 알파·분리 평면
+
+일반 어댑터가 첫 실제 Gray+Alpha UINT 입력을 거부하는 오류를 실제 image::open으로 재현했다. 잠금 TIFF의 해당2채널 검정 기준/알파1또는2정의를 공통 샘플 조회로 읽는다. 정수 회색/알파를 정확히 정규화하고 연관 색을 f64로 분리해32비트 작업층에 유지한다. 비연관 알파0의 숨은 회색은 레이어에 유지하며 합성/출력의 원래 RGB0정책과 구분한다. 실제 GRAY ICC/방향·원문/프로젝트는 기존 공통 경로를 사용하고 흰색 기준·미정의 알파/형식 오류는 명확하게 거부한다.
+
+NumPy/tifffile 독립256입력13056픽셀(8/16×프로파일없음/선형/gamma1.8/작업×연관/비연관×붙은/별도평면×classic/BigTIFF×양쪽 바이트 순서×raw/Deflate,방향1/6/8)을 SHA와 고정했다. 독립 정수 샘플/배율/알파 분리/GRAY곡선/sRGB 수식 max SDR절대/HDR상대0.00002327578<0.0008. 정규화 알파·숨은 RGB/identity비트·원본 ICC/XMP·v13프로젝트 EXR/CRC와 자동float TIFF/EXR을 tifffile/OpenCV로 정확 비교했다. 원본 입력 SHA는 유지한다. src/tiff_float_tests.rs, tests/fixtures/generate_tiff_gray_integer_alpha.py, tests/fixtures/verify_tiff_gray_integer_alpha.py에 재현 코드를 보관했다.
+
+fmt/clippy release all-targets·전체505통과/0실패/1제외(34.98초)·release 빌드 성공. 기존UINT RGB96/float RGB48/GRAY-alpha96/GRAY80/자동TIFF24/Windows라이선스308/528/18 독립 검사 통과. 직전132커밋0b99d6ec83472348fc35c22a9b3deafffcfbe28d의 GitHub main 일치 확인. 흰색 기준 회색 알파/추가 TIFF·전체ICC/메타데이터·전체 목표는 유지한다. 다음134는8/16/32회색/알파 TIFF 저장이다.
+
+133 정리:16435생성/오래된 캐시 파일1446530532바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.

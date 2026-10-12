@@ -3,6 +3,88 @@ use crate::files::{ExportOptions, export, load_project, open, save_project};
 use image::{ImageBuffer, ImageFormat};
 
 #[test]
+fn tiff_gray_integer_alpha_associated_straight_planar_icc_hidden_hdr_projects() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixtures = base.join("tests/fixtures/tiff-gray-integer-alpha");
+    let root = base.join("qa-output/tiff-gray-integer-alpha");
+    std::fs::create_dir_all(&root).unwrap();
+    let cases: Vec<serde_json::Value> =
+        serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(cases.len(), 256);
+    for (index, case) in cases.into_iter().enumerate() {
+        let name = case["file"].as_str().unwrap();
+        let path = fixtures.join(name);
+        let before = std::fs::read(&path).unwrap();
+        if index == 0 {
+            assert!(
+                image::open(&path).is_err(),
+                "original generic gray-alpha adapter must reject this supported source"
+            );
+        }
+        let imported = open(&path).unwrap();
+        assert!(
+            imported
+                .notes
+                .iter()
+                .any(|n| n.contains("회색조 TIFF의 알파와 색을 32비트"))
+        );
+        let document = imported.document;
+        assert_eq!(document.layers[0].bit_depth, 32);
+        let pixels = document.layers[0].precision.as_ref().unwrap();
+        if case["associated"].as_bool().unwrap() {
+            assert!(pixels.pixels().any(|p| p[0] > 1.));
+        }
+        std::fs::write(
+            root.join(format!("{name}.f32")),
+            pixels
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        let composite = crate::precision::composite(&document);
+        std::fs::write(
+            root.join(format!("{name}.comp.f32")),
+            composite
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        save_project(&document, &root.join(format!("{name}.rphoto"))).unwrap();
+        let restored = load_project(&root.join(format!("{name}.rphoto"))).unwrap();
+        assert_eq!(
+            restored.layers[0]
+                .precision
+                .as_ref()
+                .unwrap()
+                .as_raw()
+                .iter()
+                .map(|v| v.to_bits())
+                .collect::<Vec<_>>(),
+            pixels
+                .as_raw()
+                .iter()
+                .map(|v| v.to_bits())
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(restored.source_icc, document.source_icc);
+        assert_eq!(restored.source_metadata.xmp, document.source_metadata.xmp);
+        for (ext, format) in [("tiff", ImageFormat::Tiff), ("exr", ImageFormat::OpenExr)] {
+            let output = root.join(format!("{name}-working.{ext}"));
+            export(&restored, &output, format, &Default::default()).unwrap();
+            assert_eq!(
+                crate::precision::composite(&open(&output).unwrap().document),
+                composite
+            );
+        }
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+}
+
+#[test]
 fn tiff_integer_rgb_associated_float_ratios_hdr_icc_planar_project_auto_tiff() {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"));
     let fixtures = base.join("tests/fixtures/tiff-integer-associated");
