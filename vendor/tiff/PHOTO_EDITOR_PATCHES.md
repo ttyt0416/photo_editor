@@ -11,3 +11,9 @@ Local TIFF patches used by Photo Editor (crate remains pinned at 0.11.3):
   Ordinary decoder calls keep their existing behavior. Original IFD values and
   source file bytes are never modified. Tests exercise restoration on both
   successful reads and allocation-limit errors.
+- Tile edge padding uses the chunk index within each plane. The upstream
+  absolute chunk index lost bottom padding after the first plane, causing an
+  assertion failure when decoding planar images with partial bottom tiles.
+  The fix preserves file chunk offsets and predictor/compression handling.
+  Direct per-plane dimensions and 864 independent strip/tile float16/64 and
+  UINT32 cases exercise all planes and right/bottom edges (step140).

@@ -801,7 +801,15 @@ impl Image {
             }
             ChunkType::Tile => {
                 let tile_attrs = self.tile_attributes.as_ref().unwrap();
-                let (padding_right, padding_down) = tile_attrs.get_padding(chunk_index as usize);
+                // Chunk indices include all planes. Edge padding is relative
+                // to the tile grid within a plane, including its bottom row.
+                let tiles_per_plane = tile_attrs
+                    .tiles_across()
+                    .checked_mul(tile_attrs.tiles_down())
+                    .filter(|count| *count > 0)
+                    .ok_or(TiffError::LimitsExceeded)?;
+                let (padding_right, padding_down) =
+                    tile_attrs.get_padding(chunk_index as usize % tiles_per_plane);
 
                 let tile_width = tile_attrs.tile_width - padding_right;
                 let tile_length = tile_attrs.tile_length - padding_down;

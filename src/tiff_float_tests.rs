@@ -17,6 +17,40 @@ fn tiff_uint32_gray_rgb_alpha_white_planar_icc_projects() {
     tiff_extended_float_cases("tiff-uint32", 32);
 }
 
+#[test]
+fn tiff_extended_precision_tiled_edges_multirow_strips_and_prediction() {
+    tiff_extended_float_cases("tiff-layout", 0);
+}
+
+#[test]
+fn tiff_planar_tile_edge_dimensions_repeat_for_every_plane() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/tiff-layout");
+    for bits in [16, 32, 64] {
+        for channels in [2, 3, 4] {
+            for predicted in [0, 1] {
+                let path = root.join(format!(
+                    "d{bits}-c{channels}-w0-a0-p1-t1-b0-e0-pred{predicted}.tiff"
+                ));
+                let mut decoder = Decoder::new(BufReader::new(File::open(path).unwrap())).unwrap();
+                for plane in 0..channels {
+                    for (chunk, expected) in
+                        [(16, 16), (1, 16), (16, 3), (1, 3)].into_iter().enumerate()
+                    {
+                        assert_eq!(
+                            decoder.chunk_data_dimensions(plane * 4 + chunk as u32),
+                            expected
+                        );
+                    }
+                }
+                let mut decoded = DecodingResult::F32(vec![]);
+                let layout = decoder.read_image_to_buffer(&mut decoded).unwrap();
+                assert_eq!(layout.planes, channels as usize);
+                assert!(decoded.as_buffer(0).as_bytes().len() >= layout.complete_len);
+            }
+        }
+    }
+}
+
 fn tiff_extended_float_cases(folder: &str, bits: u8) {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"));
     let fixtures = base.join("tests/fixtures").join(folder);
@@ -24,8 +58,9 @@ fn tiff_extended_float_cases(folder: &str, bits: u8) {
     std::fs::create_dir_all(&root).unwrap();
     let cases: Vec<serde_json::Value> =
         serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
-    assert_eq!(cases.len(), 432);
+    assert_eq!(cases.len(), if bits == 0 { 864 } else { 432 });
     for (index, case) in cases.into_iter().enumerate() {
+        let bits = case["bits"].as_u64().unwrap_or(u64::from(bits));
         let name = case["file"].as_str().unwrap();
         let path = fixtures.join(name);
         let before = std::fs::read(&path).unwrap();
