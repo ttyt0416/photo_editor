@@ -876,3 +876,13 @@ NumPy/tifffile2025.6.11로 독립 작성한80TIFF/4080픽셀을 SHA-256 manifest
 fmt/clippy release all-targets·전체498통과/0실패/1제외(38.09초)·release 빌드 성공. 기존18HDR ICC/30SDR ICC·8JXL·라이선스308/528/18 독립 검사 통과. 직전127커밋c18ac285d78d08371e35f053ea78ed763f36f578의 GitHub main 일치 확인. TIFF 회색 알파/추가 정밀도/EXIF/전체 적합성·전체 색 관리 목표는 남는다. 다음129는 회색 float 알파와 분리 평면이다.
 
 128 정리:13924생성/오래된 캐시 파일1440187436바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+## 129. Gray+Alpha32F 연관/비연관·분리 평면
+
+잠금 TIFF의 read_image는 분리 평면의 첫 평면만 읽는 호환 동작이므로 read_image_to_buffer로 전체 평면을 읽고 complete_len/평면 수/행·평면 간격을 확인한다. 첫 실입력 검사에서 plane_stride가 interleaved 단일 평면에도 존재하는 것을 잘못 해석해 인덱스 범위를 넘었다. 실제 planes 수로 배치를 구분하고 색/알파 접근 범위를 검사하도록 수정했다. 검정 기준2채널/IEEEFP/알파1또는2정의만 처리하며 흰색 기준 회색 알파와 미정의 채널은 설명 있는 오류로 유지한다. 알파0–1/유한·전체 평면/비유한·연관 색 복원의 float32 초과를 확인한다. 연관 색은 f64로 나누고 ICC 적용 전 straight float로 복원하며 알파0연관색은0, 비연관 숨은 색·알파의 부호 비트는 유지한다.
+
+NumPy/tifffile의 독립96입력4896픽셀(프로파일없음/선형/작업×연관/비연관×붙은/별도평면×classic/BigTIFF×양쪽 바이트 순서×raw/Deflate,방향1/6/8)을 SHA-256과 고정했다. 알파0/-0/분수/1·HDR/음수·숨은 색·프로젝트 float자산/원본 ICC·XMP/CRC·작업 TIFF32/EXR을 검사했다. 독립 NumPy 평면/알파 분리/sRGB 수식 max SDR절대/HDR상대0.000087918143<0.0008. tifffile과 별도 OpenCV/OpenEXR 디코더로 프로젝트 내부 EXR과 출력 EXR의 전체 RGBA32 비트·숨은 색·부호 있는 알파까지 정확 비교했다. 합성/출력의 투명 RGB0 정책과 원시 레이어 숨은 RGB는 구분했다. 재현 코드 src/tiff_float_tests.rs, tests/fixtures/generate_tiff_gray_alpha.py, tests/fixtures/verify_tiff_gray_alpha.py.
+
+fmt/clippy release all-targets·전체500통과/0실패/1제외(49.32초)·release 빌드 성공. 기존80Gray32 TIFF/18HDR ICC·8JXL·라이선스308/528/18 독립 검사 통과. 직전128커밋52d75c47f4e9f55596b1fa623c3ebfe9f645c43c의 GitHub main 일치 확인. 흰색 기준 회색 알파·추가 정밀도/전체 TIFF/ICC·EXIF/IPTC 등 전체 목표를 유지한다. 다음130은 RGB float TIFF 연관 알파이다.
+
+129 정리:14405생성/오래된 캐시 파일1441560122바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.

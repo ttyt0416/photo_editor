@@ -11,7 +11,7 @@ use tiff::{
 };
 
 // image's generic TIFF adapter has no Gray32F DynamicImage variant. Decode only
-// this missing case here; other TIFF variants use the existing common path.
+// gray float cases here; other TIFF variants use the existing common path.
 pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let mut reader = BufReader::new(File::open(path).map_err(|e| e.to_string())?);
     let signature = reader.fill_buf().map_err(|e| e.to_string())?;
@@ -23,19 +23,48 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     }
     let mut limits = Limits::default();
     limits.ifd_value_size = crate::source_metadata::MAX_BYTES;
-    limits.decoding_buffer_size = crate::document::MAX_PIXELS as usize * 4;
+    limits.decoding_buffer_size = crate::document::MAX_PIXELS as usize * 8;
     let mut decoder = Decoder::new(reader)
         .map_err(|e| e.to_string())?
         .with_limits(limits);
-    if decoder.colortype().map_err(|e| e.to_string())? != tiff::ColorType::Gray(32)
-        || decoder
-            .find_tag_unsigned_vec::<u16>(Tag::SampleFormat)
-            .map_err(|e| e.to_string())?
-            .as_deref()
-            != Some(&[3])
+    let color = decoder.colortype().map_err(|e| e.to_string())?;
+    let channels = match color {
+        tiff::ColorType::Gray(32) => 1,
+        tiff::ColorType::Multiband {
+            bit_depth: 32,
+            num_samples: 2,
+        } => 2,
+        _ => return Ok(None),
+    };
+    let formats = decoder
+        .find_tag_unsigned_vec::<u16>(Tag::SampleFormat)
+        .map_err(|e| e.to_string())?;
+    if !formats
+        .as_deref()
+        .is_some_and(|values| !values.is_empty() && values.iter().all(|v| *v == 3))
     {
         return Ok(None);
     }
+    let associated = if channels == 2 {
+        if decoder
+            .find_tag_unsigned::<u16>(Tag::PhotometricInterpretation)
+            .map_err(|e| e.to_string())?
+            != Some(1)
+        {
+            return Err("흰색 기준 회색조 float TIFF의 알파 변환은 아직 제공하지 않습니다.".into());
+        }
+        match decoder
+            .find_tag_unsigned_vec::<u16>(Tag::ExtraSamples)
+            .map_err(|e| e.to_string())?
+            .as_deref()
+        {
+            Some([1]) => true,
+            Some([2]) => false,
+            _ => return Err("회색조 TIFF의 두 번째 채널이 알파로 정의되지 않았습니다.".into()),
+        }
+    } else {
+        false
+    };
     let (width, height) = decoder.dimensions().map_err(|e| e.to_string())?;
     crate::document::validate_size(width, height)?;
     let mut notes = vec![];
@@ -54,16 +83,69 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
                 .into(),
         );
     }
-    let DecodingResult::F32(values) = decoder.read_image().map_err(|e| e.to_string())? else {
+    let mut decoded = DecodingResult::F32(vec![]);
+    let layout = decoder
+        .read_image_to_buffer(&mut decoded)
+        .map_err(|e| e.to_string())?;
+    let DecodingResult::F32(values) = decoded else {
         return Err("회색조 TIFF의 float32 픽셀 형식이 일치하지 않습니다.".into());
     };
-    if values.len() != width as usize * height as usize || values.iter().any(|v| !v.is_finite()) {
+    if values.len() * 4 < layout.complete_len || values.iter().any(|v| !v.is_finite()) {
         return Err("회색조 TIFF의 픽셀 크기 또는 부동소수점 값이 잘못되었습니다.".into());
     }
-    let pixels = Rgba32FImage::from_fn(width, height, |x, y| {
-        let value = values[(y * width + x) as usize];
-        Rgba([value, value, value, 1.])
-    });
+    let row_stride = layout
+        .row_stride
+        .ok_or("회색조 TIFF의 행 배치가 잘못되었습니다")?
+        .get()
+        / 4;
+    if layout.planes != 1 && layout.planes != channels {
+        return Err("회색조 TIFF의 평면 수가 색상 채널과 일치하지 않습니다.".into());
+    }
+    // plane_stride also exists for a single interleaved plane. The plane count,
+    // rather than an optional stride, distinguishes separated sample storage.
+    let separate = layout.planes > 1;
+    let alpha_offset = if separate {
+        layout
+            .plane_stride
+            .ok_or("회색조 TIFF의 평면 간격이 없습니다")?
+            .get()
+            / 4
+    } else {
+        1
+    };
+    let mut pixels = Rgba32FImage::new(width, height);
+    for (x, y, target) in pixels.enumerate_pixels_mut() {
+        let index = y as usize * row_stride + x as usize * if separate { 1 } else { channels };
+        let alpha = if channels == 1 {
+            1.
+        } else {
+            *values
+                .get(index + alpha_offset)
+                .ok_or("회색조 TIFF의 알파 평면이 잘렸습니다")?
+        };
+        if !(0. ..=1.).contains(&alpha) {
+            return Err("회색조 TIFF의 알파 값이 0–1 범위를 벗어났습니다.".into());
+        }
+        let value = if associated {
+            if alpha == 0. {
+                0.
+            } else {
+                (f64::from(
+                    *values
+                        .get(index)
+                        .ok_or("회색조 TIFF의 색상 평면이 잘렸습니다")?,
+                ) / f64::from(alpha)) as f32
+            }
+        } else {
+            *values
+                .get(index)
+                .ok_or("회색조 TIFF의 색상 평면이 잘렸습니다")?
+        };
+        if !value.is_finite() {
+            return Err("회색조 TIFF의 연관 알파 복원 값이 float32 범위를 초과합니다.".into());
+        }
+        *target = Rgba([value, value, value, alpha]);
+    }
     drop(values);
     let pixels = if let Some(profile) = source_icc.as_deref() {
         if profile == crate::color_management::gray_profile() {

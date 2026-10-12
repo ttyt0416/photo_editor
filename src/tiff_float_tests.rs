@@ -3,6 +3,108 @@ use crate::files::{ExportOptions, export, load_project, open, save_project};
 use image::{ImageBuffer, ImageFormat};
 
 #[test]
+fn tiff_gray_alpha_float_planar_associated_original_bits_projects_outputs() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixtures = base.join("tests/fixtures/tiff-gray-alpha");
+    let root = base.join("qa-output/tiff-gray-alpha");
+    std::fs::create_dir_all(&root).unwrap();
+    let cases: Vec<serde_json::Value> =
+        serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(cases.len(), 96);
+    for case in cases {
+        let name = case["file"].as_str().unwrap();
+        let path = fixtures.join(name);
+        let before = std::fs::read(&path).unwrap();
+        let imported = open(&path).unwrap();
+        let document = imported.document;
+        assert_eq!(document.layers[0].bit_depth, 32);
+        let original = document.layers[0].precision.as_ref().unwrap();
+        assert!(original.pixels().any(|p| p[0] < 0. && p[3] > 0.));
+        assert!(original.pixels().any(|p| p[0] > 1. && p[3] > 0.));
+        std::fs::write(
+            root.join(format!("{name}.f32")),
+            original
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        let composite = crate::precision::composite(&document);
+        std::fs::write(
+            root.join(format!("{name}.comp.f32")),
+            composite
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        save_project(&document, &root.join(format!("{name}.rphoto"))).unwrap();
+        let restored = load_project(&root.join(format!("{name}.rphoto"))).unwrap();
+        assert_eq!(restored.layers[0].precision, document.layers[0].precision);
+        assert_eq!(restored.source_icc, document.source_icc);
+        assert_eq!(restored.source_metadata.xmp, document.source_metadata.xmp);
+        for (ext, format) in [("tiff", ImageFormat::Tiff), ("exr", ImageFormat::OpenExr)] {
+            let output = root.join(format!("{name}-working.{ext}"));
+            export(
+                &restored,
+                &output,
+                format,
+                &ExportOptions {
+                    tiff_depth: 3,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            assert_eq!(
+                crate::precision::composite(&open(&output).unwrap().document),
+                composite
+            );
+        }
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+}
+
+#[test]
+fn tiff_gray_alpha_invalid_alpha_missing_definition_and_overflow_rejected() {
+    struct GrayAlpha;
+    impl tiff::encoder::colortype::ColorType for GrayAlpha {
+        type Inner = f32;
+        const TIFF_VALUE: tiff::tags::PhotometricInterpretation =
+            tiff::tags::PhotometricInterpretation::BlackIsZero;
+        const BITS_PER_SAMPLE: &'static [u16] = &[32, 32];
+        const SAMPLE_FORMAT: &'static [tiff::tags::SampleFormat] =
+            &[tiff::tags::SampleFormat::IEEEFP; 2];
+        fn horizontal_predict(_: &[f32], _: &mut Vec<f32>) {
+            unreachable!()
+        }
+    }
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("qa-output/tiff-gray-alpha/errors");
+    std::fs::create_dir_all(&root).unwrap();
+    let path = root.join("bad.tiff");
+    for (extra, gray, alpha) in [
+        (2, 1., -0.125),
+        (2, 1., 1.25),
+        (2, 1., f32::NAN),
+        (2, 1., f32::INFINITY),
+        (1, f32::MAX, f32::MIN_POSITIVE),
+        (0, 1., 0.5),
+    ] {
+        let mut encoder = tiff::encoder::TiffEncoder::new(File::create(&path).unwrap()).unwrap();
+        let mut image = encoder.new_image::<GrayAlpha>(1, 1).unwrap();
+        if extra != 0 {
+            image
+                .encoder()
+                .write_tag(Tag::ExtraSamples, &[extra as u16][..])
+                .unwrap();
+        }
+        image.write_data(&[gray, alpha]).unwrap();
+        assert!(open(&path).is_err(), "{extra}/{gray}/{alpha}");
+    }
+}
+
+#[test]
 fn tiff_gray_float_independent_endian_bigtiff_compressed_hdr_icc_orientation_projects() {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"));
     let fixtures = base.join("tests/fixtures/tiff-gray-float");
