@@ -126,7 +126,7 @@ fn icc_float_rgb_cases(hdr: bool) {
             profile.green_trc = Some(curve.clone());
             profile.blue_trc = Some(curve);
         }
-        let icc = profile.encode().unwrap();
+        let icc = crate::icc_fixture::encode(&profile);
         std::fs::write(root.join(format!("{name}.icc")), &icc).unwrap();
         for alpha in [false, true] {
             let id = format!("{name}-alpha{alpha}");
@@ -231,7 +231,7 @@ fn icc_float_rgb_cases(hdr: bool) {
 
 #[test]
 fn icc_float_nonfinite_rgb_or_alpha_and_overflow_keep_all_source_bits() {
-    let icc = ColorProfile::new_display_p3().encode().unwrap();
+    let icc = crate::icc_fixture::encode(&ColorProfile::new_display_p3());
     for (channel, value) in [
         (0, f32::MAX),
         (0, f32::INFINITY),

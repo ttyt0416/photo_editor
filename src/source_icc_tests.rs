@@ -74,7 +74,7 @@ fn source_icc_import_history_project_and_working_export_preserve_original_bytes(
     for (label, profile) in [
         (
             "p3",
-            moxcms::ColorProfile::new_display_p3().encode().unwrap(),
+            crate::icc_fixture::encode(&moxcms::ColorProfile::new_display_p3()),
         ),
         ("invalid", vec![19u8; 128]),
     ] {

@@ -64,7 +64,7 @@ fn icc_rgb_gray_eight_sixteen_float_alpha_projects_and_independent_outputs() {
         ("gray18", ColorProfile::new_gray_with_gamma(1.8)),
         ("gray22", ColorProfile::new_gray_with_gamma(2.2)),
     ] {
-        let icc = profile.encode().unwrap();
+        let icc = crate::icc_fixture::encode(&profile);
         std::fs::write(root.join(format!("{name}.icc")), &icc).unwrap();
         let gray = profile.color_space == DataColorSpace::Gray;
         for mode in 0..if gray { 4 } else { 6 } {
@@ -146,7 +146,7 @@ fn icc_rgb_gray_eight_sixteen_float_alpha_projects_and_independent_outputs() {
 #[test]
 fn icc_bad_profile_channels_hdr_nonfinite_keep_original_pixels_and_note() {
     let rgb = DynamicImage::ImageRgba8(rgba());
-    let gray = ColorProfile::new_gray_with_gamma(2.2).encode().unwrap();
+    let gray = crate::icc_fixture::encode(&ColorProfile::new_gray_with_gamma(2.2));
     for profile in [
         vec![],
         vec![0; 127],
@@ -159,7 +159,7 @@ fn icc_bad_profile_channels_hdr_nonfinite_keep_original_pixels_and_note() {
         assert_eq!(output, rgb);
         assert!(notes[0].contains("못했습니다"));
     }
-    let icc = ColorProfile::new_display_p3().encode().unwrap();
+    let icc = crate::icc_fixture::encode(&ColorProfile::new_display_p3());
     for v in [f32::MAX, f32::INFINITY, f32::NAN] {
         let source = image::Rgba32FImage::from_pixel(2, 2, image::Rgba([v, 0.25, 0.5, 0.123]));
         let before = source
@@ -184,7 +184,7 @@ fn icc_bad_profile_channels_hdr_nonfinite_keep_original_pixels_and_note() {
 fn icc_png_jpeg_decoder_conversion_and_original_preservation() {
     let root = root().join("files");
     std::fs::create_dir_all(&root).unwrap();
-    let profile = ColorProfile::new_display_p3().encode().unwrap();
+    let profile = crate::icc_fixture::encode(&ColorProfile::new_display_p3());
     let source = DynamicImage::ImageRgba8(rgba());
     for depth in [8, 16] {
         let path = root.join(format!("p3-{depth}.png"));
@@ -245,8 +245,8 @@ fn icc_tiff_gray_and_rgb_import_svg_display_and_original_bytes() {
     use base64::Engine;
     let root = root().join("files");
     std::fs::create_dir_all(&root).unwrap();
-    let p3 = ColorProfile::new_display_p3().encode().unwrap();
-    let gray = ColorProfile::new_gray_with_gamma(1.8).encode().unwrap();
+    let p3 = crate::icc_fixture::encode(&ColorProfile::new_display_p3());
+    let gray = crate::icc_fixture::encode(&ColorProfile::new_gray_with_gamma(1.8));
     for is_gray in [false, true] {
         let path = root.join(format!("icc-gray{is_gray}.tiff"));
         let source = if is_gray {
@@ -572,7 +572,7 @@ fn icc_integer_curves_png_import_history_project_and_working_tiff() {
         let icc = if name == "working" {
             srgb_profile().to_vec()
         } else {
-            profile.encode().unwrap()
+            crate::icc_fixture::encode(&profile)
         };
         std::fs::write(root.join(format!("{name}.icc")), &icc).unwrap();
         for depth in [8, 16] {

@@ -27,7 +27,7 @@ fn jpeg2000_icc_rgb_gray_alpha_mixed_precision_projects_png_and_original() {
         ("gray18", ColorProfile::new_gray_with_gamma(1.8), true),
         ("gray22", ColorProfile::new_gray_with_gamma(2.2), true),
     ] {
-        let icc = profile.encode().unwrap();
+        let icc = crate::icc_fixture::encode(&profile);
         std::fs::write(root.join(format!("{name}.icc")), &icc).unwrap();
         for precision in [1, 4, 8, 12, 16] {
             for alpha in [false, true] {
