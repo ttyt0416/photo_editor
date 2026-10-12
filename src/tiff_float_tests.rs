@@ -12,6 +12,11 @@ fn tiff_double_gray_rgb_alpha_white_planar_icc_projects() {
     tiff_extended_float_cases("tiff-double", 64);
 }
 
+#[test]
+fn tiff_uint32_gray_rgb_alpha_white_planar_icc_projects() {
+    tiff_extended_float_cases("tiff-uint32", 32);
+}
+
 fn tiff_extended_float_cases(folder: &str, bits: u8) {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"));
     let fixtures = base.join("tests/fixtures").join(folder);
@@ -32,7 +37,7 @@ fn tiff_extended_float_cases(folder: &str, bits: u8) {
             imported
                 .notes
                 .iter()
-                .any(|n| n.contains(&format!("{bits}비트 부동소수점")))
+                .any(|n| n.contains(&format!("{bits}비트")))
         );
         let document = imported.document;
         assert_eq!(document.layers[0].bit_depth, 32);
@@ -84,6 +89,41 @@ fn tiff_extended_float_cases(folder: &str, bits: u8) {
             );
         }
         assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+}
+
+#[test]
+fn tiff_uint32_truncated_and_undefined_gray_alpha_rejected() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = base.join("qa-output/tiff-uint32-invalid");
+    std::fs::create_dir_all(&root).unwrap();
+    for channels in [1, 2, 3, 4] {
+        let source = base.join(format!(
+            "tests/fixtures/tiff-uint32/c{channels}-w0-a0-none-p0-b0-e0-z0.tiff"
+        ));
+        let original = std::fs::read(&source).unwrap();
+        let mut decoder = Decoder::new(BufReader::new(File::open(&source).unwrap())).unwrap();
+        let offset = decoder
+            .find_tag_unsigned_vec::<u64>(Tag::StripOffsets)
+            .unwrap()
+            .unwrap()[0] as usize;
+        let path = root.join(format!("truncated-c{channels}.tiff"));
+        std::fs::write(&path, &original[..offset + 1]).unwrap();
+        assert!(open(&path).is_err());
+        if channels == 2 {
+            let mut bytes = original.clone();
+            let ifd = u32::from_le_bytes(bytes[4..8].try_into().unwrap()) as usize;
+            let count = u16::from_le_bytes(bytes[ifd..ifd + 2].try_into().unwrap()) as usize;
+            let entry = (0..count)
+                .map(|i| ifd + 2 + i * 12)
+                .find(|e| u16::from_le_bytes(bytes[*e..*e + 2].try_into().unwrap()) == 338)
+                .unwrap();
+            bytes[entry + 8..entry + 10].copy_from_slice(&0u16.to_le_bytes());
+            let path = root.join("undefined-gray-alpha.tiff");
+            std::fs::write(&path, bytes).unwrap();
+            assert!(open(&path).err().unwrap().contains("알파로 정의"));
+        }
+        assert_eq!(std::fs::read(source).unwrap(), original);
     }
 }
 

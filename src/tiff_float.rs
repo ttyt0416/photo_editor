@@ -36,7 +36,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
             num_samples: 2,
         } => (true, 2, bits),
         tiff::ColorType::RGBA(bits @ (8 | 16 | 32 | 64)) => (false, 4, bits),
-        tiff::ColorType::RGB(bits @ (16 | 64)) => (false, 3, bits),
+        tiff::ColorType::RGB(bits @ (16 | 32 | 64)) => (false, 3, bits),
         _ => return Ok(None),
     };
     let formats = decoder
@@ -45,17 +45,18 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let floating = formats
         .as_deref()
         .is_some_and(|v| !v.is_empty() && v.iter().all(|v| *v == 3));
-    let formats_ok = if matches!(bits, 32 | 64) || floating {
+    let unsigned = formats
+        .as_deref()
+        .is_none_or(|v| !v.is_empty() && v.iter().all(|v| *v == 1));
+    let formats_ok = if bits == 64 || floating {
         floating && matches!(bits, 16 | 32 | 64)
     } else {
-        formats
-            .as_deref()
-            .is_none_or(|v| !v.is_empty() && v.iter().all(|v| *v == 1))
+        unsigned
     };
     if !formats_ok {
         return Ok(None);
     }
-    if (channels == 1 && bits == 16 || channels == 3) && !floating {
+    if (channels == 1 && bits == 16 || channels == 3 && bits != 32) && !floating {
         return Ok(None);
     }
     let white_native = gray
@@ -78,7 +79,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     } else {
         false
     };
-    if !gray && !associated && !(floating && matches!(bits, 16 | 64)) {
+    if !gray && !associated && !(floating && matches!(bits, 16 | 64) || unsigned && bits == 32) {
         return Ok(None);
     }
     let (width, height) = decoder.dimensions().map_err(|e| e.to_string())?;
@@ -156,6 +157,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let (values, sample_bytes) = match &decoded {
         DecodingResult::U8(v) if bits == 8 => (v.len(), 1),
         DecodingResult::U16(v) if bits == 16 => (v.len(), 2),
+        DecodingResult::U32(v) if bits == 32 => (v.len(), 4),
         DecodingResult::F16(v) if bits == 16 && v.iter().all(|v| v.is_finite()) => (v.len(), 2),
         DecodingResult::F32(v) if bits == 32 && v.iter().all(|v| v.is_finite()) => (v.len(), 4),
         DecodingResult::F64(v) if bits == 64 && v.iter().all(|v| v.is_finite()) => (v.len(), 8),
@@ -224,22 +226,27 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     }
     drop(decoded);
     let pixels = if let Some(profile) = source_icc.as_deref() {
-        if !gray {
+        let precise_integer_rgb =
+            !gray && unsigned && bits == 32 && profile != crate::color_management::srgb_profile();
+        if !gray && !precise_integer_rgb {
             crate::color_management::apply(DynamicImage::ImageRgba32F(pixels), profile, &mut notes)
                 .into_rgba32f()
-        } else if profile == crate::color_management::gray_profile() {
+        } else if gray && profile == crate::color_management::gray_profile() {
             notes.push(
                 "내장 회색조 ICC가 작업 sRGB 곡선과 일치해 원래 float 비트를 유지했습니다.".into(),
             );
             pixels
         } else {
-            match crate::icc_float::convert(&pixels, profile, true) {
+            let label = if gray { "회색조" } else { "RGB" };
+            match crate::icc_float::convert(&pixels, profile, gray) {
                 Ok(result) => {
-                    notes.push("내장 회색조 ICC를 적용해 작업 sRGB로 변환했습니다.".into());
+                    notes.push(format!(
+                        "내장 {label} ICC를 적용해 작업 sRGB로 변환했습니다."
+                    ));
                     result
                 }
                 Err(error) => {
-                    notes.push(format!("내장 회색조 ICC를 적용하지 못했습니다: {error}. 원래 픽셀과 원본 ICC를 유지합니다."));
+                    notes.push(format!("내장 {label} ICC를 적용하지 못했습니다: {error}. 원래 픽셀과 원본 ICC를 유지합니다."));
                     pixels
                 }
             }
@@ -249,7 +256,9 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     };
     let mut dynamic = DynamicImage::ImageRgba32F(pixels);
     dynamic.apply_orientation(orientation);
-    notes.push(if bits == 64 {
+    notes.push(if bits == 32 && unsigned {
+        "32비트 정수 TIFF를 최대값 4294967295로 정규화해 32비트 float 작업 버퍼로 변환합니다. 일부 정수 단계는 반올림됩니다.".into()
+    } else if bits == 64 {
         "64비트 부동소수점 TIFF를 32비트 작업 버퍼로 변환합니다. 정밀도와 매우 작은 값은 반올림되며 32비트 표현 범위를 넘는 색상은 오류로 처리합니다.".into()
     } else if floating && bits == 16 {
         "16비트 부동소수점 TIFF의 음수·HDR·알파를 32비트 작업 버퍼에 유지합니다.".into()
@@ -274,6 +283,7 @@ fn sample(data: &DecodingResult, index: usize) -> Option<f64> {
     match data {
         DecodingResult::U8(v) => v.get(index).map(|v| f64::from(*v) / 255.),
         DecodingResult::U16(v) => v.get(index).map(|v| f64::from(*v) / 65535.),
+        DecodingResult::U32(v) => v.get(index).map(|v| f64::from(*v) / 4294967295.),
         DecodingResult::F16(v) => v.get(index).map(|v| v.to_f64()),
         DecodingResult::F32(v) => v.get(index).map(|v| f64::from(*v)),
         DecodingResult::F64(v) => v.get(index).copied(),
