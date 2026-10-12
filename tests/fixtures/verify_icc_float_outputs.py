@@ -3,11 +3,18 @@ from pathlib import Path
 import json
 import struct
 import zipfile
+import argparse
+import os
 import numpy as np
 import tifffile
 from icc_reference import tags, matrix, encode_srgb
+os.environ.setdefault('OPENCV_IO_ENABLE_OPENEXR', '1')
+import cv2
 
-ROOT = Path(__file__).resolve().parents[2] / 'qa-output/icc-float'
+parser = argparse.ArgumentParser()
+parser.add_argument('--sdr', action='store_true')
+sdr = parser.parse_args().sdr
+ROOT = Path(__file__).resolve().parents[2] / ('qa-output/icc-float-sdr' if sdr else 'qa-output/icc-float')
 destination = matrix(tags((ROOT / 'working.icc').read_bytes()))
 
 
@@ -39,11 +46,19 @@ def curve(tag, x):
 
 
 cases = json.loads((ROOT/'manifest.json').read_text())
-assert len(cases) == 18
+assert len(cases) == (20 if sdr else 18)
 errors = []
 for case in cases:
     name = case['id']
     source = np.fromfile(ROOT/(name+'.src.f32'), dtype='<f4').reshape(9,17,4)
+    if sdr:
+        assert np.all((source[:,:,:3]>=0) & (source[:,:,:3]<=1))
+        expected_source = np.zeros_like(source)
+        for y in range(9):
+            for x in range(17):
+                expected_source[y,x]=[-0. if x==0 else x/16, y/8, ((x*19+y*13)%113)/112,
+                                     [0.,-0.,.125,.33333334,1.][(x+y)%5] if case['alpha'] else 1.]
+        np.testing.assert_array_equal(source.view('u4'),expected_source.view('u4'))
     actual = np.fromfile(ROOT/(name+'.dst.f32'), dtype='<f4').reshape(9,17,4)
     composite = np.fromfile(ROOT/(name+'.comp.f32'), dtype='<f4').reshape(9,17,4)
     profile_bytes = (ROOT/(case['profile']+'.icc')).read_bytes()
@@ -54,8 +69,8 @@ for case in cases:
     assert error < .0008, (name,error)
     errors.append(error)
     np.testing.assert_array_equal(source[:,:,3].view('u4'),actual[:,:,3].view('u4'))
-    assert actual[:,:,:3].max() > 1
-    if case['profile'] in ['srgb','p3','adobe','linear','table','gamma']:
+    if not sdr: assert actual[:,:,:3].max() > 1
+    if not sdr and case['profile'] in ['srgb','p3','adobe','linear','table','gamma']:
         assert actual[:,:,:3].min() < 0
     with tifffile.TiffFile(ROOT/(name+'.tiff')) as file:
         page = file.pages[0]
@@ -71,4 +86,11 @@ for case in cases:
         assert project.read('metadata/source.icc') == profile_bytes
         metadata = json.loads(project.read('manifest.json'))
         assert metadata['version'] == 12 and metadata['layers'][0]['bit_depth'] == 32
-print(f'Float ICC HDR: 18 RGB/RGBA TIFF inputs/{len(cases)*153} pixels, 9 profiles including all 5 parametric/identity/gamma/sampled curves, independent max SDR-absolute/HDR-relative error {max(errors):.8g} <0.0008; exact alpha/TIFF source/working float bits, original ICC/project CRC/depth; EXR/project/history verified in Rust.')
+        layer = metadata['layers'][0]['id']
+        decoded = cv2.imdecode(np.frombuffer(project.read(f'layers/{layer}.exr'),dtype='u1'),cv2.IMREAD_UNCHANGED)
+        assert decoded is not None
+        np.testing.assert_array_equal(decoded[:,:,[2,1,0,3]].copy().view('u4'),actual.view('u4'))
+    decoded = cv2.imread(str(ROOT/(name+'-working.exr')),cv2.IMREAD_UNCHANGED)
+    assert decoded is not None
+    np.testing.assert_array_equal(decoded[:,:,[2,1,0,3]].copy().view('u4'),composite.view('u4'))
+print(f'Float ICC {"SDR" if sdr else "HDR"}: {len(cases)} RGB/RGBA TIFF inputs/{len(cases)*153} pixels, {len(cases)//2} profiles including all 5 parametric/identity/gamma/sampled curves, independent max SDR-absolute/HDR-relative error {max(errors):.8g} <0.0008; exact alpha/TIFF source/working float bits, original ICC/project CRC/depth/OpenCV EXR bits; history verified in Rust.')

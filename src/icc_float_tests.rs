@@ -17,11 +17,71 @@ fn write_float(path: &Path, image: &Rgba32FImage) {
 }
 
 #[test]
+fn icc_float_sdr_matrix_reference_keeps_out_of_gamut_and_alpha() {
+    // Independent NumPy XYZ-matrix/TRC calculation from serialized ICC tags.
+    let source = Rgba32FImage::from_raw(
+        4,
+        1,
+        vec![
+            0., 1., 0., -0., 0.25, 0.5, 0.75, 0., 0.1, 0.2, 0.3, 0.125, 1., 1., 1., 1.,
+        ],
+    )
+    .unwrap();
+    let expected = [
+        [
+            -3.1120597136961483,
+            1.0220987529247985,
+            0.024353907175998314,
+        ],
+        [-0.3452852974443335, 0.5168620196011476, 0.7515238652363996],
+        [-0.04599507463761619, 0.19189564219230074, 0.293208528057279],
+        [1.0001868539464738, 0.9999769957803065, 0.9995859727672171],
+    ];
+    let profile = include_bytes!("../tests/fixtures/tiff-rgb-associated/matrix.icc");
+    let converted = convert(&DynamicImage::ImageRgba32F(source.clone()), profile)
+        .unwrap()
+        .to_rgba32f();
+    let mut maximum = 0f64;
+    for ((actual, source), reference) in converted.pixels().zip(source.pixels()).zip(expected) {
+        assert_eq!(actual[3].to_bits(), source[3].to_bits());
+        for c in 0..3 {
+            maximum = maximum
+                .max((f64::from(actual[c]) - reference[c]).abs() / reference[c].abs().max(1.));
+        }
+    }
+    assert!(
+        maximum < 0.0008,
+        "SDR matrix reference error {maximum} exceeds 0.0008"
+    );
+}
+
+#[test]
 fn icc_float_rgb_rgba_hdr_negative_tiff_project_working_export() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("qa-output/icc-float");
+    icc_float_rgb_cases(true);
+}
+
+#[test]
+fn icc_float_rgb_rgba_sdr_tiff_project_working_export() {
+    icc_float_rgb_cases(false);
+}
+
+fn icc_float_rgb_cases(hdr: bool) {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(if hdr {
+        "qa-output/icc-float"
+    } else {
+        "qa-output/icc-float-sdr"
+    });
     std::fs::create_dir_all(&root).unwrap();
     std::fs::write(root.join("working.icc"), srgb_profile()).unwrap();
     let source = Rgba32FImage::from_fn(17, 9, |x, y| {
+        if !hdr {
+            return Rgba([
+                if x == 0 { -0. } else { x as f32 / 16. },
+                y as f32 / 8.,
+                ((x * 19 + y * 13) % 113) as f32 / 112.,
+                [0., -0., 0.125, 0.33333334, 1.][(x as usize + y as usize) % 5],
+            ]);
+        }
         Rgba([
             [-2., -0.125, -0.0, 0.001, 0.5, 1., 2., 16., 1e8][y as usize],
             x as f32 / 4. - 1.,
@@ -30,10 +90,18 @@ fn icc_float_rgb_rgba_hdr_negative_tiff_project_working_export() {
         ])
     });
     let mut cases = vec![];
-    for name in [
+    let mut profiles = vec![
         "srgb", "p3", "adobe", "linear", "table", "gamma", "para1", "para2", "para4",
-    ] {
+    ];
+    if !hdr {
+        profiles.push("matrix");
+    }
+    for name in profiles {
         let mut profile = match name {
+            "matrix" => ColorProfile::new_from_slice(include_bytes!(
+                "../tests/fixtures/tiff-rgb-associated/matrix.icc"
+            ))
+            .unwrap(),
             "srgb" => ColorProfile::new_srgb(),
             "adobe" => ColorProfile::new_adobe_rgb(),
             _ => ColorProfile::new_display_p3(),
@@ -70,7 +138,7 @@ fn icc_float_rgb_rgba_hdr_negative_tiff_project_working_export() {
             let native = input.to_rgba32f();
             let converted = convert(&input, &icc).unwrap().to_rgba32f();
             assert!(
-                converted.pixels().any(|p| p.0[..3].iter().any(|v| *v > 1.)),
+                !hdr || converted.pixels().any(|p| p.0[..3].iter().any(|v| *v > 1.)),
                 "{id}"
             );
             assert!(
@@ -123,7 +191,9 @@ fn icc_float_rgb_rgba_hdr_negative_tiff_project_working_export() {
                 icc
             );
             let mut editor = crate::document::Editor::new(imported.document, false);
-            editor.edit("rename", |d| d.layers[0].name = "HDR".into());
+            editor.edit("rename", |d| {
+                d.layers[0].name = if hdr { "HDR" } else { "SDR" }.into()
+            });
             editor.undo();
             editor.redo();
             save_project(&editor.document, &root.join(format!("{id}.rphoto"))).unwrap();

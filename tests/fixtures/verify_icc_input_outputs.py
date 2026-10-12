@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2] / 'qa-output/icc-input'
 from icc_reference import tags, curve, matrix, encode_srgb
 cases=json.loads((ROOT/'manifest.json').read_text());assert len(cases)==30
 reference_matrix=matrix(tags((ROOT/'srgb.icc').read_bytes()))
+working_matrix=matrix(tags((ROOT.parents[1]/'data/color/srgb.icc').read_bytes()))
 max_eight=0;max_math=0
 for case in cases:
     src=np.fromfile(ROOT/(case['id']+'.src.f32'),'<f4').reshape(9,17,4).astype('f8')
@@ -26,7 +27,8 @@ for case in cases:
             linear=np.repeat(curve(t['kTRC'],src[:,:,:1]),3,axis=2)
         else:
             values=np.stack([curve(t[k],src[:,:,c]) for c,k in enumerate(['rTRC','gTRC','bTRC'])],axis=2)
-            linear=values @ (np.linalg.inv(reference_matrix) @ matrix(t)).T
+            destination=working_matrix if case['depth']==32 else reference_matrix
+            linear=values @ (np.linalg.inv(destination) @ matrix(t)).T
         expected=encode_srgb(linear)
         if case['depth'] < 32: expected=np.clip(expected,0,1)
         error=np.max(np.abs(dst[:,:,:3]-expected));max_math=max(max_math,error)

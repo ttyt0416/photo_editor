@@ -152,15 +152,21 @@ pub(crate) fn convert(image: &DynamicImage, bytes: &[u8]) -> Result<DynamicImage
         DynamicImage::ImageLumaA16(b) => integer!(b, Layout::GrayAlpha, 2, 65535, ImageRgba16),
         DynamicImage::ImageRgb32F(_) | DynamicImage::ImageRgba32F(_) => {
             let input = image.to_rgba32f();
-            if input.pixels().any(|p| {
-                p.0.iter().any(|v| !v.is_finite())
-                    || p.0[..3].iter().any(|v| !(0. ..=1.).contains(v))
-            }) {
-                if input.as_raw().iter().any(|v| !v.is_finite()) {
-                    return Err("색상 또는 알파 값이 유한하지 않습니다".into());
+            if input.as_raw().iter().any(|v| !v.is_finite()) {
+                return Err("색상 또는 알파 값이 유한하지 않습니다".into());
+            }
+            // Matrix/TRC float precision is the same for SDR and HDR. Keep
+            // the existing SDR engine as a fallback for other ICC structures.
+            match crate::icc_float::convert(&input, bytes, false) {
+                Ok(converted) => return Ok(DynamicImage::ImageRgba32F(converted)),
+                Err(error)
+                    if input
+                        .pixels()
+                        .any(|p| p.0[..3].iter().any(|v| !(0. ..=1.).contains(v))) =>
+                {
+                    return Err(error);
                 }
-                return crate::icc_float::convert(&input, bytes, false)
-                    .map(DynamicImage::ImageRgba32F);
+                Err(_) => {}
             }
             let transform = profile
                 .create_transform_f32(Layout::Rgba, &destination, Layout::Rgba, options)
