@@ -866,3 +866,13 @@ fmt/clippy·전체494통과/0실패/1제외(136.26초)·개발/release 빌드 �
 최종 fmt/clippy release all-targets·전체496통과/0실패/1제외(42.44초)·release 빌드 성공. 중간 테스트 출력 작성 중 실행한 JXL 독립 검사는 미완성 zlib로 종료되어 최종 전체 검사 종료 후 다시 실행해 정상8입력/5059392픽셀·51HDR 수식 비교를 확인했다. 원본 ICC8코덱/프로젝트와 Windows라이선스308/528/18도 통과했다. 직전126커밋7185547587bc09264244efaa7e952d1525686ef9의 GitHub main 일치를 확인했다. 전체 ICC/LUT/PQ/HLG·모니터/출력·전체 목표는 유지한다. 다음128은 TIFF 회색 float 입력이다.
 
 127 정리:13610생성/오래된 캐시 파일1437840088바이트 삭제. 첫 검사에서 unhashed 라이브러리의 더 최근 check fingerprint를 선택해 빌드 캐시가 누락되는 문제를 확인했다. 실제 산출물의 기록 시간과 일치하는 fingerprint를 선택하도록 보완했다. 라이브러리/앱에 더 최근의 가짜 검사 기록을 별도로 만들고 다시 정리한 뒤 가짜 기록 제거·release363산출물 모두 fresh/보고 파일 존재를 확인했다. 최신 성공 빌드 기록만 유지하고 임시 검증 기록 삭제.
+
+## 128. TIFF Gray32 float 읽기·ICC/방향/원본 자산
+
+잠금 image0.25.10 TIFF 어댑터의 Gray32 미지원 경로를 제한된 tiff0.11.3 직접 읽기로 보완했다. TIFF signature와 Gray32/IEEEFP일 때만 연결하고 일반 RGB/정수 TIFF·확장자와 내용이 다른 PNG는 기존 일반 경로를 유지한다. 치수/픽셀 할당·IFD 자산16MiB·정확 f32개수/비유한 값 검사를 적용한다. 원시 회색 샘플을 RGB float로 확대하고 버퍼를 해제한 뒤 공통 GRAY ICC 변환을 사용한다. 작업 GRAY 프로파일과 정확 일치하면 불필요한 변환을 생략해 HDR/음수/-0비트를 유지한다. 손상 프로파일은 원래 픽셀/ICC를 유지하고 안내한다. TIFF 방향은 한 번 적용하고 원래 XMP는 프로젝트에 보관한다.
+
+NumPy/tifffile2025.6.11로 독립 작성한80TIFF/4080픽셀을 SHA-256 manifest와 tests/fixtures/tiff-gray-float에 고정했다.5프로파일 선택(없음/선형/gamma1.8/작업/손상)×classic/BigTIFF×양쪽 바이트 순서×흰색/검정 기준×raw/Deflate, 한 행 스트립·방향1/6/8·3다중 페이지의 첫 이미지 안내를 확인했다. white-zero는 잠금 디코더의 f32 1-stored 해석에 맞추어 독립 비교하며 입력 저장과 반전의 반올림을 숨기지 않는다. XMP/ICC 원문·이력·v13프로젝트/CRC/정밀도·TIFF32/EXR 정확 float 왕복을 검사했다. 독립 회색 ICC/방향 수식 max SDR절대/HDR상대0.000087923127<0.0008, identity경로 float 비트·알파1·작업 TIFF/sRGB프로파일·원본 파일 SHA가 일치했다. 비유한/잘림·일반 TIFF16/PNG내용 fallback도 검사했다. 재현 코드 src/tiff_float_tests.rs, tests/fixtures/generate_tiff_gray_float.py, tests/fixtures/verify_tiff_gray_float.py. [잠금 TIFF 디코더](https://docs.rs/tiff/0.11.3/tiff/decoder/struct.Decoder.html) API와 실제 소스를 확인했다.
+
+fmt/clippy release all-targets·전체498통과/0실패/1제외(38.09초)·release 빌드 성공. 기존18HDR ICC/30SDR ICC·8JXL·라이선스308/528/18 독립 검사 통과. 직전127커밋c18ac285d78d08371e35f053ea78ed763f36f578의 GitHub main 일치 확인. TIFF 회색 알파/추가 정밀도/EXIF/전체 적합성·전체 색 관리 목표는 남는다. 다음129는 회색 float 알파와 분리 평면이다.
+
+128 정리:13924생성/오래된 캐시 파일1440187436바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.

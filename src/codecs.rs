@@ -21,6 +21,7 @@ pub fn decode(path: &Path, extension: &str) -> Result<Option<Decoded>, String> {
         std::fs::read(path).map_err(|e| e.to_string())
     };
     let image = match extension {
+        "tif" | "tiff" => return crate::tiff_float::read(path),
         "pcx" => DynamicImage::ImageRgba8(crate::pcx::read(&bytes()?)?),
         "avif" => {
             notes.push("AVIF는 대표 이미지 한 장으로 엽니다. 프레임·다중 이미지 편집은 아직 지원하지 않습니다.".into());
