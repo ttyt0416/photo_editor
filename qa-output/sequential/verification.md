@@ -1050,3 +1050,16 @@ NumPy가 serialized 원문ICC에서 계산한4색기준을 고정한 새검사�
 fmt/clippy release all-targets·전체525통과/0실패/1제외(56.21초)·release 빌드 성공. 새20/기존HDR18/30ICC·binary16/64각432·float32RGB평면144/팔레트알파320/라이선스308/528/18 독립검사 통과. 직전143커밋157b14f621a18cd2f23b53b6806b03ada1358d81의GitHub main일치확인. 전체ICC/LUT/PQ/HLG·정수목적지/고정밀색선택·모니터/HDR/추가TIFF·촬영EXIF/확장XMP/IPTC·기존전체목표는유지한다. 다음145는공통정수ICC 목적지 일치/정밀도다.
 
 144 정리:33664생성/오래된 캐시 파일1518358181바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+
+## 145. 정수 ICC의 실제 작업 목적지와 정밀 변환
+
+RGB/회색조8·16비트도 행렬/TRC f64 계산과 실제 serialized 작업ICC 목적지를 사용한다. 공유 Transform은 이미지별 행렬/곡선을 한 번 준비하고 행 버퍼로 계산해 전체 크기 float 복사나 행별 ICC 재파싱을 피한다. 다른 지원 구조의 MoxCMS fallback도 실제 작업ICC와 원문곡선으로 맞춘다. 원래alpha 정수/정밀도·작업ICC identity·투명 픽셀 숨은색은 유지한다. 고정 NumPy 색기준의 수정 전16비트 청색101단계 오류를 실제 실패로 확인했다.
+
+새32 PNG/4896픽셀은6 RGB 행렬·identity/표/parametric 곡선, 회색표곡선과 정확한 작업ICC의8/16·RGB/GRAY·alpha 유무를 포함한다. 실제 ICC태그의 NumPy 행렬/곡선/작업곡선 역함수 독립기준 최대1정수단계, alpha/sourcePNG/native 프로젝트PNG/원문ICC/CRC/깊이/작업TIFF태그가 일치한다. 열기/이력/저장복원은 Rust에서 확인했다. 기존30ICC도 이제 전 깊이 실제 작업행렬을 기준으로 계산해12LittleCMS8 최대1단계/18수식 최대0.00041803253<=0.0008 통과.20SDR/18HDR의정확alpha/EXR와96연관알파 TIFF 및8원문ICC 회귀 통과.
+
+첫 독립 비교는 para2의 검정에서 LittleCMS와25단계 차이로 실패했다. [LittleCMS 원문 cmsgamma.c](https://github.com/mm2/Little-CMS/blob/master/src/cmsgamma.c)의 type3(ICC type2) 계산은 a*x+b가0일 때c 대신0을 반환한다. 앱/독립ICC식은 경계에서도c를 더한다. 모든32사례 모든픽셀의 엄격한태그식 최대1단계 검사를 유지하고,16LittleCMS사례는 경계외 최대1단계와 para2 두 검정픽셀의0 대25 차이를 별도 단언한다. 허용오차를늘리지않았다. OpenCV/libpng가 생성/기존 ICC의 길이·정렬·D50헤더 경고를 출력했다. 픽셀/원문보존 검사와 형식적ICC 구조 적합성은 구분하며 구조수정·전체LUT/PQ/HLG·모니터 등 목표는 미완료다.
+
+fmt/clippy release all-targets·전체527통과/0실패/1제외(58.56초)·release 빌드 성공. 직전144 커밋445c77f338e121da85e379f00729b44ebc49c501을 기준으로 진행했다. 다음146은UINT8/16 RGB 분리평면, 이후TIFF 촬영EXIF/ICC구조/확장XMP/IPTC와 기존전체목표를 유지한다.
+
+145 정리:33833생성/오래된 캐시 파일1518974279바이트 삭제·최신release363산출물 모두fresh/실제파일 존재 확인·임시검증기록 및 새 빈 임시파일3개 삭제.

@@ -20,9 +20,13 @@ def curve(tag, x):
     kind = struct.unpack_from('>H', tag, 8)[0]
     params = np.array(struct.unpack_from('>'+'i'*[1,3,4,5,7][kind], tag, 12))/65536
     if kind == 0: return x**params[0]
-    assert kind == 3
-    g,a,b,c,d = params
-    return np.where(x>=d, np.maximum(a*x+b,0)**g, c*x)
+    if kind in (1, 2):
+        g,a,b = params[:3]
+        c = params[3] if kind == 2 else 0
+        return np.where(x >= -b/a, np.maximum(a*x+b,0)**g+c, c)
+    if kind == 3: params = np.concatenate([params, [0,0]])
+    g,a,b,c,d,e,f = params
+    return np.where(x>=d, np.maximum(a*x+b,0)**g+e, c*x+f)
 def matrix(t):
     return np.column_stack([np.array(struct.unpack_from('>iii',t[k],8))/65536 for k in ['rXYZ','gXYZ','bXYZ']])
 def encode_srgb(x):

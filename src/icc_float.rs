@@ -13,68 +13,95 @@ pub(crate) fn convert(
     if bytes.len() > crate::source_metadata::MAX_BYTES {
         return Err("ICC 보관 예산 초과".into());
     }
-    let profile = ColorProfile::new_from_slice(bytes).map_err(|e| e.to_string())?;
-    if profile.color_space
-        != if gray {
-            DataColorSpace::Gray
-        } else {
-            DataColorSpace::Rgb
-        }
-    {
-        return Err("복원 색상 채널과 ICC가 일치하지 않습니다".into());
-    }
-    if profile.pcs != DataColorSpace::Xyz
-        || profile.lut_a_to_b_perceptual.is_some()
-        || profile.lut_a_to_b_colorimetric.is_some()
-        || profile.lut_a_to_b_saturation.is_some()
-    {
-        return Err("행렬·명암 곡선 ICC만 작업 변환을 지원합니다".into());
-    }
-    let destination = ColorProfile::new_from_slice(crate::color_management::srgb_profile())
-        .map_err(|e| e.to_string())?;
-    let matrix = profile.transform_matrix(&destination).v;
-    let curves = if gray {
-        [
-            profile.gray_trc.as_ref(),
-            profile.gray_trc.as_ref(),
-            profile.gray_trc.as_ref(),
-        ]
-    } else {
-        [
-            profile.red_trc.as_ref(),
-            profile.green_trc.as_ref(),
-            profile.blue_trc.as_ref(),
-        ]
-    };
-    let [red, green, blue] = curves.map(|c| c.ok_or("ICC 명암 곡선 누락"));
-    let curves = [red?, green?, blue?];
-    let ToneReprCurve::Parametric(target_curve) =
-        destination.red_trc.as_ref().ok_or("작업 곡선 누락")?
-    else {
-        return Err("작업 곡선 오류".into());
-    };
-    let [g, a, b, c, d, ..] = target_curve.as_slice() else {
-        return Err("작업 곡선 오류".into());
-    };
-    let (g, a, b, c, d) = (
-        f64::from(*g),
-        f64::from(*a),
-        f64::from(*b),
-        f64::from(*c),
-        f64::from(*d),
-    );
+    let transform = Transform::new(bytes, gray)?;
     let mut result = pixels.clone();
     for (source, target) in pixels.pixels().zip(result.pixels_mut()) {
+        target.0[..3].copy_from_slice(&transform.rgb([source[0], source[1], source[2]])?);
+    }
+    Ok(result)
+}
+
+// Prepare once per image; integer imports reuse this without allocating a
+// full-size float copy or parsing the ICC again for each row/pixel.
+pub(crate) struct Transform {
+    matrix: [[f64; 3]; 3],
+    curves: [ToneReprCurve; 3],
+    target: [f64; 5],
+    gray: bool,
+}
+
+impl Transform {
+    pub(crate) fn new(bytes: &[u8], gray: bool) -> Result<Self, String> {
+        let profile = ColorProfile::new_from_slice(bytes).map_err(|e| e.to_string())?;
+        if profile.color_space
+            != if gray {
+                DataColorSpace::Gray
+            } else {
+                DataColorSpace::Rgb
+            }
+        {
+            return Err("복원 색상 채널과 ICC가 일치하지 않습니다".into());
+        }
+        if profile.pcs != DataColorSpace::Xyz
+            || profile.lut_a_to_b_perceptual.is_some()
+            || profile.lut_a_to_b_colorimetric.is_some()
+            || profile.lut_a_to_b_saturation.is_some()
+        {
+            return Err("행렬·명암 곡선 ICC만 작업 변환을 지원합니다".into());
+        }
+        let destination = ColorProfile::new_from_slice(crate::color_management::srgb_profile())
+            .map_err(|e| e.to_string())?;
+        let matrix = profile.transform_matrix(&destination).v;
+        let curves = if gray {
+            [
+                profile.gray_trc.as_ref(),
+                profile.gray_trc.as_ref(),
+                profile.gray_trc.as_ref(),
+            ]
+        } else {
+            [
+                profile.red_trc.as_ref(),
+                profile.green_trc.as_ref(),
+                profile.blue_trc.as_ref(),
+            ]
+        };
+        let [red, green, blue] = curves.map(|c| c.ok_or("ICC 명암 곡선 누락"));
+        let curves = [red?.clone(), green?.clone(), blue?.clone()];
+        let ToneReprCurve::Parametric(target_curve) =
+            destination.red_trc.as_ref().ok_or("작업 곡선 누락")?
+        else {
+            return Err("작업 곡선 오류".into());
+        };
+        let [g, a, b, c, d, ..] = target_curve.as_slice() else {
+            return Err("작업 곡선 오류".into());
+        };
+        Ok(Self {
+            matrix,
+            curves,
+            target: [*g, *a, *b, *c, *d].map(f64::from),
+            gray,
+        })
+    }
+
+    pub(crate) fn rgb(&self, source: [f32; 3]) -> Result<[f32; 3], String> {
         let linear = [
-            tone(curves[0], f64::from(source[0]))?,
-            tone(curves[1], f64::from(source[if gray { 0 } else { 1 }]))?,
-            tone(curves[2], f64::from(source[if gray { 0 } else { 2 }]))?,
+            tone(&self.curves[0], f64::from(source[0]))?,
+            tone(
+                &self.curves[1],
+                f64::from(source[if self.gray { 0 } else { 1 }]),
+            )?,
+            tone(
+                &self.curves[2],
+                f64::from(source[if self.gray { 0 } else { 2 }]),
+            )?,
         ];
-        for channel in 0..3 {
-            let value = if gray {
+        let [g, a, b, c, d] = self.target;
+        let mut result = [0.; 3];
+        for (channel, target) in result.iter_mut().enumerate() {
+            let value = if self.gray {
                 linear[channel]
             } else {
-                (0..3).map(|i| matrix[channel][i] * linear[i]).sum()
+                (0..3).map(|i| self.matrix[channel][i] * linear[i]).sum()
             };
             let encoded = if value < c * d {
                 value / c
@@ -84,10 +111,10 @@ pub(crate) fn convert(
             if !encoded.is_finite() || !(encoded as f32).is_finite() {
                 return Err("ICC 변환 결과가 유한하지 않습니다".into());
             }
-            target[channel] = encoded as f32;
+            *target = encoded as f32;
         }
+        Ok(result)
     }
-    Ok(result)
 }
 
 // Sampled ICC curves define [0,1]. Outside it, extend each end segment by its

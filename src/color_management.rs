@@ -65,14 +65,15 @@ pub(crate) fn convert(image: &DynamicImage, bytes: &[u8]) -> Result<DynamicImage
         return Err("색상 프로파일이 메모리 예산을 초과합니다".into());
     }
     let mut profile = ColorProfile::new_from_slice(bytes).map_err(|e| e.to_string())?;
-    // Source ICC curves remain authoritative. The known sRGB destination may
-    // use its exact transfer function, including the linear shadow segment.
+    // Source and destination curves come from their serialized ICC tags.
     profile.cicp = None;
-    let destination = ColorProfile::new_srgb();
+    let mut destination =
+        ColorProfile::new_from_slice(srgb_profile()).map_err(|e| e.to_string())?;
+    destination.cicp = None;
     let options = TransformOptions {
         rendering_intent: RenderingIntent::RelativeColorimetric,
         prefer_fixed_point: false,
-        allow_use_cicp_transfer: true,
+        allow_use_cicp_transfer: false,
         allow_extended_range_rgb_xyz: true,
         ..Default::default()
     };
@@ -116,13 +117,23 @@ pub(crate) fn convert(image: &DynamicImage, bytes: &[u8]) -> Result<DynamicImage
     }
     macro_rules! integer {
         ($buffer:expr, $layout:expr, $channels:expr, $maximum:expr, $variant:ident) => {{
-            let transform = profile.create_transform_f32($layout, &destination, Layout::Rgba, options).map_err(|e| e.to_string())?;
+            let precise = crate::icc_float::Transform::new(bytes, gray).ok();
+            let fallback = if precise.is_none() {
+                Some(profile.create_transform_f32($layout, &destination, Layout::Rgba, options).map_err(|e| e.to_string())?)
+            } else { None };
             let mut output = vec![0; w as usize * h as usize * 4];
             let mut normalized = vec![0f32; w as usize * $channels];
             let mut converted = vec![0f32; w as usize * 4];
             for (src, dst) in $buffer.as_raw().chunks_exact(w as usize * $channels).zip(output.chunks_exact_mut(w as usize * 4)) {
                 for (value, normalized) in src.iter().zip(normalized.iter_mut()) { *normalized = *value as f32 / $maximum as f32; }
-                transform.transform(&normalized, &mut converted).map_err(|e| e.to_string())?;
+                if let Some(precise) = &precise {
+                    for (src, dst) in normalized.chunks_exact($channels).zip(converted.chunks_exact_mut(4)) {
+                        let rgb = if gray { [src[0]; 3] } else { [src[0], src[1], src[2]] };
+                        dst[..3].copy_from_slice(&precise.rgb(rgb)?);
+                    }
+                } else if let Some(fallback) = &fallback {
+                    fallback.transform(&normalized, &mut converted).map_err(|e| e.to_string())?;
+                }
                 if converted.iter().any(|v| !v.is_finite()) { return Err("색상 변환 결과가 유한하지 않습니다".into()); }
                 for (value, dst) in converted.iter().zip(dst.iter_mut()) {
                     *dst = (value.clamp(0., 1.) * $maximum as f32).round() as _;

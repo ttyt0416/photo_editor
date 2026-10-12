@@ -476,3 +476,189 @@ fn icc_exact_working_profile_identity_preserves_float_hdr_bits_rejects_nonfinite
         assert!(notes[0].contains("못했습니다"));
     }
 }
+
+#[test]
+fn icc_integer_actual_working_matrix_reference_preserves_alpha_and_depth() {
+    // NumPy reference from the serialized source and working ICC tags.
+    let references = [
+        [0., 1., 0.024353907175998314],
+        [1., 0.9999769957803065, 0.9995859727672171],
+    ];
+    let profile = include_bytes!("../tests/fixtures/tiff-rgb-associated/matrix.icc");
+    for depth in [8, 16] {
+        let input = if depth == 8 {
+            DynamicImage::ImageRgba8(
+                ImageBuffer::from_raw(2, 1, vec![0, 255, 0, 0, 255, 255, 255, 113]).unwrap(),
+            )
+        } else {
+            DynamicImage::ImageRgba16(
+                ImageBuffer::from_raw(2, 1, vec![0, 65535, 0, 0, 65535, 65535, 65535, 17293])
+                    .unwrap(),
+            )
+        };
+        let maximum = if depth == 8 { 255. } else { 65535. };
+        let converted = convert(&input, profile).unwrap();
+        assert_eq!(converted.color(), input.color());
+        for ((actual, source), reference) in converted
+            .to_rgba32f()
+            .pixels()
+            .zip(input.to_rgba32f().pixels())
+            .zip(references)
+        {
+            assert_eq!(actual[3].to_bits(), source[3].to_bits());
+            for c in 0..3 {
+                let error =
+                    (f64::from(actual[c]) * maximum - (reference[c] * maximum).round()).abs();
+                assert!(
+                    error < 1.01,
+                    "depth {depth} channel {c} integer reference error {error}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn icc_integer_curves_png_import_history_project_and_working_tiff() {
+    use moxcms::ToneReprCurve;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("qa-output/icc-integer");
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("working.icc"), srgb_profile()).unwrap();
+    let mut cases = vec![];
+    for name in [
+        "matrix",
+        "linear",
+        "table",
+        "para1",
+        "para2",
+        "para4",
+        "gray-table",
+        "working",
+    ] {
+        let gray = name == "gray-table";
+        let mut profile = if gray {
+            ColorProfile::new_gray_with_gamma(1.8)
+        } else if name == "matrix" {
+            ColorProfile::new_from_slice(include_bytes!(
+                "../tests/fixtures/tiff-rgb-associated/matrix.icc"
+            ))
+            .unwrap()
+        } else {
+            ColorProfile::new_display_p3()
+        };
+        let curve = match name {
+            "linear" => Some(ToneReprCurve::Lut(vec![])),
+            "table" | "gray-table" => Some(ToneReprCurve::Lut(
+                (0..=32)
+                    .map(|i| ((i as f64 / 32.).powf(1.8) * 65535.).round() as u16)
+                    .collect(),
+            )),
+            "para1" => Some(ToneReprCurve::Parametric(vec![2.2, 1., 0.])),
+            "para2" => Some(ToneReprCurve::Parametric(vec![2.2, 1., 0., 0.01])),
+            "para4" => Some(ToneReprCurve::Parametric(vec![
+                2.2, 1., 0., 0.1, 0.05, 0.02, 0.003,
+            ])),
+            _ => None,
+        };
+        if let Some(curve) = curve {
+            if gray {
+                profile.gray_trc = Some(curve);
+            } else {
+                profile.red_trc = Some(curve.clone());
+                profile.green_trc = Some(curve.clone());
+                profile.blue_trc = Some(curve);
+            }
+        }
+        let icc = if name == "working" {
+            srgb_profile().to_vec()
+        } else {
+            profile.encode().unwrap()
+        };
+        std::fs::write(root.join(format!("{name}.icc")), &icc).unwrap();
+        for depth in [8, 16] {
+            for alpha in [false, true] {
+                let rgba = if depth == 8 {
+                    DynamicImage::ImageRgba8(rgba())
+                } else {
+                    DynamicImage::ImageRgba16(rgba16())
+                };
+                let original8 = rgba.to_rgba8();
+                let original16 = rgba.to_rgba16();
+                let input = match (depth, gray, alpha) {
+                    (8, false, true) | (16, false, true) => rgba,
+                    (8, false, false) => DynamicImage::ImageRgb8(rgba.to_rgb8()),
+                    (16, false, false) => DynamicImage::ImageRgb16(rgba.to_rgb16()),
+                    (8, true, true) => {
+                        DynamicImage::ImageLumaA8(ImageBuffer::from_fn(17, 9, |x, y| {
+                            let p = original8.get_pixel(x, y).0;
+                            image::LumaA([p[0], p[3]])
+                        }))
+                    }
+                    (8, true, false) => {
+                        DynamicImage::ImageLuma8(ImageBuffer::from_fn(17, 9, |x, y| {
+                            image::Luma([original8.get_pixel(x, y)[0]])
+                        }))
+                    }
+                    (16, true, true) => {
+                        DynamicImage::ImageLumaA16(ImageBuffer::from_fn(17, 9, |x, y| {
+                            let p = original16.get_pixel(x, y).0;
+                            image::LumaA([p[0], p[3]])
+                        }))
+                    }
+                    _ => DynamicImage::ImageLuma16(ImageBuffer::from_fn(17, 9, |x, y| {
+                        image::Luma([original16.get_pixel(x, y)[0]])
+                    })),
+                };
+                let id = format!("{name}-d{depth}-a{alpha}");
+                let converted = convert(&input, &icc).unwrap();
+                write_float(&root.join(format!("{id}.src.f32")), &input.to_rgba32f());
+                write_float(&root.join(format!("{id}.dst.f32")), &converted.to_rgba32f());
+                let path = root.join(format!("{id}.png"));
+                let mut encoder =
+                    image::codecs::png::PngEncoder::new(std::fs::File::create(&path).unwrap());
+                encoder.set_icc_profile(icc.clone()).unwrap();
+                input.clone().write_with_encoder(encoder).unwrap();
+                let original = std::fs::read(&path).unwrap();
+                let opened = crate::files::open(&path).unwrap();
+                assert!(
+                    opened.notes.iter().any(|n| n.contains("적용해")),
+                    "{id}: {:?}",
+                    opened.notes
+                );
+                let expected = crate::precision::document(id.clone(), converted).unwrap();
+                let mut editor = crate::document::Editor::new(opened.document, false);
+                assert_eq!(editor.document.layers[0].bit_depth, depth);
+                assert_eq!(
+                    crate::precision::composite(&editor.document),
+                    crate::precision::composite(&expected)
+                );
+                editor.edit("rename", |d| d.layers[0].name = "renamed".into());
+                editor.undo();
+                editor.redo();
+                let project = root.join(format!("{id}.rphoto"));
+                crate::files::save_project(&editor.document, &project).unwrap();
+                let restored = crate::files::load_project(&project).unwrap();
+                assert_eq!(restored.source_icc.as_deref().unwrap().as_slice(), icc);
+                assert_eq!(
+                    crate::precision::composite(&restored),
+                    crate::precision::composite(&expected)
+                );
+                crate::files::export(
+                    &restored,
+                    &root.join(format!("{id}-working.tiff")),
+                    image::ImageFormat::Tiff,
+                    &Default::default(),
+                )
+                .unwrap();
+                assert_eq!(std::fs::read(path).unwrap(), original);
+                cases.push(serde_json::json!({"id":id,"profile":name,"gray":gray,"depth":depth,"alpha":alpha}));
+            }
+        }
+    }
+    assert_eq!(cases.len(), 32);
+    std::fs::write(
+        root.join("manifest.json"),
+        serde_json::to_vec_pretty(&cases).unwrap(),
+    )
+    .unwrap();
+}

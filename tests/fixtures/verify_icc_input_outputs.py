@@ -8,7 +8,6 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2] / 'qa-output/icc-input'
 from icc_reference import tags, curve, matrix, encode_srgb
 cases=json.loads((ROOT/'manifest.json').read_text());assert len(cases)==30
-reference_matrix=matrix(tags((ROOT/'srgb.icc').read_bytes()))
 working_matrix=matrix(tags((ROOT.parents[1]/'data/color/srgb.icc').read_bytes()))
 max_eight=0;max_math=0
 for case in cases:
@@ -18,7 +17,7 @@ for case in cases:
     if case['mode'] < 2:
         mode='L' if case['gray'] else 'RGB'
         image=Image.fromarray(np.rint((src[:,:,0] if case['gray'] else src[:,:,:3])*255).astype('u1'))
-        transform=ImageCms.buildTransformFromOpenProfiles(ImageCms.ImageCmsProfile(io.BytesIO(profile)),ImageCms.createProfile('sRGB'),mode,'RGB',renderingIntent=1,flags=ImageCms.Flags.NOOPTIMIZE)
+        transform=ImageCms.buildTransformFromOpenProfiles(ImageCms.ImageCmsProfile(io.BytesIO(profile)),ImageCms.ImageCmsProfile(io.BytesIO((ROOT.parents[1]/'data/color/srgb.icc').read_bytes())),mode,'RGB',renderingIntent=1,flags=ImageCms.Flags.NOOPTIMIZE)
         expected=np.asarray(ImageCms.applyTransform(image,transform)).astype('i4')
         error=np.max(np.abs(np.rint(dst[:,:,:3]*255)-expected));max_eight=max(max_eight,error)
         assert error<=1,(case['id'],error)
@@ -27,7 +26,7 @@ for case in cases:
             linear=np.repeat(curve(t['kTRC'],src[:,:,:1]),3,axis=2)
         else:
             values=np.stack([curve(t[k],src[:,:,c]) for c,k in enumerate(['rTRC','gTRC','bTRC'])],axis=2)
-            destination=working_matrix if case['depth']==32 else reference_matrix
+            destination=working_matrix
             linear=values @ (np.linalg.inv(destination) @ matrix(t)).T
         expected=encode_srgb(linear)
         if case['depth'] < 32: expected=np.clip(expected,0,1)
