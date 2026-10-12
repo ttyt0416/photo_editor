@@ -4,9 +4,18 @@ use image::{ImageBuffer, ImageFormat};
 
 #[test]
 fn tiff_half_gray_rgb_alpha_white_planar_icc_projects() {
+    tiff_extended_float_cases("tiff-half", 16);
+}
+
+#[test]
+fn tiff_double_gray_rgb_alpha_white_planar_icc_projects() {
+    tiff_extended_float_cases("tiff-double", 64);
+}
+
+fn tiff_extended_float_cases(folder: &str, bits: u8) {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let fixtures = base.join("tests/fixtures/tiff-half");
-    let root = base.join("qa-output/tiff-half");
+    let fixtures = base.join("tests/fixtures").join(folder);
+    let root = base.join("qa-output").join(folder);
     std::fs::create_dir_all(&root).unwrap();
     let cases: Vec<serde_json::Value> =
         serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
@@ -23,7 +32,7 @@ fn tiff_half_gray_rgb_alpha_white_planar_icc_projects() {
             imported
                 .notes
                 .iter()
-                .any(|n| n.contains("16비트 부동소수점"))
+                .any(|n| n.contains(&format!("{bits}비트 부동소수점")))
         );
         let document = imported.document;
         assert_eq!(document.layers[0].bit_depth, 32);
@@ -75,6 +84,84 @@ fn tiff_half_gray_rgb_alpha_white_planar_icc_projects() {
             );
         }
         assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+}
+
+#[test]
+fn tiff_double_nonfinite_float32_overflow_alpha_and_truncation_rejected() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = base.join("qa-output/tiff-double-invalid");
+    std::fs::create_dir_all(&root).unwrap();
+    for channels in [1, 2, 3, 4] {
+        let source = base.join(format!(
+            "tests/fixtures/tiff-double/c{channels}-w0-a0-none-p0-b0-e0-z0.tiff"
+        ));
+        let original = std::fs::read(&source).unwrap();
+        let mut decoder = Decoder::new(BufReader::new(File::open(&source).unwrap())).unwrap();
+        let offset = decoder
+            .find_tag_unsigned_vec::<u64>(Tag::StripOffsets)
+            .unwrap()
+            .unwrap()[0] as usize;
+        for (index, value) in [
+            f64::NAN,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+            f64::MAX,
+            -f64::MAX,
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let mut bytes = original.clone();
+            bytes[offset..offset + 8].copy_from_slice(&value.to_le_bytes());
+            let path = root.join(format!("c{channels}-{index}.tiff"));
+            std::fs::write(&path, bytes).unwrap();
+            assert!(open(&path).is_err());
+        }
+        if matches!(channels, 2 | 4) {
+            let alpha = offset + (channels - 1) * 8;
+            for value in [2f64, -1.] {
+                let mut bytes = original.clone();
+                bytes[alpha..alpha + 8].copy_from_slice(&value.to_le_bytes());
+                let path = root.join(format!("alpha-c{channels}-{value}.tiff"));
+                std::fs::write(&path, bytes).unwrap();
+                assert!(open(&path).err().unwrap().contains("알파"));
+            }
+            let mut bytes = original.clone();
+            bytes[alpha..alpha + 8].copy_from_slice(&1e-300f64.to_le_bytes());
+            let path = root.join(format!("underflow-c{channels}.tiff"));
+            std::fs::write(&path, bytes).unwrap();
+            let imported = open(&path).unwrap();
+            assert!(imported.notes.iter().any(|n| n.contains("반올림")));
+            assert_eq!(
+                imported.document.layers[0]
+                    .precision
+                    .as_ref()
+                    .unwrap()
+                    .get_pixel(0, 0)[3]
+                    .to_bits(),
+                0
+            );
+            let source = base.join(format!(
+                "tests/fixtures/tiff-double/c{channels}-w0-a1-none-p0-b0-e0-z0.tiff"
+            ));
+            let mut bytes = std::fs::read(&source).unwrap();
+            let mut decoder = Decoder::new(BufReader::new(File::open(source).unwrap())).unwrap();
+            let offset = decoder
+                .find_tag_unsigned_vec::<u64>(Tag::StripOffsets)
+                .unwrap()
+                .unwrap()[0] as usize;
+            bytes[offset..offset + 8].copy_from_slice(&2f64.to_le_bytes());
+            let alpha = offset + (channels - 1) * 8;
+            bytes[alpha..alpha + 8].copy_from_slice(&f64::MIN_POSITIVE.to_le_bytes());
+            let path = root.join(format!("associated-overflow-c{channels}.tiff"));
+            std::fs::write(&path, bytes).unwrap();
+            assert!(open(&path).is_err());
+        }
+        let path = root.join(format!("truncated-c{channels}.tiff"));
+        std::fs::write(&path, &original[..offset + 1]).unwrap();
+        assert!(open(&path).is_err());
+        assert_eq!(std::fs::read(source).unwrap(), original);
     }
 }
 

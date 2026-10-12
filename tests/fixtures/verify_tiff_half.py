@@ -5,6 +5,7 @@ import json
 import os
 import struct
 import zipfile
+import argparse
 import numpy as np
 import tifffile
 from icc_reference import tags, matrix, encode_srgb
@@ -12,8 +13,12 @@ os.environ.setdefault('OPENCV_IO_ENABLE_OPENEXR', '1')
 import cv2
 
 BASE = Path(__file__).resolve().parents[2]
-FIXTURES = BASE/'tests/fixtures/tiff-half'
-OUTPUT = BASE/'qa-output/tiff-half'
+parser = argparse.ArgumentParser()
+parser.add_argument('--bits', type=int, choices=(16, 64), default=16)
+bits = parser.parse_args().bits
+folder = 'tiff-half' if bits == 16 else 'tiff-double'
+FIXTURES = BASE/'tests/fixtures'/folder
+OUTPUT = BASE/'qa-output'/folder
 cases = json.loads((FIXTURES/'manifest.json').read_text())
 assert len(cases) == 432
 destination = matrix(tags((BASE/'data/color/srgb.icc').read_bytes()))
@@ -25,7 +30,7 @@ for case in cases:
     with tifffile.TiffFile(path) as file:
         page = file.pages[0]
         stored = page.asarray().astype('f8')
-        assert page.bitspersample == 16 and int(page.sampleformat) == 3
+        assert page.bitspersample == bits and int(page.sampleformat) == 3
         if case['channels'] == 1:
             stored = stored[:, :, None]
         elif case['planar']:
@@ -89,4 +94,4 @@ for case in cases:
     decoded = cv2.imread(str(OUTPUT/(name+'-working.exr')), cv2.IMREAD_UNCHANGED)
     assert decoded is not None
     np.testing.assert_array_equal(decoded[:, :, [2, 1, 0, 3]].copy().view('u4'), composite.view('u4'))
-print(f'Binary16 TIFF: {len(cases)} pinned inputs/{len(cases)*51} pixels; gray/RGB/straight+associated alpha/white+black/separate+contiguous/classic+BigTIFF/both endian/raw+Deflate; independent ICC error {maximum:.8g}<0.0008; exact identity/alpha/project ICC+XMP+CRC/OpenCV EXR/working TIFF bits.')
+print(f'Binary{bits} TIFF: {len(cases)} pinned inputs/{len(cases)*51} pixels; gray/RGB/straight+associated alpha/white+black/separate+contiguous/classic+BigTIFF/both endian/raw+Deflate; independent ICC error {maximum:.8g}<0.0008; exact f32-rounded identity/alpha/project ICC+XMP+CRC/OpenCV EXR/working TIFF bits.')

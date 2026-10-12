@@ -10,7 +10,7 @@ use tiff::{
     tags::Tag,
 };
 
-// The generic TIFF adapter lacks float16, gray alpha/Gray32F and leaves
+// The generic TIFF adapter lacks float16/64, gray alpha/Gray32F and leaves
 // associated RGB samples premultiplied. Other TIFFs use the common path.
 pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let mut reader = BufReader::new(File::open(path).map_err(|e| e.to_string())?);
@@ -23,20 +23,20 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     }
     let mut limits = Limits::default();
     limits.ifd_value_size = crate::source_metadata::MAX_BYTES;
-    limits.decoding_buffer_size = crate::document::MAX_PIXELS as usize * 16;
+    limits.decoding_buffer_size = crate::document::MAX_PIXELS as usize * 32;
     let mut decoder = Decoder::new(reader)
         .map_err(|e| e.to_string())?
         .with_limits(limits);
     let color = decoder.colortype().map_err(|e| e.to_string())?;
     let (gray, channels, bits) = match color {
         tiff::ColorType::Gray(bits @ (2 | 4)) => (true, 1, bits),
-        tiff::ColorType::Gray(bits @ (16 | 32)) => (true, 1, bits),
+        tiff::ColorType::Gray(bits @ (16 | 32 | 64)) => (true, 1, bits),
         tiff::ColorType::Multiband {
-            bit_depth: bits @ (8 | 16 | 32),
+            bit_depth: bits @ (8 | 16 | 32 | 64),
             num_samples: 2,
         } => (true, 2, bits),
-        tiff::ColorType::RGBA(bits @ (8 | 16 | 32)) => (false, 4, bits),
-        tiff::ColorType::RGB(16) => (false, 3, 16),
+        tiff::ColorType::RGBA(bits @ (8 | 16 | 32 | 64)) => (false, 4, bits),
+        tiff::ColorType::RGB(bits @ (16 | 64)) => (false, 3, bits),
         _ => return Ok(None),
     };
     let formats = decoder
@@ -45,8 +45,8 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let floating = formats
         .as_deref()
         .is_some_and(|v| !v.is_empty() && v.iter().all(|v| *v == 3));
-    let formats_ok = if bits == 32 || floating {
-        floating && matches!(bits, 16 | 32)
+    let formats_ok = if matches!(bits, 32 | 64) || floating {
+        floating && matches!(bits, 16 | 32 | 64)
     } else {
         formats
             .as_deref()
@@ -78,7 +78,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     } else {
         false
     };
-    if !gray && !associated && !(floating && bits == 16) {
+    if !gray && !associated && !(floating && matches!(bits, 16 | 64)) {
         return Ok(None);
     }
     let (width, height) = decoder.dimensions().map_err(|e| e.to_string())?;
@@ -158,6 +158,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         DecodingResult::U16(v) if bits == 16 => (v.len(), 2),
         DecodingResult::F16(v) if bits == 16 && v.iter().all(|v| v.is_finite()) => (v.len(), 2),
         DecodingResult::F32(v) if bits == 32 && v.iter().all(|v| v.is_finite()) => (v.len(), 4),
+        DecodingResult::F64(v) if bits == 64 && v.iter().all(|v| v.is_finite()) => (v.len(), 8),
         _ => return Err("TIFF의 샘플 형식 또는 부동소수점 값이 잘못되었습니다.".into()),
     };
     if values * sample_bytes < layout.complete_len {
@@ -248,7 +249,9 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     };
     let mut dynamic = DynamicImage::ImageRgba32F(pixels);
     dynamic.apply_orientation(orientation);
-    notes.push(if floating && bits == 16 {
+    notes.push(if bits == 64 {
+        "64비트 부동소수점 TIFF를 32비트 작업 버퍼로 변환합니다. 정밀도와 매우 작은 값은 반올림되며 32비트 표현 범위를 넘는 색상은 오류로 처리합니다.".into()
+    } else if floating && bits == 16 {
         "16비트 부동소수점 TIFF의 음수·HDR·알파를 32비트 작업 버퍼에 유지합니다.".into()
     } else if gray && bits == 32 {
         "32비트 회색조 TIFF의 음수·HDR 값을 RGB 작업 버퍼에 유지합니다.".into()
@@ -273,6 +276,7 @@ fn sample(data: &DecodingResult, index: usize) -> Option<f64> {
         DecodingResult::U16(v) => v.get(index).map(|v| f64::from(*v) / 65535.),
         DecodingResult::F16(v) => v.get(index).map(|v| v.to_f64()),
         DecodingResult::F32(v) => v.get(index).map(|v| f64::from(*v)),
+        DecodingResult::F64(v) => v.get(index).copied(),
         _ => None,
     }
 }
