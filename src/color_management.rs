@@ -1,6 +1,25 @@
 use image::{DynamicImage, ImageBuffer};
 use moxcms::{ColorProfile, DataColorSpace, Layout, RenderingIntent, TransformOptions};
 
+pub(crate) const MAX_PROFILE_BYTES: usize = 16 * 1024 * 1024;
+
+pub fn remember(
+    document: &mut crate::document::Document,
+    profile: Option<Vec<u8>>,
+    notes: &mut Vec<String>,
+) {
+    if let Some(profile) = profile {
+        if profile.len() > MAX_PROFILE_BYTES {
+            notes.push(
+                "원본 ICC 프로파일이 보관 예산을 초과해 프로젝트에 보존하지 못했습니다.".into(),
+            );
+        } else {
+            document.source_icc = Some(std::sync::Arc::new(profile));
+            notes.push("원본 ICC 프로파일 원문을 프로젝트에 보존합니다. 이미지 내보내기는 작업 색상 프로파일을 사용합니다.".into());
+        }
+    }
+}
+
 pub fn srgb_profile() -> &'static [u8] {
     include_bytes!("../data/color/srgb.icc")
 }
@@ -42,7 +61,7 @@ pub fn tiff_profile(path: &std::path::Path) -> Result<Option<Vec<u8>>, String> {
 }
 
 pub(crate) fn convert(image: &DynamicImage, bytes: &[u8]) -> Result<DynamicImage, String> {
-    if bytes.len() > 16 * 1024 * 1024 {
+    if bytes.len() > MAX_PROFILE_BYTES {
         return Err("색상 프로파일이 메모리 예산을 초과합니다".into());
     }
     let mut profile = ColorProfile::new_from_slice(bytes).map_err(|e| e.to_string())?;
@@ -172,3 +191,7 @@ pub(crate) fn convert(image: &DynamicImage, bytes: &[u8]) -> Result<DynamicImage
 #[cfg(test)]
 #[path = "color_management_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "source_icc_tests.rs"]
+mod source_tests;

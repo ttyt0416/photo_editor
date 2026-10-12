@@ -65,15 +65,18 @@ pub fn save(doc: &Document, path: &Path, options: &ExportOptions) -> Result<(), 
 
 // The image wrapper fixes the maximum at 100 scans; our 64 scans per
 // component output needs 192. Keep a finite bound and the document pixel budget.
-pub fn read(path: &Path) -> Result<(image::DynamicImage, Vec<String>), String> {
+pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
     if std::fs::metadata(path).map_err(|e| e.to_string())?.len() > crate::document::MAX_PIXELS * 16
     {
         return Err("JPEG 파일이 메모리 예산을 초과합니다.".into());
     }
     let bytes = std::fs::read(path).map_err(|e| e.to_string())?;
-    read_bytes(&bytes)
+    decode_bytes(&bytes)
 }
 pub(crate) fn read_bytes(bytes: &[u8]) -> Result<(image::DynamicImage, Vec<String>), String> {
+    decode_bytes(bytes).map(|decoded| (decoded.pixels, decoded.notes))
+}
+fn decode_bytes(bytes: &[u8]) -> Result<crate::codecs::Decoded, String> {
     use zune_core::{bytestream::ZCursor, colorspace::ColorSpace, options::DecoderOptions};
     if bytes.len() as u64 > crate::document::MAX_PIXELS * 16 {
         return Err("JPEG 파일이 메모리 예산을 초과합니다.".into());
@@ -114,10 +117,14 @@ pub(crate) fn read_bytes(bytes: &[u8]) -> Result<(image::DynamicImage, Vec<Strin
     };
     image.apply_orientation(orientation);
     let mut notes = vec![];
-    if let Some(profile) = profile {
-        image = crate::color_management::apply(image, &profile, &mut notes);
+    if let Some(profile) = &profile {
+        image = crate::color_management::apply(image, profile, &mut notes);
     }
-    Ok((image, notes))
+    Ok(crate::codecs::Decoded {
+        pixels: image,
+        notes,
+        source_icc: profile,
+    })
 }
 
 #[cfg(test)]

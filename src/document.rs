@@ -102,6 +102,7 @@ pub struct Document {
     pub active: u64,
     pub next_id: u64,
     pub psd_resources: Arc<Vec<u8>>,
+    pub source_icc: Option<Arc<Vec<u8>>>,
     pub layout: crate::guides::Layout,
 }
 
@@ -156,6 +157,7 @@ impl Document {
             active: 1,
             next_id: 2,
             psd_resources: Arc::new(Vec::new()),
+            source_icc: None,
             layout: Default::default(),
         }
     }
@@ -863,6 +865,11 @@ impl Editor {
         let mut buffers = std::collections::HashMap::new();
         for edit in &self.undo {
             for doc in [&edit.before, &edit.after] {
+                if let Some(profile) = &doc.source_icc {
+                    buffers
+                        .entry(Arc::as_ptr(profile) as usize)
+                        .or_insert(profile.len() as u64);
+                }
                 for layer in &doc.layers {
                     buffers
                         .entry(Arc::as_ptr(&layer.pixels) as usize)

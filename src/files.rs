@@ -151,9 +151,11 @@ fn decode_impl(
             notes,
         });
     }
-    if let Some(image) = crate::codecs::decode(path, &extension)? {
+    if let Some(mut image) = crate::codecs::decode(path, &extension)? {
+        let mut document = crate::precision::document(title.clone(), image.pixels)?;
+        crate::color_management::remember(&mut document, image.source_icc, &mut image.notes);
         return Ok(Opened {
-            document: crate::precision::document(title.clone(), image.pixels)?,
+            document,
             project_path: None,
             source_stamp: None,
             title,
@@ -166,13 +168,15 @@ fn decode_impl(
         .map_err(error)?;
     let format = reader.format();
     if format == Some(ImageFormat::Jpeg) {
-        let (pixels, notes) = crate::jpeg_output::read(path)?;
+        let mut decoded = crate::jpeg_output::read(path)?;
+        let mut document = crate::precision::document(title.clone(), decoded.pixels)?;
+        crate::color_management::remember(&mut document, decoded.source_icc, &mut decoded.notes);
         return Ok(Opened {
-            document: crate::precision::document(title.clone(), pixels)?,
+            document,
             project_path: None,
             source_stamp: None,
             title,
-            notes,
+            notes: decoded.notes,
         });
     }
     let mut limits = image::Limits::default();
@@ -200,8 +204,8 @@ fn decode_impl(
     let orientation = decoder.orientation().map_err(error)?;
     let mut pixels = DynamicImage::from_decoder(decoder).map_err(error)?;
     pixels.apply_orientation(orientation);
-    if let Some(profile) = profile {
-        pixels = crate::color_management::apply(pixels, &profile, &mut notes);
+    if let Some(profile) = &profile {
+        pixels = crate::color_management::apply(pixels, profile, &mut notes);
     }
     if format == Some(ImageFormat::Dds) {
         notes.push("DDS는 기본 이미지 한 장으로 엽니다. 밉맵·큐브맵·배열 텍스처는 아직 편집할 수 없습니다.".into());
@@ -209,8 +213,10 @@ fn decode_impl(
     if has_multiple_images(path, format)? {
         notes.push("현재 한 장의 이미지로 엽니다. 애니메이션·여러 페이지·여러 아이콘 크기는 아직 편집할 수 없습니다.".into());
     }
+    let mut document = crate::precision::document(title.clone(), pixels)?;
+    crate::color_management::remember(&mut document, profile, &mut notes);
     Ok(Opened {
-        document: crate::precision::document(title.clone(), pixels)?,
+        document,
         project_path: None,
         source_stamp: None,
         title,
@@ -261,6 +267,8 @@ struct Manifest {
     layers: Vec<LayerRecord>,
     #[serde(default)]
     psd_resources: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    source_icc: bool,
     #[serde(default)]
     layout: crate::guides::Layout,
 }
@@ -394,13 +402,22 @@ pub fn save_project(document: &Document, path: &Path) -> Result<(), String> {
             "RAW 원본 자산이 현재 메모리 예산을 초과합니다. 기존 파일을 보존했습니다.".into(),
         );
     }
+    if document
+        .source_icc
+        .as_ref()
+        .is_some_and(|p| p.len() > crate::color_management::MAX_PROFILE_BYTES)
+    {
+        return Err("원본 ICC 프로파일이 보관 예산을 초과합니다. 기존 파일을 보존했습니다.".into());
+    }
     atomic_write(path, |file| {
         let mut zip = ZipWriter::new(file);
         let options =
             SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
         let manifest = Manifest {
             format: "photo-editor.project".into(),
-            version: if document
+            version: if document.source_icc.is_some() {
+                12
+            } else if document
                 .layers
                 .iter()
                 .filter_map(|l| l.raw_source.as_ref())
@@ -424,6 +441,7 @@ pub fn save_project(document: &Document, path: &Path) -> Result<(), String> {
             height: document.height,
             active: document.active,
             psd_resources: !document.psd_resources.is_empty(),
+            source_icc: document.source_icc.is_some(),
             layout: document.layout.clone(),
             layers: document
                 .layers
@@ -469,6 +487,11 @@ pub fn save_project(document: &Document, path: &Path) -> Result<(), String> {
             zip.start_file("metadata/photoshop-resources.bin", options)
                 .map_err(error)?;
             zip.write_all(&document.psd_resources).map_err(error)?;
+        }
+        if let Some(profile) = &document.source_icc {
+            zip.start_file("metadata/source.icc", options)
+                .map_err(error)?;
+            zip.write_all(profile).map_err(error)?;
         }
         for layer in &document.layers {
             if let Some(raw) = &layer.raw_source {
@@ -842,8 +865,11 @@ pub fn load_project(path: &Path) -> Result<Document, String> {
         return Err("프로젝트 설명 파일이 너무 큽니다.".into());
     }
     let manifest: Manifest = serde_json::from_slice(&manifest_bytes).map_err(error)?;
-    if manifest.format != "photo-editor.project" || !(1..=11).contains(&manifest.version) {
+    if manifest.format != "photo-editor.project" || !(1..=12).contains(&manifest.version) {
         return Err("지원하지 않는 프로젝트 형식 또는 버전입니다.".into());
+    }
+    if manifest.version < 12 && manifest.source_icc {
+        return Err("구버전 프로젝트에 원본 ICC 자산이 포함되어 있습니다.".into());
     }
     if manifest.version < 8 && manifest.layers.iter().any(|l| l.adjustment_layer) {
         return Err("구버전 프로젝트에 조정 레이어가 포함되어 있습니다.".into());
@@ -1138,6 +1164,23 @@ pub fn load_project(path: &Path) -> Result<Document, String> {
             .read_to_end(&mut resources)
             .map_err(error)?;
     }
+    let source_icc = if manifest.source_icc {
+        let mut asset = zip.by_name("metadata/source.icc").map_err(error)?;
+        if asset.size() > crate::color_management::MAX_PROFILE_BYTES as u64 {
+            return Err("원본 ICC 프로파일이 보관 예산을 초과합니다.".into());
+        }
+        let mut profile = Vec::new();
+        (&mut asset)
+            .take(crate::color_management::MAX_PROFILE_BYTES as u64 + 1)
+            .read_to_end(&mut profile)
+            .map_err(error)?;
+        if profile.len() > crate::color_management::MAX_PROFILE_BYTES {
+            return Err("원본 ICC 프로파일이 보관 예산을 초과합니다.".into());
+        }
+        Some(Arc::new(profile))
+    } else {
+        None
+    };
     let document = Document {
         document_id: match manifest.document_id {
             Some(id) => id,
@@ -1149,6 +1192,7 @@ pub fn load_project(path: &Path) -> Result<Document, String> {
         active: manifest.active,
         next_id,
         psd_resources: Arc::new(resources),
+        source_icc,
         layout: manifest.layout,
     };
     if document.layers.iter().any(|l| !crate::masks::valid(l)) {

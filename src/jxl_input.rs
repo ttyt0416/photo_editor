@@ -141,7 +141,11 @@ pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
             image::Rgba(pixels.get_pixel(x, y).0.map(|v| (v * 255.).round() as u8))
         }))
     };
-    Ok(crate::codecs::Decoded { pixels, notes })
+    Ok(crate::codecs::Decoded {
+        pixels,
+        notes,
+        source_icc: None,
+    })
 }
 
 #[cfg(test)]

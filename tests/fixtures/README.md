@@ -173,3 +173,5 @@ JPEG XL 예제6종은 [libjxl/conformance](https://github.com/libjxl/conformance
 순차116 `verify_jpeg2000_metadata_rate_outputs.py`는 자체96출력537696픽셀/24그룹의 정확 codestream·전체 C 성분·288부분 품질층, RGB/GRAY ICC/CDEF·ppi분수·8/16비트 정규화/프로젝트 CRC를 독립 비교한다. 기존 해상도 비교도 포함/제외를 같은 그룹으로 강화했다. 생성 출력은 정리하며 재현 코드/기준 입력은 유지한다.
 
 순차117 `verify_webp_icc_outputs.py`는 자체32WebP3136픽셀의 별도 Pillow/libwebp RGBA/알파·16쌍 VP8/VP8L/ALPH 원문 동일·ICC/RIFF크기/패딩/VP8X치수/정상순서·프로젝트 CRC를 검사한다. 기준 자산/검사 코드를 유지하고 생성 출력은 정리한다. 애니메이션/전체 WebP 적합성 완료를 뜻하지 않는다.
+
+순차118 `verify_source_icc_projects.py`는 자체8PNG/JPEG/TIFF/WebP/JP2 native/P3/잘못된 프로파일 입력의 독립 원문과 프로젝트v12 원문/크기/CRC/플래그를 정확 비교한다. 작업 출력 프로파일과 원본 프로파일을 구분하고 프로파일 없는 v8 구조도 확인한다. 오류 프로젝트와 생성 입력/출력은 검사 후 정리하고 재현 코드/기준 입력은 유지한다.

@@ -226,7 +226,12 @@ fn icc_png_jpeg_decoder_conversion_and_original_preservation() {
     let (pixels, notes) = crate::jpeg_output::read_bytes(&encoded).unwrap();
     assert!(notes[0].contains("적용해"));
     let opened = crate::files::open(&path).unwrap();
-    assert_eq!(opened.notes, notes);
+    assert!(opened.notes.starts_with(&notes));
+    assert!(opened.notes.iter().any(|n| n.contains("프로젝트에 보존")));
+    assert_eq!(
+        opened.document.source_icc.as_deref().unwrap().as_slice(),
+        profile
+    );
     let expected = crate::precision::document("jpeg".into(), pixels).unwrap();
     assert_eq!(
         crate::precision::composite(&opened.document),

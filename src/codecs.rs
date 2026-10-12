@@ -4,10 +4,12 @@ use std::path::Path;
 pub struct Decoded {
     pub pixels: DynamicImage,
     pub notes: Vec<String>,
+    pub source_icc: Option<Vec<u8>>,
 }
 
 pub fn decode(path: &Path, extension: &str) -> Result<Option<Decoded>, String> {
     let mut notes = Vec::new();
+    let mut source_icc = None;
     let bytes = || -> Result<Vec<u8>, String> {
         if std::fs::metadata(path).map_err(|e| e.to_string())?.len()
             > crate::document::MAX_PIXELS * 16
@@ -85,6 +87,10 @@ pub fn decode(path: &Path, extension: &str) -> Result<Option<Decoded>, String> {
             {
                 notes.push("JPEG2000의 이 색상 프로파일 변환은 아직 제공하지 않습니다.".into());
             }
+            source_icc = crate::jpeg2000_icc::profile(&encoded)
+                .ok()
+                .flatten()
+                .map(|p| p.to_vec());
             let pixels = crate::jpeg2000_input::pixels(&decoded, &encoded, &mut notes)?;
             crate::jpeg2000_icc::apply(pixels, decoded.components(), &encoded, &mut notes)
         }
@@ -93,6 +99,7 @@ pub fn decode(path: &Path, extension: &str) -> Result<Option<Decoded>, String> {
     Ok(Some(Decoded {
         pixels: image,
         notes,
+        source_icc,
     }))
 }
 
