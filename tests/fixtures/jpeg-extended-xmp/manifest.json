@@ -1,0 +1,222 @@
+[
+  {
+    "file": "gray0-prog0-single.jpg",
+    "base": "base-gray0-prog0.jpg",
+    "layout": "single",
+    "gray": 0,
+    "progressive": 0,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 1,
+    "sha256": "01e2f899b1f10b1572b1e06e226bbb4df2fd214b76f6c04f2a076fb7984a131f"
+  },
+  {
+    "file": "gray0-prog0-split-utf8.jpg",
+    "base": "base-gray0-prog0.jpg",
+    "layout": "split-utf8",
+    "gray": 0,
+    "progressive": 0,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 2,
+    "sha256": "c2f7a75034fe3949b94f072e39f9d90e9b3519089ca071158ef5f4e07dc4456d"
+  },
+  {
+    "file": "gray0-prog0-reverse.jpg",
+    "base": "base-gray0-prog0.jpg",
+    "layout": "reverse",
+    "gray": 0,
+    "progressive": 0,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 4,
+    "sha256": "a6908b8c0822044ef8064ad32dd246b36cee149ea36c2da85e0a9634b6307767"
+  },
+  {
+    "file": "gray0-prog0-large.jpg",
+    "base": "base-gray0-prog0.jpg",
+    "layout": "large",
+    "gray": 0,
+    "progressive": 0,
+    "packet": "large.xmp",
+    "guid": "55D877D3ADE7B94F206E685B2459C1FE",
+    "chunks": 4,
+    "sha256": "bf98cd71bdee15da0695d95f4ef48e964a1b9ea60bfaa25646c75153673586c7"
+  },
+  {
+    "file": "gray0-prog0-basic-late.jpg",
+    "base": "base-gray0-prog0.jpg",
+    "layout": "basic-late",
+    "gray": 0,
+    "progressive": 0,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 4,
+    "sha256": "a062cb3ae81a8da94de7116e1c9d7edd156e11f1677dd2c777adb97e0b7b8539"
+  },
+  {
+    "file": "gray0-prog1-single.jpg",
+    "base": "base-gray0-prog1.jpg",
+    "layout": "single",
+    "gray": 0,
+    "progressive": 1,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 1,
+    "sha256": "1a3ab1ffe5da51a7d855f857f924e378a153342deb4a3a41f6794ba48027bdbe"
+  },
+  {
+    "file": "gray0-prog1-split-utf8.jpg",
+    "base": "base-gray0-prog1.jpg",
+    "layout": "split-utf8",
+    "gray": 0,
+    "progressive": 1,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 2,
+    "sha256": "9f230ebbeaccd7955123fdd37e94f368c01dbdd16f35eeccb6b6325fa3fc46b1"
+  },
+  {
+    "file": "gray0-prog1-reverse.jpg",
+    "base": "base-gray0-prog1.jpg",
+    "layout": "reverse",
+    "gray": 0,
+    "progressive": 1,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 4,
+    "sha256": "9dd864dad4d4f550c545c65a682b0b46f027c7bc8a45a31f66c99059c44dfeff"
+  },
+  {
+    "file": "gray0-prog1-large.jpg",
+    "base": "base-gray0-prog1.jpg",
+    "layout": "large",
+    "gray": 0,
+    "progressive": 1,
+    "packet": "large.xmp",
+    "guid": "55D877D3ADE7B94F206E685B2459C1FE",
+    "chunks": 4,
+    "sha256": "3181d00ba8a9eb8f95c81b4431acd19ecf927bc9234efcf79a9a04c9560280ca"
+  },
+  {
+    "file": "gray0-prog1-basic-late.jpg",
+    "base": "base-gray0-prog1.jpg",
+    "layout": "basic-late",
+    "gray": 0,
+    "progressive": 1,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 4,
+    "sha256": "a6191359f66ae9a4e06184965c16c7cf8f7450faac65403a8511db010a5b6539"
+  },
+  {
+    "file": "gray1-prog0-single.jpg",
+    "base": "base-gray1-prog0.jpg",
+    "layout": "single",
+    "gray": 1,
+    "progressive": 0,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 1,
+    "sha256": "fca7fc5a27ba7d304bfe9ef1a1d325d2425b9cf8fc2afe5d8570d640863c175e"
+  },
+  {
+    "file": "gray1-prog0-split-utf8.jpg",
+    "base": "base-gray1-prog0.jpg",
+    "layout": "split-utf8",
+    "gray": 1,
+    "progressive": 0,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 2,
+    "sha256": "acf41a58115b78d24241e88452e0a0640ed31a2de47d462cf083cb62818d6606"
+  },
+  {
+    "file": "gray1-prog0-reverse.jpg",
+    "base": "base-gray1-prog0.jpg",
+    "layout": "reverse",
+    "gray": 1,
+    "progressive": 0,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 4,
+    "sha256": "40702ee09fe99bb2ddaf4d81f3c675d4658f1e064f84211e33ecba0573d0eecd"
+  },
+  {
+    "file": "gray1-prog0-large.jpg",
+    "base": "base-gray1-prog0.jpg",
+    "layout": "large",
+    "gray": 1,
+    "progressive": 0,
+    "packet": "large.xmp",
+    "guid": "55D877D3ADE7B94F206E685B2459C1FE",
+    "chunks": 4,
+    "sha256": "3192f66878f30dfb137263d6a29cc0359a207a6f381eeb1a13709dd4f6d40169"
+  },
+  {
+    "file": "gray1-prog0-basic-late.jpg",
+    "base": "base-gray1-prog0.jpg",
+    "layout": "basic-late",
+    "gray": 1,
+    "progressive": 0,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 4,
+    "sha256": "bb74c4d51b4afb3fbbad60b5647a6a4f1e0f2559ec26242da43f1b9182464389"
+  },
+  {
+    "file": "gray1-prog1-single.jpg",
+    "base": "base-gray1-prog1.jpg",
+    "layout": "single",
+    "gray": 1,
+    "progressive": 1,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 1,
+    "sha256": "908b0798b1410b3a1f64964b8f72ba100a02124d699ac300f014dfede9f8dd8c"
+  },
+  {
+    "file": "gray1-prog1-split-utf8.jpg",
+    "base": "base-gray1-prog1.jpg",
+    "layout": "split-utf8",
+    "gray": 1,
+    "progressive": 1,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 2,
+    "sha256": "ef05d4167e15247bc8fe94c516973b5ac6aa85f6ef07ad9413d1e39e11b4588e"
+  },
+  {
+    "file": "gray1-prog1-reverse.jpg",
+    "base": "base-gray1-prog1.jpg",
+    "layout": "reverse",
+    "gray": 1,
+    "progressive": 1,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 4,
+    "sha256": "107e8dba5113f7f768db55e7773c91dcf260ccbfc856409b733d724cedc7eca4"
+  },
+  {
+    "file": "gray1-prog1-large.jpg",
+    "base": "base-gray1-prog1.jpg",
+    "layout": "large",
+    "gray": 1,
+    "progressive": 1,
+    "packet": "large.xmp",
+    "guid": "55D877D3ADE7B94F206E685B2459C1FE",
+    "chunks": 4,
+    "sha256": "c3ce6fe565505040a2f33d3a104ad28e3d2c295c4363f885bbfbb6779a2f4fb9"
+  },
+  {
+    "file": "gray1-prog1-basic-late.jpg",
+    "base": "base-gray1-prog1.jpg",
+    "layout": "basic-late",
+    "gray": 1,
+    "progressive": 1,
+    "packet": "small.xmp",
+    "guid": "8ECAF57CED751E6D6E3C20D2B105D4AD",
+    "chunks": 4,
+    "sha256": "cb417e7d7c9b615f37b389ebef4336f606481ed041978bf58722d8e4cf44678e"
+  }
+]

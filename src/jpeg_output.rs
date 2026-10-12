@@ -133,6 +133,7 @@ fn decode_bytes(bytes: &[u8]) -> Result<crate::codecs::Decoded, String> {
     let mut notes = vec![];
     let mut source_metadata = crate::source_metadata::Metadata::from_bytes(exif, xmp, &mut notes);
     crate::jpeg_iptc::remember_bytes(bytes, &mut source_metadata, &mut notes);
+    crate::jpeg_xmp_extended::remember_bytes(bytes, &mut source_metadata, &mut notes);
     if let Some(profile) = &profile {
         image = crate::color_management::apply(image, profile, &mut notes);
     }

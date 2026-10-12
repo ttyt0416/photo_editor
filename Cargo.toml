@@ -7,6 +7,7 @@ edition = "2024"
 eframe = { version = "0.36.2", default-features = false, features = ["default_fonts", "glow"] }
 image = "0.25.10"
 moxcms = { version = "=0.8.1", features = ["extended_range"] }
+md5 = "=0.8.1"
 rfd = "0.17.2"
 serde = { version = "1.0.229", features = ["derive", "rc"] }
 serde_json = { version = "1.0.151", features = ["float_roundtrip"] }

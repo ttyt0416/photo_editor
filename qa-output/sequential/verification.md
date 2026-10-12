@@ -1122,3 +1122,16 @@ fmt/clippy release all-targets·전체535통과/0실패/1제외(62.54초)·relea
 잘못된SOI/마커/길이0·1/잘림/FF0/마커4097/16MiB fill·길이누적초과를거부하고정상SOS/FFfill EOI를허용한다. 자산보존예산/CRC/구버전/원자저장은149공통검사에이어진다. fmt/clippy release all-targets·전체537통과/0실패/1제외(65.27초)·새24타깃 재검사0.33초·release빌드성공. 독립새24/기존TIFF IPTC80/원문메타49/EXIF출력258/ICC기본구조회귀통과. 직전149커밋67a29cebabc52510cd84855a9932e089f4494130의GitHub main일치확인. 다음151은JPEG확장XMP 원문보존이며 기존전체목표를유지한다.
 
 150 정리:34718생성/오래된캐시파일1557170640바이트삭제·최신release363산출물모두fresh/실제파일존재확인·검증기록과빈임시파일3개삭제.
+
+
+## 151. JPEG 확장 XMP의 원문 복원과 프로젝트15
+
+[Adobe 공식 XMP Part3](https://github.com/adobe/XMP-Toolkit-SDK/blob/main/docs/XMPSpecificationPart3.pdf)의APP1 extension서명·GUID/전체길이/offset 조각을공유JPEG헤더순회로읽는다. 기본XMP의note namespace HasExtendedXMP 속성/요소를확인하고byte위치순으로합쳐전체길이·MD5가일치할때원문별도자산metadata/source-extended.xmp·GUID에보존한다. XML기본패킷/원래EXIF/Photoshop/픽셀을유지한다. 확장문서만rphoto15이며기존문서버전/1–14읽기를유지한다. 이미잠긴md5 0.8.1을직접의존성으로재사용했고Windows의기존308/528/18라이선스고지폐쇄집합은변하지않는다. MD5는규격의내용식별자검증이다.
+
+컴파일에서Option형식지정과clippy의불필요복제를수정한뒤검증했다. 독립Pillow20입력은RGB/GRAY·기준/프로그레시브×단일/UTF8중간분할/역순/225282바이트/기본패킷보다앞의확장조각을포함한다. 독립APP1위치/전체coverage/MD5/namespace연결/XML·프로젝트15/원문기본+확장+Photoshop/CRC/방향/깊이가일치한다. Pillow기준픽셀차이<=2·앱의메타유무픽셀은정확히같고이력공유/복원/원본불변을확인했다.
+
+누락/중복/겹침/전체크기불일치/16MiB초과/offset범위/GUID형식·연결/빈조각/MD5오류와기본없는조각은거부하며기존메타데이터를보존한다. 프로젝트자산누락/과대/MD5·GUID/필수descriptor/구버전/CRC/원자저장을검증한다. 이미지확장출력은아직구현하지않아XMP포함출력은오류로기존목적지를보존하고옵션끄면이미지를출력한다. 원문조각물리배치/첫스캔이후조각·복수관련GUID·전체RDF/다른형식출력/동기화는미완료목표다.
+
+fmt/clippy release all-targets·전체540통과/0실패/1제외(62.15초)·release빌드성공. 독립새20/JPEG리소스24/TIFF IPTC80/원문49/EXIF출력258/라이선스308회귀통과. 직전150커밋e69e845dde58b702db5400ad6fa8a5b7ebde23f9의GitHub main일치확인. 다음152는JPEG 확장XMP 출력이며기존전체목표를유지한다.
+
+151 정리:34759생성/오래된캐시파일1575249109바이트삭제·최신release363산출물모두fresh/실제파일존재확인·검증기록과빈임시파일3개삭제.

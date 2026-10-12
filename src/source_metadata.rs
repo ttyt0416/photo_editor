@@ -12,6 +12,8 @@ pub struct Metadata {
     pub iptc: Option<Arc<Vec<u8>>>,
     pub iptc_tiff: Option<TiffIptc>,
     pub photoshop: Option<Arc<Vec<u8>>>,
+    pub xmp_extended: Option<Arc<Vec<u8>>>,
+    pub xmp_extended_guid: Option<String>,
 }
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -32,13 +34,23 @@ pub struct Record {
     pub iptc_tiff: Option<TiffIptc>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub photoshop: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub xmp_extended: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub xmp_extended_guid: Option<String>,
 }
 fn is_false(value: &bool) -> bool {
     !value
 }
 impl Record {
     pub fn is_empty(&self) -> bool {
-        !self.exif && !self.xmp && !self.iptc && !self.photoshop && self.iptc_tiff.is_none()
+        !self.exif
+            && !self.xmp
+            && !self.iptc
+            && !self.photoshop
+            && self.iptc_tiff.is_none()
+            && !self.xmp_extended
+            && self.xmp_extended_guid.is_none()
     }
 }
 impl Metadata {
@@ -49,6 +61,8 @@ impl Metadata {
             iptc: self.iptc.is_some(),
             iptc_tiff: self.iptc_tiff.clone(),
             photoshop: self.photoshop.is_some(),
+            xmp_extended: self.xmp_extended.is_some(),
+            xmp_extended_guid: self.xmp_extended_guid.clone(),
         }
     }
     pub fn assets(&self) -> impl Iterator<Item = (&'static str, &Arc<Vec<u8>>)> {
@@ -57,6 +71,7 @@ impl Metadata {
             ("metadata/source.xmp", self.xmp.as_ref()),
             ("metadata/source.iptc", self.iptc.as_ref()),
             ("metadata/source.photoshop", self.photoshop.as_ref()),
+            ("metadata/source-extended.xmp", self.xmp_extended.as_ref()),
         ]
         .into_iter()
         .filter_map(|(name, data)| data.map(|data| (name, data)))
@@ -73,6 +88,15 @@ impl Metadata {
                 .as_ref()
                 .zip(self.iptc_tiff.as_ref())
                 .is_none_or(|(bytes, format)| format.kind != 4 || bytes.len().is_multiple_of(4))
+            && match (&self.xmp_extended, &self.xmp_extended_guid) {
+                (None, None) => true,
+                (Some(bytes), Some(guid)) => crate::jpeg_xmp_extended::valid(
+                    bytes,
+                    guid,
+                    self.xmp.as_deref().map(|v| v.as_slice()),
+                ),
+                _ => false,
+            }
     }
     pub fn from_bytes(
         exif: Option<Vec<u8>>,
@@ -161,6 +185,7 @@ impl Metadata {
             crate::tiff_iptc::remember(path, &mut metadata, notes);
         } else if format == Some(image::ImageFormat::Jpeg) {
             crate::jpeg_iptc::remember(path, &mut metadata, notes);
+            crate::jpeg_xmp_extended::remember_file(path, &mut metadata, notes);
         }
         metadata
     }
@@ -209,9 +234,15 @@ impl Metadata {
             } else {
                 None
             },
+            xmp_extended: if record.xmp_extended {
+                Some(read_asset(zip, "metadata/source-extended.xmp")?)
+            } else {
+                None
+            },
+            xmp_extended_guid: record.xmp_extended_guid,
         };
         if !metadata.valid() {
-            return Err("IPTC 원문 저장 형식 또는 크기가 잘못되었습니다".into());
+            return Err("촬영 메타데이터 원문 연결·형식 또는 크기가 잘못되었습니다".into());
         }
         Ok(metadata)
     }

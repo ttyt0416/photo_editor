@@ -35,7 +35,26 @@ fn store(
 }
 
 fn read(reader: Result<impl Read, String>) -> Result<Option<Vec<u8>>, String> {
-    let mut reader = reader?;
+    let mut resources = vec![];
+    let mut found = false;
+    visit_headers(reader?, |marker, bytes| {
+        if marker == 0xed && bytes.starts_with(PHOTOSHOP) {
+            found = true;
+            let data = &bytes[PHOTOSHOP.len()..];
+            if resources.len() + data.len() > MAX_BYTES {
+                return Err("JPEG Photoshop 원문 보관 예산 초과".into());
+            }
+            resources.extend_from_slice(data);
+        }
+        Ok(())
+    })?;
+    Ok(found.then_some(resources))
+}
+
+pub(crate) fn visit_headers(
+    mut reader: impl Read,
+    mut visit: impl FnMut(u8, &[u8]) -> Result<(), String>,
+) -> Result<(), String> {
     let mut signature = [0; 2];
     reader
         .read_exact(&mut signature)
@@ -43,8 +62,6 @@ fn read(reader: Result<impl Read, String>) -> Result<Option<Vec<u8>>, String> {
     if signature != [0xff, 0xd8] {
         return Err("JPEG 헤더 오류".into());
     }
-    let mut resources = vec![];
-    let mut found = false;
     let mut scanned = 2usize;
     for _ in 0..4096 {
         let mut marker = [0; 1];
@@ -64,7 +81,7 @@ fn read(reader: Result<impl Read, String>) -> Result<Option<Vec<u8>>, String> {
             }
         }
         match marker[0] {
-            0xda | 0xd9 => return Ok(found.then_some(resources)), // Before first scan.
+            0xda | 0xd9 => return Ok(()), // Before first scan.
             0x01 | 0xd0..=0xd7 => continue,
             0x00 | 0xd8 => return Err("JPEG 마커 오류".into()),
             _ => {}
@@ -83,14 +100,7 @@ fn read(reader: Result<impl Read, String>) -> Result<Option<Vec<u8>>, String> {
         }
         let mut bytes = vec![0; size - 2];
         reader.read_exact(&mut bytes).map_err(|e| e.to_string())?;
-        if marker[0] == 0xed && bytes.starts_with(PHOTOSHOP) {
-            found = true;
-            let data = &bytes[PHOTOSHOP.len()..];
-            if resources.len() + data.len() > MAX_BYTES {
-                return Err("JPEG Photoshop 원문 보관 예산 초과".into());
-            }
-            resources.extend_from_slice(data);
-        }
+        visit(marker[0], &bytes)?;
     }
     Err("JPEG 촬영정보 마커 개수 초과".into())
 }

@@ -166,7 +166,7 @@ fn source_icc_project_versions_missing_oversize_corrupt_assets_and_atomic_save()
             if name == "manifest.json" && matches!(label, "old-version" | "unsupported-version") {
                 let mut manifest: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
                 manifest["version"] =
-                    serde_json::json!(if label == "old-version" { 11 } else { 15 });
+                    serde_json::json!(if label == "old-version" { 11 } else { 16 });
                 bytes = serde_json::to_vec(&manifest).unwrap();
             }
             if label == "oversize" && name == "metadata/source.icc" {

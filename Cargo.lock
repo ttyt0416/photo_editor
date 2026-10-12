@@ -2556,6 +2556,7 @@ dependencies = [
  "jpeg2k",
  "jxl-grid",
  "jxl-oxide",
+ "md5",
  "moxcms",
  "openjp2",
  "percent-encoding",

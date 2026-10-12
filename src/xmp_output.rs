@@ -13,6 +13,9 @@ pub fn prepare(
     if !include {
         return Ok(None);
     }
+    if document.source_metadata.xmp_extended.is_some() {
+        return Err("확장 XMP 원문은 프로젝트에 보존합니다. 확장 패킷의 이미지 출력은 아직 지원하지 않으므로 XMP 포함 옵션을 꺼 주세요.".into());
+    }
     document
         .source_metadata
         .xmp

@@ -60,6 +60,7 @@ mod jpeg2000_output;
 mod jpeg2000_xmp;
 mod jpeg_iptc;
 mod jpeg_output;
+mod jpeg_xmp_extended;
 mod jxl_color;
 mod jxl_input;
 mod jxl_metadata;
