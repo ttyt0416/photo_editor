@@ -154,6 +154,7 @@ fn decode_impl(
     if let Some(mut image) = crate::codecs::decode(path, &extension)? {
         let mut document = crate::precision::document(title.clone(), image.pixels)?;
         crate::color_management::remember(&mut document, image.source_icc, &mut image.notes);
+        document.source_metadata = image.source_metadata;
         return Ok(Opened {
             document,
             project_path: None,
@@ -171,6 +172,7 @@ fn decode_impl(
         let mut decoded = crate::jpeg_output::read(path)?;
         let mut document = crate::precision::document(title.clone(), decoded.pixels)?;
         crate::color_management::remember(&mut document, decoded.source_icc, &mut decoded.notes);
+        document.source_metadata = decoded.source_metadata;
         return Ok(Opened {
             document,
             project_path: None,
@@ -201,6 +203,8 @@ fn decode_impl(
     } else {
         decoder.icc_profile().map_err(error)?
     };
+    let source_metadata =
+        crate::source_metadata::Metadata::decode(&mut decoder, path, format, &mut notes);
     let orientation = decoder.orientation().map_err(error)?;
     let mut pixels = DynamicImage::from_decoder(decoder).map_err(error)?;
     pixels.apply_orientation(orientation);
@@ -215,6 +219,7 @@ fn decode_impl(
     }
     let mut document = crate::precision::document(title.clone(), pixels)?;
     crate::color_management::remember(&mut document, profile, &mut notes);
+    document.source_metadata = source_metadata;
     Ok(Opened {
         document,
         project_path: None,
@@ -269,6 +274,11 @@ struct Manifest {
     psd_resources: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     source_icc: bool,
+    #[serde(
+        default,
+        skip_serializing_if = "crate::source_metadata::Record::is_empty"
+    )]
+    source_metadata: crate::source_metadata::Record,
     #[serde(default)]
     layout: crate::guides::Layout,
 }
@@ -409,13 +419,20 @@ pub fn save_project(document: &Document, path: &Path) -> Result<(), String> {
     {
         return Err("원본 ICC 프로파일이 보관 예산을 초과합니다. 기존 파일을 보존했습니다.".into());
     }
+    if !document.source_metadata.valid() {
+        return Err(
+            "원본 촬영 메타데이터가 보관 예산을 초과합니다. 기존 파일을 보존했습니다.".into(),
+        );
+    }
     atomic_write(path, |file| {
         let mut zip = ZipWriter::new(file);
         let options =
             SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
         let manifest = Manifest {
             format: "photo-editor.project".into(),
-            version: if document.source_icc.is_some() {
+            version: if !document.source_metadata.record().is_empty() {
+                13
+            } else if document.source_icc.is_some() {
                 12
             } else if document
                 .layers
@@ -442,6 +459,7 @@ pub fn save_project(document: &Document, path: &Path) -> Result<(), String> {
             active: document.active,
             psd_resources: !document.psd_resources.is_empty(),
             source_icc: document.source_icc.is_some(),
+            source_metadata: document.source_metadata.record(),
             layout: document.layout.clone(),
             layers: document
                 .layers
@@ -493,6 +511,7 @@ pub fn save_project(document: &Document, path: &Path) -> Result<(), String> {
                 .map_err(error)?;
             zip.write_all(profile).map_err(error)?;
         }
+        document.source_metadata.save(&mut zip, options)?;
         for layer in &document.layers {
             if let Some(raw) = &layer.raw_source {
                 zip.start_file(format!("layers/{}-source.raw", layer.id), options)
@@ -865,8 +884,11 @@ pub fn load_project(path: &Path) -> Result<Document, String> {
         return Err("프로젝트 설명 파일이 너무 큽니다.".into());
     }
     let manifest: Manifest = serde_json::from_slice(&manifest_bytes).map_err(error)?;
-    if manifest.format != "photo-editor.project" || !(1..=12).contains(&manifest.version) {
+    if manifest.format != "photo-editor.project" || !(1..=13).contains(&manifest.version) {
         return Err("지원하지 않는 프로젝트 형식 또는 버전입니다.".into());
+    }
+    if manifest.version < 13 && !manifest.source_metadata.is_empty() {
+        return Err("구버전 프로젝트에 촬영 메타데이터 자산이 포함되어 있습니다.".into());
     }
     if manifest.version < 12 && manifest.source_icc {
         return Err("구버전 프로젝트에 원본 ICC 자산이 포함되어 있습니다.".into());
@@ -1165,22 +1187,15 @@ pub fn load_project(path: &Path) -> Result<Document, String> {
             .map_err(error)?;
     }
     let source_icc = if manifest.source_icc {
-        let mut asset = zip.by_name("metadata/source.icc").map_err(error)?;
-        if asset.size() > crate::color_management::MAX_PROFILE_BYTES as u64 {
-            return Err("원본 ICC 프로파일이 보관 예산을 초과합니다.".into());
-        }
-        let mut profile = Vec::new();
-        (&mut asset)
-            .take(crate::color_management::MAX_PROFILE_BYTES as u64 + 1)
-            .read_to_end(&mut profile)
-            .map_err(error)?;
-        if profile.len() > crate::color_management::MAX_PROFILE_BYTES {
-            return Err("원본 ICC 프로파일이 보관 예산을 초과합니다.".into());
-        }
-        Some(Arc::new(profile))
+        Some(crate::source_metadata::read_asset(
+            &mut zip,
+            "metadata/source.icc",
+        )?)
     } else {
         None
     };
+    let source_metadata =
+        crate::source_metadata::Metadata::load(manifest.source_metadata, &mut zip)?;
     let document = Document {
         document_id: match manifest.document_id {
             Some(id) => id,
@@ -1193,6 +1208,7 @@ pub fn load_project(path: &Path) -> Result<Document, String> {
         next_id,
         psd_resources: Arc::new(resources),
         source_icc,
+        source_metadata,
         layout: manifest.layout,
     };
     if document.layers.iter().any(|l| !crate::masks::valid(l)) {

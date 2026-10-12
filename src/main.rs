@@ -17,6 +17,7 @@ mod photo_geometry;
 mod sampling;
 mod selection_edges;
 mod shortcuts;
+mod source_metadata;
 mod transform_batch;
 
 mod adjustment_layer;

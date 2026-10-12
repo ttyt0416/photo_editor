@@ -1,0 +1,176 @@
+use serde::{Deserialize, Serialize};
+use std::{
+    io::{Read, Seek, Write},
+    sync::Arc,
+};
+pub const MAX_BYTES: usize = 16 * 1024 * 1024;
+
+#[derive(Clone, Debug, Default)]
+pub struct Metadata {
+    pub exif: Option<Arc<Vec<u8>>>,
+    pub xmp: Option<Arc<Vec<u8>>>,
+}
+#[derive(Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Record {
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub exif: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub xmp: bool,
+}
+fn is_false(value: &bool) -> bool {
+    !value
+}
+impl Record {
+    pub fn is_empty(&self) -> bool {
+        !self.exif && !self.xmp
+    }
+}
+impl Metadata {
+    pub fn record(&self) -> Record {
+        Record {
+            exif: self.exif.is_some(),
+            xmp: self.xmp.is_some(),
+        }
+    }
+    pub fn assets(&self) -> impl Iterator<Item = (&'static str, &Arc<Vec<u8>>)> {
+        [
+            ("metadata/source.exif", self.exif.as_ref()),
+            ("metadata/source.xmp", self.xmp.as_ref()),
+        ]
+        .into_iter()
+        .filter_map(|(name, data)| data.map(|data| (name, data)))
+    }
+    pub fn valid(&self) -> bool {
+        self.assets().all(|(_, data)| data.len() <= MAX_BYTES)
+    }
+    pub fn from_bytes(
+        exif: Option<Vec<u8>>,
+        xmp: Option<Vec<u8>>,
+        notes: &mut Vec<String>,
+    ) -> Self {
+        fn asset(
+            bytes: Option<Vec<u8>>,
+            name: &str,
+            notes: &mut Vec<String>,
+        ) -> Option<Arc<Vec<u8>>> {
+            bytes.and_then(|bytes| {
+                if bytes.len() > MAX_BYTES {
+                    notes.push(format!(
+                        "원본 {name} 메타데이터가 보관 예산을 초과했습니다."
+                    ));
+                    None
+                } else {
+                    Some(Arc::new(bytes))
+                }
+            })
+        }
+        let metadata = Self {
+            exif: asset(exif, "EXIF", notes),
+            xmp: asset(xmp, "XMP", notes),
+        };
+        if !metadata.record().is_empty() {
+            notes.push("원본 촬영 메타데이터를 프로젝트에 보존합니다.".into());
+        }
+        metadata
+    }
+    pub fn decode(
+        decoder: &mut impl image::ImageDecoder,
+        path: &std::path::Path,
+        format: Option<image::ImageFormat>,
+        notes: &mut Vec<String>,
+    ) -> Self {
+        fn result(
+            result: Result<Option<Vec<u8>>, String>,
+            label: &str,
+            notes: &mut Vec<String>,
+        ) -> Option<Vec<u8>> {
+            match result {
+                Ok(bytes) => bytes,
+                Err(error) => {
+                    notes.push(format!(
+                        "원본 {label} 메타데이터를 읽지 못했습니다: {error}"
+                    ));
+                    None
+                }
+            }
+        }
+        let exif = result(
+            decoder.exif_metadata().map_err(|e| e.to_string()),
+            "EXIF",
+            notes,
+        );
+        let xmp = result(
+            if format == Some(image::ImageFormat::Tiff) {
+                (|| {
+                    let mut limits = tiff::decoder::Limits::default();
+                    limits.ifd_value_size = MAX_BYTES;
+                    limits.decoding_buffer_size = MAX_BYTES;
+                    let mut decoder = tiff::decoder::Decoder::new(std::io::BufReader::new(
+                        std::fs::File::open(path).map_err(|e| e.to_string())?,
+                    ))
+                    .map_err(|e| e.to_string())?
+                    .with_limits(limits);
+                    decoder
+                        .find_tag_unsigned_vec::<u8>(tiff::tags::Tag::Unknown(700))
+                        .map_err(|e| e.to_string())
+                })()
+            } else {
+                decoder.xmp_metadata().map_err(|e| e.to_string())
+            },
+            "XMP",
+            notes,
+        );
+        Self::from_bytes(exif, xmp, notes)
+    }
+    pub fn save<W: Write + Seek>(
+        &self,
+        zip: &mut zip::ZipWriter<W>,
+        options: zip::write::SimpleFileOptions,
+    ) -> Result<(), String> {
+        for (name, data) in self.assets() {
+            zip.start_file(name, options).map_err(|e| e.to_string())?;
+            zip.write_all(data).map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    }
+    pub fn load<R: Read + Seek>(
+        record: Record,
+        zip: &mut zip::ZipArchive<R>,
+    ) -> Result<Self, String> {
+        Ok(Self {
+            exif: if record.exif {
+                Some(read_asset(zip, "metadata/source.exif")?)
+            } else {
+                None
+            },
+            xmp: if record.xmp {
+                Some(read_asset(zip, "metadata/source.xmp")?)
+            } else {
+                None
+            },
+        })
+    }
+}
+pub fn read_asset<R: Read + Seek>(
+    zip: &mut zip::ZipArchive<R>,
+    name: &str,
+) -> Result<Arc<Vec<u8>>, String> {
+    let mut asset = zip.by_name(name).map_err(|e| e.to_string())?;
+    if asset.size() > MAX_BYTES as u64 {
+        return Err("원본 메타데이터가 보관 예산을 초과합니다.".into());
+    }
+    let mut data = Vec::new();
+    (&mut asset)
+        .take(MAX_BYTES as u64 + 1)
+        .read_to_end(&mut data)
+        .map_err(|e| e.to_string())?;
+    if data.len() > MAX_BYTES {
+        return Err("원본 메타데이터가 보관 예산을 초과합니다.".into());
+    }
+    Ok(Arc::new(data))
+}
+
+#[cfg(test)]
+#[path = "source_metadata_tests.rs"]
+mod tests;

@@ -103,6 +103,7 @@ pub struct Document {
     pub next_id: u64,
     pub psd_resources: Arc<Vec<u8>>,
     pub source_icc: Option<Arc<Vec<u8>>>,
+    pub source_metadata: crate::source_metadata::Metadata,
     pub layout: crate::guides::Layout,
 }
 
@@ -158,6 +159,7 @@ impl Document {
             next_id: 2,
             psd_resources: Arc::new(Vec::new()),
             source_icc: None,
+            source_metadata: Default::default(),
             layout: Default::default(),
         }
     }
@@ -865,6 +867,11 @@ impl Editor {
         let mut buffers = std::collections::HashMap::new();
         for edit in &self.undo {
             for doc in [&edit.before, &edit.after] {
+                for (_, asset) in doc.source_metadata.assets() {
+                    buffers
+                        .entry(Arc::as_ptr(asset) as usize)
+                        .or_insert(asset.len() as u64);
+                }
                 if let Some(profile) = &doc.source_icc {
                     buffers
                         .entry(Arc::as_ptr(profile) as usize)

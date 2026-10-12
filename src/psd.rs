@@ -974,6 +974,7 @@ fn read_order(bytes: &[u8], force_legacy: bool) -> Result<Document, String> {
         next_id,
         psd_resources: resources,
         source_icc: None,
+        source_metadata: Default::default(),
         layout,
     })
 }

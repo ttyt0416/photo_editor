@@ -1,7 +1,7 @@
 use image::{DynamicImage, ImageBuffer};
 use moxcms::{ColorProfile, DataColorSpace, Layout, RenderingIntent, TransformOptions};
 
-pub(crate) const MAX_PROFILE_BYTES: usize = 16 * 1024 * 1024;
+pub(crate) const MAX_PROFILE_BYTES: usize = crate::source_metadata::MAX_BYTES;
 
 pub fn remember(
     document: &mut crate::document::Document,

@@ -5,6 +5,7 @@ pub struct Decoded {
     pub pixels: DynamicImage,
     pub notes: Vec<String>,
     pub source_icc: Option<Vec<u8>>,
+    pub source_metadata: crate::source_metadata::Metadata,
 }
 
 pub fn decode(path: &Path, extension: &str) -> Result<Option<Decoded>, String> {
@@ -100,6 +101,7 @@ pub fn decode(path: &Path, extension: &str) -> Result<Option<Decoded>, String> {
         pixels: image,
         notes,
         source_icc,
+        source_metadata: Default::default(),
     }))
 }
 

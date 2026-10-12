@@ -175,3 +175,5 @@ JPEG XL 예제6종은 [libjxl/conformance](https://github.com/libjxl/conformance
 순차117 `verify_webp_icc_outputs.py`는 자체32WebP3136픽셀의 별도 Pillow/libwebp RGBA/알파·16쌍 VP8/VP8L/ALPH 원문 동일·ICC/RIFF크기/패딩/VP8X치수/정상순서·프로젝트 CRC를 검사한다. 기준 자산/검사 코드를 유지하고 생성 출력은 정리한다. 애니메이션/전체 WebP 적합성 완료를 뜻하지 않는다.
 
 순차118 `verify_source_icc_projects.py`는 자체8PNG/JPEG/TIFF/WebP/JP2 native/P3/잘못된 프로파일 입력의 독립 원문과 프로젝트v12 원문/크기/CRC/플래그를 정확 비교한다. 작업 출력 프로파일과 원본 프로파일을 구분하고 프로파일 없는 v8 구조도 확인한다. 오류 프로젝트와 생성 입력/출력은 검사 후 정리하고 재현 코드/기준 입력은 유지한다.
+
+순차119 `verify_source_metadata_projects.py`는 자체49입력의 PNG chunk CRC/압축 XMP·JPEG APP1·WebP RIFF·TIFF XMP 원문 및 v13 EXIF/XMP/ICC 자산/CRC를 독립 비교한다. Pillow로48입력1680픽셀의8방향/두 바이트 순서·Make/Unicode를 정확 확인한다. 큰 TIFF XMP·이전 v8와 자산 오류도 검사하며 생성 파일은 검사 후 정리한다. 전체 촬영 메타데이터 편집/출력 완료를 뜻하지 않는다.

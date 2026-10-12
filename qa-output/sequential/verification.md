@@ -1,6 +1,6 @@
 # 순차 구현 검증 기록 — 2026-10-12
 
-현재까지 순차 구현 기록의 1–24/26–118번 기능을 구현하고 자동 검사했으며, 25번에서 참고 README의 46개 항목을 대응했다. 전체 개발 계획의 완료를 뜻하지 않는다. 원래 범위와 Windows 전용 결정은 DEVELOPMENT_CHECKLIST.md에 유지한다.
+현재까지 순차 구현 기록의 1–24/26–119번 기능을 구현하고 자동 검사했으며, 25번에서 참고 README의 46개 항목을 대응했다. 전체 개발 계획의 완료를 뜻하지 않는다. 원래 범위와 Windows 전용 결정은 DEVELOPMENT_CHECKLIST.md에 유지한다.
 
 검증 예제/로그 경로는 검사로 재현하는 생성 위치다. 2026-10-12 사용자 요청에 따라 부산물을 삭제했고, 이후에도 독립 검사를 마친 생성 이미지·프로젝트·로그/Python 캐시는 정리한다. 작성한 이 기록과 재현 코드·기준 입력·실행 파일은 보존한다.
 
@@ -8,7 +8,7 @@
 
 - `cargo fmt --check`: 성공.
 - `cargo clippy --all-targets --offline -- -D warnings`: 성공.
-- `cargo test --offline`: 476개 통과, 실패 0, 수동 성능 진단 1개 제외(총 477개).
+- `cargo test --offline`: 478개 통과, 실패 0, 수동 성능 진단 1개 제외(총 479개).
 - `cargo build --offline`, `cargo build --release --offline`: 성공. 두 실행 파일을 갱신했다.
 - `python tests/fixtures/verify_compressed_psd_outputs.py`: 8/16/32비트 × PSD/PSB × 무압축/RLE/ZIP/예측 24개 파일의 레이어/마스크/행 길이/예측/합성 이미지 확인.
 - `python tests/fixtures/verify_hdr_outputs.py`: 일반/RLE 행의 RGBE 픽셀·알파 배경 합성·음수 변환·최대 표현 값 확인.
@@ -16,7 +16,7 @@
 - Pillow 12.1.0: Rust PCX 출력을 독립 디코딩해 기대 RGB 픽셀과 일치 확인.
 - PNG 10단계 × 6개 필터 × 8/16비트 = 120개 조합의 픽셀·알파·정밀도 확인.
 
-release 실행 파일 SHA-256: `2caba4739b5f775cda8bfdb904a94c095b787ccbb0f088bddb47c6c6dc027533`
+release 실행 파일 SHA-256: `ee3230d913a45b5533d6d065f129ad97021f63ef153fa4b87f6f0dd2b3b58ae5`
 
 ## 기능과 예제 위치
 
@@ -783,3 +783,13 @@ PNG/JPEG/TIFF/WebP 및 지원 COLR에서 읽은 JP2 ICC를 문서의 공유 원�
 자체8입력(native PNG/JPEG/TIFF/WebP/JP2 RGB·GRAY +P3/잘못된 PNG), 독립 Pillow/IFD/JP2박스에서 뽑은 원문과 프로젝트 자산의 정확한 바이트·크기/CRC/버전, 원본/문서ID·픽셀·이력 공유 및 작업 PNG 프로파일을 비교했다. 손상·누락·용량/버전 오류 및 원자적 저장도 검사했다. 기존 변환 수식30사례4590픽셀·JP2 ICC60입력2100픽셀·WebP32출력3136픽셀 독립 비교도 통과했다. 재현 코드: src/source_icc_tests.rs, tests/fixtures/verify_source_icc_projects.py.
 
 전체476통과/0실패/1제외(49.35초), fmt/clippy·개발/release 빌드 성공. 첫 전체 검사에서 기존 JPEG 안내문 목록 동일 검사가 새 보관 안내 때문에 실패했다. 기존 변환 안내 유지와 새 보관 안내/원문을 함께 검사하도록 갱신한 뒤 전체 재검사에 통과했다. 라이선스308/528/18 독립 검사도 통과했다. 생성 부산물은 정리한다. 직전117커밋7defadf8b3fef6af22734bb15c7e2b858d145e7e의 GitHub main 원격 일치를 확인했다. 다음119는 촬영 EXIF/XMP 원문 보존이며 추가 코덱/전체 메타데이터·원본 색역 출력/전체 색 관리는 남음.
+
+## 119. 원본 EXIF/XMP·방향 적용 후 픽셀·프로젝트 보존
+
+PNG/JPEG/WebP EXIF/XMP와 TIFF XMP를 문서 공유 자산으로 보관하고 자산별16MiB·읽기 실패 안내·이력의 고유 버퍼 예산에 연결했다. JPEG는 이미 읽은 디코더 원문을 넘긴다. TIFF XMP는 작은 픽셀 버퍼에 따른 태그 읽기 제한으로 누락되지 않도록 native bounded 태그 읽기를 쓴다. 메타데이터는 해석/재작성하지 않은 원문이며 가져오기의 EXIF 방향 적용 후 프로젝트 재열기는 저장한 픽셀을 그대로 유지한다.
+
+EXIF/XMP가 있는 문서만 v13 metadata/source.exif·source.xmp를 저장하고 원본 ICC도 함께 보관한다. v1–12를 읽으며 메타데이터 없는 문서의 v8–12 저장 조건은 유지한다. 구버전의 새 플래그·누락/CRC 손상·용량 초과를 거부하고 저장 오류는 기존 파일을 유지한다. 새 버전 추가에 맞춰 기존 ICC 미지원 버전 회귀의 입력을14로 갱신했다.
+
+48PNG/JPEG/WebP/1680픽셀(8방향×두 EXIF 바이트 순서·Make/Unicode XMP·PNG 압축 XMP8종), 큰12KB 이상 XMP를 가진 tiny TIFF1종의 원문/CRC와 별도 Pillow 방향 RGBA/프로젝트 크기·v13 자산 원문·재입력/문서 이력 공유를 비교했다. EXIF/XMP 각각의 누락/손상/초과/버전 오류·원자적 저장/임의 바이트 보존·메타데이터 없는 v8도 검사했다. 재현 코드: src/source_metadata_tests.rs, tests/fixtures/verify_source_metadata_projects.py.
+
+전체478통과/0실패/1제외(49.16초), fmt/clippy·개발/release 빌드 성공. 기존 ICC8프로젝트·SVG20정규화/16자산·라이선스308/528/18 독립 검사도 통과했다. 잘못 지정한 SVG 독립 검사 파일명 때문에 검사 명령이 종료된 뒤 실제 verify_svg_normalized_outputs.py/verify_svg_asset_outputs.py를 실행해 통과하고 빌드를 완료했다. 생성 부산물은 정리한다. 직전118커밋bf2810d92466215d130027b419d2d812bbf1aded의 GitHub main 원격 일치를 확인했다. 다음120은 PNG/JPEG/WebP EXIF 출력 선택/방향·치수 갱신이며 TIFF 원본 EXIF/추가 코덱·확장 XMP/IPTC·전체 메타데이터 편집/출력은 남음.

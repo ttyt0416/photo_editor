@@ -93,6 +93,8 @@ fn decode_bytes(bytes: &[u8]) -> Result<crate::codecs::Decoded, String> {
         .ok_or("JPEG 크기를 읽을 수 없습니다.")?;
     crate::document::validate_size(w as u32, h as u32)?;
     let profile = decoder.icc_profile();
+    let exif = decoder.exif().cloned();
+    let xmp = decoder.xmp().cloned();
     let orientation = decoder
         .exif()
         .and_then(|v| image::metadata::Orientation::from_exif_chunk(v))
@@ -117,6 +119,7 @@ fn decode_bytes(bytes: &[u8]) -> Result<crate::codecs::Decoded, String> {
     };
     image.apply_orientation(orientation);
     let mut notes = vec![];
+    let source_metadata = crate::source_metadata::Metadata::from_bytes(exif, xmp, &mut notes);
     if let Some(profile) = &profile {
         image = crate::color_management::apply(image, profile, &mut notes);
     }
@@ -124,6 +127,7 @@ fn decode_bytes(bytes: &[u8]) -> Result<crate::codecs::Decoded, String> {
         pixels: image,
         notes,
         source_icc: profile,
+        source_metadata,
     })
 }
 

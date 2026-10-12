@@ -145,6 +145,7 @@ pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
         pixels,
         notes,
         source_icc: None,
+        source_metadata: Default::default(),
     })
 }
 
