@@ -80,6 +80,7 @@ mod svg_namespace;
 mod svg_objects;
 mod svg_paths;
 mod text_canvas;
+mod tiff_exif;
 mod tiff_float;
 mod tiff_output;
 mod tiff_palette;

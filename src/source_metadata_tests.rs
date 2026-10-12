@@ -2,6 +2,75 @@ use super::*;
 use crate::files::{ExportOptions, export, load_project, open, save_project};
 use image::ImageEncoder;
 
+#[test]
+fn tiff_camera_exif_gps_offsets_history_project_and_png_export() {
+    let base = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixtures = base.join("tests/fixtures/tiff-exif");
+    let root = base.join("qa-output/tiff-exif");
+    std::fs::create_dir_all(&root).unwrap();
+    let cases: Vec<serde_json::Value> =
+        serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(cases.len(), 48);
+    for case in cases {
+        let name = case["file"].as_str().unwrap();
+        let path = fixtures.join(name);
+        let original = std::fs::read(&path).unwrap();
+        let imported = open(&path).unwrap();
+        let source = imported
+            .document
+            .source_metadata
+            .exif
+            .clone()
+            .expect("TIFF camera EXIF must be captured");
+        let orientation = case["orientation"].as_u64().unwrap() as u8;
+        assert_eq!(
+            image::metadata::Orientation::from_exif_chunk(&source),
+            image::metadata::Orientation::from_exif(orientation)
+        );
+        let mut editor = crate::document::Editor::new(imported.document, false);
+        let pixels = crate::precision::composite(&editor.document);
+        editor.edit("rename", |d| d.layers[0].name = "EXIF retained".into());
+        editor.undo();
+        editor.redo();
+        assert!(std::sync::Arc::ptr_eq(
+            &source,
+            editor.document.source_metadata.exif.as_ref().unwrap()
+        ));
+        let project = root.join(format!("{name}.rphoto"));
+        save_project(&editor.document, &project).unwrap();
+        let restored = load_project(&project).unwrap();
+        assert_eq!(
+            restored.source_metadata.exif.as_deref().unwrap().as_slice(),
+            source.as_slice()
+        );
+        assert_eq!(crate::precision::composite(&restored), pixels);
+        for include in [true, false] {
+            let output = root.join(format!("{name}-exif{include}.png"));
+            export(
+                &restored,
+                &output,
+                image::ImageFormat::Png,
+                &ExportOptions {
+                    include_exif: include,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            let exported = open(&output).unwrap();
+            assert_eq!(exported.document.source_metadata.exif.is_some(), include);
+            if include {
+                assert_eq!(
+                    image::metadata::Orientation::from_exif_chunk(
+                        exported.document.source_metadata.exif.as_deref().unwrap()
+                    ),
+                    Some(image::metadata::Orientation::NoTransforms)
+                );
+            }
+        }
+        assert_eq!(std::fs::read(path).unwrap(), original);
+    }
+}
+
 fn exif(orientation: u16, little: bool) -> Vec<u8> {
     let mut data = if little {
         b"II".to_vec()

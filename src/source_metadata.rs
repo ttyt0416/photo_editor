@@ -96,7 +96,11 @@ impl Metadata {
             }
         }
         let exif = result(
-            decoder.exif_metadata().map_err(|e| e.to_string()),
+            if format == Some(image::ImageFormat::Tiff) {
+                Ok(crate::tiff_exif::read(path, notes))
+            } else {
+                decoder.exif_metadata().map_err(|e| e.to_string())
+            },
             "EXIF",
             notes,
         );

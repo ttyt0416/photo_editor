@@ -32,7 +32,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         .map_err(|e| e.to_string())?
         == Some(3)
     {
-        return crate::tiff_palette::read(&mut decoder).map(Some);
+        return crate::tiff_palette::read(&mut decoder, path).map(Some);
     }
     let color = decoder.colortype().map_err(|e| e.to_string())?;
     let (gray, channels, bits) = match color {
@@ -109,7 +109,8 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let mut notes = vec![];
     let source_icc = asset(&mut decoder, Tag::IccProfile, "ICC", &mut notes);
     let xmp = asset(&mut decoder, Tag::Unknown(700), "XMP", &mut notes);
-    let source_metadata = crate::source_metadata::Metadata::from_bytes(None, xmp, &mut notes);
+    let exif = crate::tiff_exif::read(path, &mut notes);
+    let source_metadata = crate::source_metadata::Metadata::from_bytes(exif, xmp, &mut notes);
     let orientation = decoder
         .find_tag_unsigned::<u16>(Tag::Orientation)
         .map_err(|e| e.to_string())?

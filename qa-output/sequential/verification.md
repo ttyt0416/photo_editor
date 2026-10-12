@@ -1074,3 +1074,16 @@ fmt/clippy release all-targets·전체527통과/0실패/1제외(58.56초)·relea
 fmt/clippy release all-targets·전체529통과/0실패/1제외(63.45초)·독립새192/float32평면144/고정밀타일864/연관정수96/공통ICC30 회귀통과. release 빌드 성공. 직전145커밋81092afa93b5ef16a14802cb0bbf8a1b273e1b8a의GitHub main 일치확인. 추가색/샘플·전체TIFF·촬영EXIF/확장XMP/IPTC·ICC구조/LUT/모니터와기존전체목표를 유지한다. 다음147은TIFF 촬영EXIF다.
 
 146 정리:34415생성/오래된캐시 파일1521410192바이트 삭제·최신release363산출물 모두fresh/실제파일 존재 확인·검증기록과빈임시파일3개삭제.
+
+
+## 147. TIFF 촬영 EXIF/GPS/Interop의 원문 값과 위치 보존
+
+일반/BigTIFF 촬영IFD0·Exif/GPS/Interop 그래프를 별도 제한된 읽기로 캡처하고 기존generic TIFF·정수/float/회색조/팔레트 경로 모두에 연결했다. 원래 외부블록/연결IFD의 절대위치를 유지하는 sparse classic EXIF 자산을 만들고 이미지payload는 복사하지 않는다. BigTIFF의 IFD 구조와 명시적64비트 디렉터리 포인터를classic 형태로 변환하며 표준1–12 값/외부payload는원문그대로 유지한다. BigTIFF의5–8바이트 inline 값은payload로옮겨값을유지한다. 원래MakerNote블록/위치는 유지하지만 블록밖 제조사참조는 보존하지 않는다고 import에알린다. 원래파일은수정하지않는다. 촬영정보없는TIFF에는 빈EXIF를 만들지 않는다.
+
+초기회귀검사는 작성기manifest의literal backslash-n으로JSON실패했다. 실제줄바꿈과ASCII null을수정한 뒤 기존코드에서촬영EXIF누락 실패를확인했다. 이후48입력(4이미지경로×TIFF구조2×바이트순서2×방향1/6/8)에카메라/모델/작성자·노출시간/조리개/ISO/날짜/렌즈·원문MakerNote/UNICODE한글·GPS/Interop을독립작성하고SHA로고정했다. 프로젝트header/원래외부주소/태그값바이트/CRC/깊이·이미지payload영역0·PNG eXIf CRC/포함·제외/방향1/현재너비높이·별도Pillow 카메라/렌즈/노출/GPS값이일치한다. 이력/복원/원본불변은Rust에서확인했다. 중간작성기24개오래된fixture도작업폴더내정확한이름/절대경로검사후삭제했다.
+
+누적읽기/출력의절대참조끝16MiB,8연결깊이/16IFD/4096항목을검증한다. 디렉터리순환/항목초과/잘못된형식/너무먼참조/헤더·IFD와겹치는값/파일밖값/개수overflow의8종은EXIF를제외하고안내와원래픽셀을유지한다. 예산보다뒤에있는촬영블록·외부MakerNote참조·알수없는IFD/확장정수·다른페이지/썸네일/제조사전체구조·TIFF EXIF출력/전체IPTC/XMP는미완료목표로남긴다.
+
+fmt/clippy release all-targets·전체531통과/0실패/1제외(65.24초)·release 빌드성공. 독립새48/원문49/기존EXIF출력258/정수평면192/팔레트alpha320/원문ICC8 회귀통과. 직전146커밋d9813cf09f75327a755414867534aba9a19c22fb의GitHub main일치확인. 다음148은145검사에서발견한작업ICC 헤더/정렬 구조를보완하며 기존전체목표를유지한다.
+
+147 정리:34568생성/오래된캐시파일1522447981바이트삭제·최신release363산출물 모두fresh/실제파일존재확인·검증기록과빈임시파일3개삭제.

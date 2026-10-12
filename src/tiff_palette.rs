@@ -6,7 +6,10 @@ use tiff::{
     tags::Tag,
 };
 
-pub fn read(decoder: &mut Decoder<BufReader<File>>) -> Result<Decoded, String> {
+pub fn read(
+    decoder: &mut Decoder<BufReader<File>>,
+    path: &std::path::Path,
+) -> Result<Decoded, String> {
     let samples = decoder
         .find_tag_unsigned::<u16>(Tag::SamplesPerPixel)
         .map_err(|e| e.to_string())?
@@ -68,7 +71,8 @@ pub fn read(decoder: &mut Decoder<BufReader<File>>) -> Result<Decoded, String> {
     let mut notes = vec![];
     let source_icc = crate::tiff_float::asset(decoder, Tag::IccProfile, "ICC", &mut notes);
     let xmp = crate::tiff_float::asset(decoder, Tag::Unknown(700), "XMP", &mut notes);
-    let source_metadata = crate::source_metadata::Metadata::from_bytes(None, xmp, &mut notes);
+    let exif = crate::tiff_exif::read(path, &mut notes);
+    let source_metadata = crate::source_metadata::Metadata::from_bytes(exif, xmp, &mut notes);
     let orientation = decoder
         .find_tag_unsigned::<u16>(Tag::Orientation)
         .map_err(|e| e.to_string())?
