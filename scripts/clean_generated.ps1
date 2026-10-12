@@ -56,9 +56,10 @@ if ($KeepLatestBuildCache) {
             # filenames. Their Cargo fingerprint and dep-info are still needed.
             if (-not $hashedArtifact -and -not $message.executable -and $message.target.kind -notcontains 'custom-build') {
                 $marker = 'lib-' + $message.target.name
+                $artifactTime = (Get-Item -LiteralPath $message.filenames[0]).LastWriteTimeUtc
                 $fingerprint = Get-ChildItem -LiteralPath (Join-Path $profileRoot '.fingerprint') -Directory |
                     ForEach-Object { Get-Item -LiteralPath (Join-Path $_.FullName $marker) -ErrorAction SilentlyContinue } |
-                    Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+                    Sort-Object { [Math]::Abs(($_.LastWriteTimeUtc - $artifactTime).TotalSeconds) } | Select-Object -First 1
                 if (-not $fingerprint) { throw 'Unhashed library fingerprint is missing.' }
                 if ($fingerprint.Directory.Name -match '-([0-9a-f]{16})$') { [void]$hashes.Add($Matches[1]) }
                 [void]$artifactNames.Add($message.target.name + '.d')
@@ -74,9 +75,10 @@ if ($KeepLatestBuildCache) {
         }
     }
     # Cargo reports the root executable rather than its hashed bin artifact.
+    $appTime = (Get-Item -LiteralPath $app.executable).LastWriteTimeUtc
     $bin = Get-ChildItem -LiteralPath (Join-Path $profileRoot '.fingerprint') -Directory -Filter 'photo_editor-*' |
         ForEach-Object { Get-Item -LiteralPath (Join-Path $_.FullName 'bin-photo_editor') -ErrorAction SilentlyContinue } |
-        Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+        Sort-Object { [Math]::Abs(($_.LastWriteTimeUtc - $appTime).TotalSeconds) } | Select-Object -First 1
     if (-not $bin) { throw 'Latest application fingerprint is missing.' }
     if ($bin.Directory.Name -match '-([0-9a-f]{16})$') { [void]$hashes.Add($Matches[1]) }
     foreach ($item in Get-ChildItem -LiteralPath (Join-Path $workspaceRoot 'target') -Force) {

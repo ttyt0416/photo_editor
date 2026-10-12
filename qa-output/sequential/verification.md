@@ -856,3 +856,13 @@ moxcms 일반 float 변환의 회색 표 곡선이 native -0.039968..1.0495를 �
 fmt/clippy·전체494통과/0실패/1제외(136.26초)·개발/release 빌드 성공. 기존6JXL 기준·4ICC입력·12메타데이터·18Brotli/36PNG·Windows라이선스308/528/18 독립 검사 통과. 최신 성공 Cargo artifact 그래프를 사용하는 캐시 정리를 추가했으며 삭제 대상을 워크스페이스 안에서 확인하고 링크/정션을 거부한다. 다음127은 공통 float RGB ICC의 HDR/음수 입력 연결이다.
 
 126 정리 결과: 이전 debug/오래된 release·생성 QA/Python 캐시19958파일10960314392바이트 삭제, 최신 release 캐시만 유지. 첫 재사용 검사에서 해시 없는 openjp2 라이브러리의 fingerprint/dep-info 누락을 발견해 보존하도록 수정했다. 다시 정리한 뒤 release 재빌드의 모든 compiler-artifact가 fresh이며 보고된 파일이 존재함을 확인했다. 성공 빌드 기록 외 임시 검증 기록도 삭제했다.
+
+## 127. 공통 float RGB ICC 음수/HDR 변환
+
+126의 정확한 행렬/TRC 계산을 src/icc_float.rs로 공유해 일반 RGB/RGBA32F의 범위 밖 값에 적용한다. 기존 SDR ICC 변환 경로는 유지한다. 첫 일반 float 전수 변경의 SDR 수식 비교가 srgb-4에서0.004405를 보였으므로 범위 밖 입력만 새 경로로 연결했다. 최종 기존30ICC/4590픽셀·LittleCMS 정밀8비트 max1·16/32수식 max0.000751942<0.0008을 다시 확인했다. 비유한 RGB/알파와 최종 f32 오버플로는 부분 변환을 반환하지 않고 전체 원본 비트를 유지한다.
+
+자체9프로파일(sRGB/P3/Adobe/선형/표/감마·parametric1/2/4)의18RGB/RGBA float TIFF/2754픽셀에서 음수/1e8·HDR·알파0/-0/분수1·ICC 원문/원본 파일/이력/프로젝트와 작업 TIFF32·EXR 왕복을 확인했다. 모든5종 parametric·identity/gamma/표 곡선을 포함한다. 독립 NumPy ICC 태그/행렬/곡선 max SDR절대/HDR상대0.000087956162<0.0008, tifffile 원본/작업 float 비트·원본 ICC/project v12/CRC 검증을 통과했다. src/icc_float_tests.rs, tests/fixtures/verify_icc_float_outputs.py에 재현 코드를 보관한다.
+
+최종 fmt/clippy release all-targets·전체496통과/0실패/1제외(42.44초)·release 빌드 성공. 중간 테스트 출력 작성 중 실행한 JXL 독립 검사는 미완성 zlib로 종료되어 최종 전체 검사 종료 후 다시 실행해 정상8입력/5059392픽셀·51HDR 수식 비교를 확인했다. 원본 ICC8코덱/프로젝트와 Windows라이선스308/528/18도 통과했다. 직전126커밋7185547587bc09264244efaa7e952d1525686ef9의 GitHub main 일치를 확인했다. 전체 ICC/LUT/PQ/HLG·모니터/출력·전체 목표는 유지한다. 다음128은 TIFF 회색 float 입력이다.
+
+127 정리:13610생성/오래된 캐시 파일1437840088바이트 삭제. 첫 검사에서 unhashed 라이브러리의 더 최근 check fingerprint를 선택해 빌드 캐시가 누락되는 문제를 확인했다. 실제 산출물의 기록 시간과 일치하는 fingerprint를 선택하도록 보완했다. 라이브러리/앱에 더 최근의 가짜 검사 기록을 별도로 만들고 다시 정리한 뒤 가짜 기록 제거·release363산출물 모두 fresh/보고 파일 존재를 확인했다. 최신 성공 빌드 기록만 유지하고 임시 검증 기록 삭제.

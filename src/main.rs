@@ -50,6 +50,7 @@ mod filter_bounds;
 mod font_picker;
 mod gif_output;
 mod guides;
+mod icc_float;
 mod icons;
 mod jpeg2000_icc;
 mod jpeg2000_input;

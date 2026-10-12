@@ -156,9 +156,11 @@ pub(crate) fn convert(image: &DynamicImage, bytes: &[u8]) -> Result<DynamicImage
                 p.0.iter().any(|v| !v.is_finite())
                     || p.0[..3].iter().any(|v| !(0. ..=1.).contains(v))
             }) {
-                return Err(
-                    "범위 밖 HDR·음수 부동소수점의 ICC 변환은 아직 제공하지 않습니다".into(),
-                );
+                if input.as_raw().iter().any(|v| !v.is_finite()) {
+                    return Err("색상 또는 알파 값이 유한하지 않습니다".into());
+                }
+                return crate::icc_float::convert(&input, bytes, false)
+                    .map(DynamicImage::ImageRgba32F);
             }
             let transform = profile
                 .create_transform_f32(Layout::Rgba, &destination, Layout::Rgba, options)
@@ -195,3 +197,7 @@ mod tests;
 #[cfg(test)]
 #[path = "source_icc_tests.rs"]
 mod source_tests;
+
+#[cfg(test)]
+#[path = "icc_float_tests.rs"]
+mod float_tests;

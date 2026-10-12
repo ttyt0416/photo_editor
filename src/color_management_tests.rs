@@ -160,7 +160,7 @@ fn icc_bad_profile_channels_hdr_nonfinite_keep_original_pixels_and_note() {
         assert!(notes[0].contains("못했습니다"));
     }
     let icc = ColorProfile::new_display_p3().encode().unwrap();
-    for v in [-1., 2., f32::MAX, f32::INFINITY, f32::NAN] {
+    for v in [f32::MAX, f32::INFINITY, f32::NAN] {
         let source = image::Rgba32FImage::from_pixel(2, 2, image::Rgba([v, 0.25, 0.5, 0.123]));
         let before = source
             .as_raw()
