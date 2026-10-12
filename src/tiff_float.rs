@@ -10,8 +10,8 @@ use tiff::{
     tags::Tag,
 };
 
-// image's generic TIFF adapter has no Gray32F DynamicImage variant. Decode only
-// gray float cases here; other TIFF variants use the existing common path.
+// The generic TIFF adapter has no Gray32F variant and leaves associated RGB
+// samples premultiplied. Handle those cases; other TIFFs use the common path.
 pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let mut reader = BufReader::new(File::open(path).map_err(|e| e.to_string())?);
     let signature = reader.fill_buf().map_err(|e| e.to_string())?;
@@ -23,17 +23,18 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     }
     let mut limits = Limits::default();
     limits.ifd_value_size = crate::source_metadata::MAX_BYTES;
-    limits.decoding_buffer_size = crate::document::MAX_PIXELS as usize * 8;
+    limits.decoding_buffer_size = crate::document::MAX_PIXELS as usize * 16;
     let mut decoder = Decoder::new(reader)
         .map_err(|e| e.to_string())?
         .with_limits(limits);
     let color = decoder.colortype().map_err(|e| e.to_string())?;
-    let channels = match color {
-        tiff::ColorType::Gray(32) => 1,
+    let (gray, channels) = match color {
+        tiff::ColorType::Gray(32) => (true, 1),
         tiff::ColorType::Multiband {
             bit_depth: 32,
             num_samples: 2,
-        } => 2,
+        } => (true, 2),
+        tiff::ColorType::RGBA(32) => (false, 4),
         _ => return Ok(None),
     };
     let formats = decoder
@@ -45,11 +46,12 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     {
         return Ok(None);
     }
-    let associated = if channels == 2 {
-        if decoder
-            .find_tag_unsigned::<u16>(Tag::PhotometricInterpretation)
-            .map_err(|e| e.to_string())?
-            != Some(1)
+    let associated = if channels > 1 {
+        if gray
+            && decoder
+                .find_tag_unsigned::<u16>(Tag::PhotometricInterpretation)
+                .map_err(|e| e.to_string())?
+                != Some(1)
         {
             return Err("흰색 기준 회색조 float TIFF의 알파 변환은 아직 제공하지 않습니다.".into());
         }
@@ -60,11 +62,15 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         {
             Some([1]) => true,
             Some([2]) => false,
-            _ => return Err("회색조 TIFF의 두 번째 채널이 알파로 정의되지 않았습니다.".into()),
+            _ if !gray => return Ok(None),
+            _ => return Err("TIFF의 추가 채널이 알파로 정의되지 않았습니다.".into()),
         }
     } else {
         false
     };
+    if !gray && !associated {
+        return Ok(None);
+    }
     let (width, height) = decoder.dimensions().map_err(|e| e.to_string())?;
     crate::document::validate_size(width, height)?;
     let mut notes = vec![];
@@ -88,10 +94,10 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         .read_image_to_buffer(&mut decoded)
         .map_err(|e| e.to_string())?;
     let DecodingResult::F32(values) = decoded else {
-        return Err("회색조 TIFF의 float32 픽셀 형식이 일치하지 않습니다.".into());
+        return Err("TIFF의 float32 픽셀 형식이 일치하지 않습니다.".into());
     };
     if values.len() * 4 < layout.complete_len || values.iter().any(|v| !v.is_finite()) {
-        return Err("회색조 TIFF의 픽셀 크기 또는 부동소수점 값이 잘못되었습니다.".into());
+        return Err("TIFF의 픽셀 크기 또는 부동소수점 값이 잘못되었습니다.".into());
     }
     let row_stride = layout
         .row_stride
@@ -104,7 +110,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     // plane_stride also exists for a single interleaved plane. The plane count,
     // rather than an optional stride, distinguishes separated sample storage.
     let separate = layout.planes > 1;
-    let alpha_offset = if separate {
+    let component_stride = if separate {
         layout
             .plane_stride
             .ok_or("회색조 TIFF의 평면 간격이 없습니다")?
@@ -120,35 +126,38 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
             1.
         } else {
             *values
-                .get(index + alpha_offset)
-                .ok_or("회색조 TIFF의 알파 평면이 잘렸습니다")?
+                .get(index + component_stride * (channels - 1))
+                .ok_or("TIFF의 알파 평면이 잘렸습니다")?
         };
         if !(0. ..=1.).contains(&alpha) {
-            return Err("회색조 TIFF의 알파 값이 0–1 범위를 벗어났습니다.".into());
+            return Err("TIFF의 알파 값이 0–1 범위를 벗어났습니다.".into());
         }
-        let value = if associated {
-            if alpha == 0. {
-                0.
+        *target = Rgba([0., 0., 0., alpha]);
+        for channel in 0..3 {
+            let native = *values
+                .get(index + if gray { 0 } else { channel * component_stride })
+                .ok_or("TIFF의 색상 평면이 잘렸습니다")?;
+            let value = if associated {
+                if alpha == 0. {
+                    0.
+                } else {
+                    (f64::from(native) / f64::from(alpha)) as f32
+                }
             } else {
-                (f64::from(
-                    *values
-                        .get(index)
-                        .ok_or("회색조 TIFF의 색상 평면이 잘렸습니다")?,
-                ) / f64::from(alpha)) as f32
+                native
+            };
+            if !value.is_finite() {
+                return Err("TIFF의 연관 알파 복원 값이 float32 범위를 초과합니다.".into());
             }
-        } else {
-            *values
-                .get(index)
-                .ok_or("회색조 TIFF의 색상 평면이 잘렸습니다")?
-        };
-        if !value.is_finite() {
-            return Err("회색조 TIFF의 연관 알파 복원 값이 float32 범위를 초과합니다.".into());
+            target[channel] = value;
         }
-        *target = Rgba([value, value, value, alpha]);
     }
     drop(values);
     let pixels = if let Some(profile) = source_icc.as_deref() {
-        if profile == crate::color_management::gray_profile() {
+        if !gray {
+            crate::color_management::apply(DynamicImage::ImageRgba32F(pixels), profile, &mut notes)
+                .into_rgba32f()
+        } else if profile == crate::color_management::gray_profile() {
             notes.push(
                 "내장 회색조 ICC가 작업 sRGB 곡선과 일치해 원래 float 비트를 유지했습니다.".into(),
             );
@@ -170,7 +179,14 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     };
     let mut dynamic = DynamicImage::ImageRgba32F(pixels);
     dynamic.apply_orientation(orientation);
-    notes.push("32비트 회색조 TIFF의 음수·HDR 값을 RGB 작업 버퍼에 유지합니다.".into());
+    notes.push(
+        if gray {
+            "32비트 회색조 TIFF의 음수·HDR 값을 RGB 작업 버퍼에 유지합니다."
+        } else {
+            "32비트 RGB TIFF의 연관 알파를 분리하고 음수·HDR 값을 유지합니다."
+        }
+        .into(),
+    );
     Ok(Some(Decoded {
         pixels: dynamic,
         notes,

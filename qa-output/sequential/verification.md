@@ -886,3 +886,15 @@ NumPy/tifffile의 독립96입력4896픽셀(프로파일없음/선형/작업×연
 fmt/clippy release all-targets·전체500통과/0실패/1제외(49.32초)·release 빌드 성공. 기존80Gray32 TIFF/18HDR ICC·8JXL·라이선스308/528/18 독립 검사 통과. 직전128커밋52d75c47f4e9f55596b1fa623c3ebfe9f645c43c의 GitHub main 일치 확인. 흰색 기준 회색 알파·추가 정밀도/전체 TIFF/ICC·EXIF/IPTC 등 전체 목표를 유지한다. 다음130은 RGB float TIFF 연관 알파이다.
 
 129 정리:14405생성/오래된 캐시 파일1441560122바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+## 130. RGB float TIFF 연관 알파 복원·ICC
+
+잠금 일반 TIFF 어댑터가 명시된 associated RGBA32F를 그대로 전달하는 것을 실제 원래 image::open 경로로 재현했다. 부분 알파 픽셀의 원래 곱해진 RGB와 새 복원 RGB가 다름을 검사한다. 새 경로는 명시된 ExtraSamples1/IEEEFP/RGBA32 입력만 선택해 전체 평면/치수/알파/유한 값을 확인하고 RGB를 f64로 알파 분리한 뒤 공통 작업 ICC를 적용한다. 알파0RGB는0, 알파 비트는 유지하며 복원 초과/비유한/범위 밖 알파를 거부한다. 회색조128/129 경로도 공통 평면 읽기를 유지한다.
+
+처음 추가한 오류 검사에 Rust 소수 리터럴0.5의0이 빠져 컴파일 오류가 났고 수정했다. 첫 전체 검사502중 기존 ICC TIFF 입력1개가 ExtraSamples를 생략해 새 경로에서 거부되는 호환성 오류를 확인했다. RGB에서 명시된 연관 알파가 없는 경우 기존 일반 경로를 유지하도록 수정하고 전체/기존 ICC 독립 검사를 재실행했다. 회색2채널의 알파 정의 검사는 유지했다.
+
+NumPy/tifffile의 독립48입력2448픽셀(없음/작업/자체 XYZ행렬+gamma2.2 ICC×붙은/별도평면×classic/BigTIFF×양쪽 바이트 순서×raw/Deflate,방향1/6/8)을 SHA-256과 고정했다. 자체 프로파일은 D50 합에 맞춘 XYZ열·signed gamma를 사용하며 특정 표준 색역 일치를 주장하지 않는다. 독립 알파 분리/ICC태그/행렬/곡선 max SDR절대/HDR상대0.000087939938<0.0008. ICC없음/작업 프로파일의 RGB·부호 있는 알파 비트, 원본 ICC/XMP·v13프로젝트/CRC·EXR자산의 전체비트/작업 TIFF를 별도 tifffile/OpenCV 디코더로 정확 비교했다. src/tiff_float_tests.rs, tests/fixtures/generate_tiff_rgb_associated.py, tests/fixtures/verify_tiff_rgb_associated.py에 재현 코드를 보관한다.
+
+최종 fmt/clippy release all-targets·전체502통과/0실패/1제외(52.70초)·release 빌드 성공. 기존96GrayAlpha/80Gray TIFF·18HDR/30SDR ICC·8JXL·Windows라이선스308/528/18 독립 검사 통과. 직전129커밋63270213ac8820f476fc75d3f237f30456f73dd1의 GitHub main 일치 확인. 정수 RGB 연관 알파·흰색 기준 회색 알파·추가 정밀도/TIFF·전체 ICC/메타데이터 목표는 남는다. 다음131은 TIFF 자동 정밀도의32비트 작업층 유지다.
+
+130 정리:14656생성/오래된 캐시 파일1442173867바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.

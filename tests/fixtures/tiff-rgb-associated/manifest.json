@@ -1,0 +1,482 @@
+[
+  {
+    "file": "none-plan0-big0-end0-zip0.tiff",
+    "profile": "none",
+    "planar": false,
+    "big": false,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 1,
+    "sha256": "c338299600d72ce3bd9e231c8cb077d9fc4dd32f479481cef390376d3323163b"
+  },
+  {
+    "file": "none-plan0-big0-end0-zip1.tiff",
+    "profile": "none",
+    "planar": false,
+    "big": false,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 6,
+    "sha256": "8e79bbfd08a499c71b67bc5b725225d328cf94e5a07f4031956085a165352d72"
+  },
+  {
+    "file": "none-plan0-big0-end1-zip0.tiff",
+    "profile": "none",
+    "planar": false,
+    "big": false,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 8,
+    "sha256": "7d1bd60a0746b5f4f6e56a492a59c5171ccdc624c636838faf8aa74d71b57315"
+  },
+  {
+    "file": "none-plan0-big0-end1-zip1.tiff",
+    "profile": "none",
+    "planar": false,
+    "big": false,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 1,
+    "sha256": "4904be507518670e3b364a0afbc22f1643e3054e6b3a68ab7c9c4d69785ba8cd"
+  },
+  {
+    "file": "none-plan0-big1-end0-zip0.tiff",
+    "profile": "none",
+    "planar": false,
+    "big": true,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 6,
+    "sha256": "9a064288e1ef1aa7d8ec612293bfb73754c23913f22e4d56268bda1535110467"
+  },
+  {
+    "file": "none-plan0-big1-end0-zip1.tiff",
+    "profile": "none",
+    "planar": false,
+    "big": true,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 8,
+    "sha256": "cc794be505496fbfcf5770b7d476852d75c21f047b2e7f3d50e5ef53877982fd"
+  },
+  {
+    "file": "none-plan0-big1-end1-zip0.tiff",
+    "profile": "none",
+    "planar": false,
+    "big": true,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 1,
+    "sha256": "b3f8d32dc4e6ad3e141b72d2aaafef9c3c64b63556a2bfeb167f8fd68ef015db"
+  },
+  {
+    "file": "none-plan0-big1-end1-zip1.tiff",
+    "profile": "none",
+    "planar": false,
+    "big": true,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 6,
+    "sha256": "0a61086dca6c97429c9aea51cbe5a23900b47b1e7d42a05b123713aa7cefd2b9"
+  },
+  {
+    "file": "none-plan1-big0-end0-zip0.tiff",
+    "profile": "none",
+    "planar": true,
+    "big": false,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 8,
+    "sha256": "a236eab367df1777f720c9a2d103438ecb9f4a882cb4e4c00f99daa79becf6bf"
+  },
+  {
+    "file": "none-plan1-big0-end0-zip1.tiff",
+    "profile": "none",
+    "planar": true,
+    "big": false,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 1,
+    "sha256": "b2c45a3d2a3e4d504c47e6ba7671dc94d2cfa7c8777d62f3debfaca9d87a1387"
+  },
+  {
+    "file": "none-plan1-big0-end1-zip0.tiff",
+    "profile": "none",
+    "planar": true,
+    "big": false,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 6,
+    "sha256": "eacf747f79f04d50f7c15a3d0fc0812db8f4758f6ae4ec983ea32d525d0d403e"
+  },
+  {
+    "file": "none-plan1-big0-end1-zip1.tiff",
+    "profile": "none",
+    "planar": true,
+    "big": false,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 8,
+    "sha256": "c5a725e8334bb00c956a3e54cae548e5befc05dde29e45fa85507d3bc3b98fb3"
+  },
+  {
+    "file": "none-plan1-big1-end0-zip0.tiff",
+    "profile": "none",
+    "planar": true,
+    "big": true,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 1,
+    "sha256": "e19a47c229a496011677ec102052a3f0c7c7dff1b6ad71c648df63e841dbfcfd"
+  },
+  {
+    "file": "none-plan1-big1-end0-zip1.tiff",
+    "profile": "none",
+    "planar": true,
+    "big": true,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 6,
+    "sha256": "c03cf34b5866846f01b0206af4b5f648ff27e95b01dd8a68e9f990e4026c2d01"
+  },
+  {
+    "file": "none-plan1-big1-end1-zip0.tiff",
+    "profile": "none",
+    "planar": true,
+    "big": true,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 8,
+    "sha256": "161371f26fb96b4e7a63b4ac912c39626b06464636c96dfeed8370ef6460bb0d"
+  },
+  {
+    "file": "none-plan1-big1-end1-zip1.tiff",
+    "profile": "none",
+    "planar": true,
+    "big": true,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 1,
+    "sha256": "b7e80f9f43d7cca08b2d1faf4dec3d5b0b5d34c5f6e9caa64128622ae44b9fff"
+  },
+  {
+    "file": "working-plan0-big0-end0-zip0.tiff",
+    "profile": "working",
+    "planar": false,
+    "big": false,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 6,
+    "sha256": "e567d1f3d313513603e2539b0607e21453d8be7545497a155c53479d7fd302ca"
+  },
+  {
+    "file": "working-plan0-big0-end0-zip1.tiff",
+    "profile": "working",
+    "planar": false,
+    "big": false,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 8,
+    "sha256": "195e7984b8f2c185d8b099931ef8cc1c2bcb0808c957d3390d82df91c269f35c"
+  },
+  {
+    "file": "working-plan0-big0-end1-zip0.tiff",
+    "profile": "working",
+    "planar": false,
+    "big": false,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 1,
+    "sha256": "686e075bdebd8e36a31a3885d396498193a140be6bc9021fc0f4716be3f2feb2"
+  },
+  {
+    "file": "working-plan0-big0-end1-zip1.tiff",
+    "profile": "working",
+    "planar": false,
+    "big": false,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 6,
+    "sha256": "94715e57b2f9e26a84f44e435643fabbe3da0e6e6b96695c1f591744faa787f1"
+  },
+  {
+    "file": "working-plan0-big1-end0-zip0.tiff",
+    "profile": "working",
+    "planar": false,
+    "big": true,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 8,
+    "sha256": "d1a25d21039227ac8fcdb6bb72dc1c00791df384b405b7fad8e89edad0611ff5"
+  },
+  {
+    "file": "working-plan0-big1-end0-zip1.tiff",
+    "profile": "working",
+    "planar": false,
+    "big": true,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 1,
+    "sha256": "e4715411753bf607f83408a54b0a0472ac7e7db8e85d3954ad7bebed783d9295"
+  },
+  {
+    "file": "working-plan0-big1-end1-zip0.tiff",
+    "profile": "working",
+    "planar": false,
+    "big": true,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 6,
+    "sha256": "403b7b653d1f11030ccd3ea2a4966b2f247d71c68a76ccdaf765d28954619c24"
+  },
+  {
+    "file": "working-plan0-big1-end1-zip1.tiff",
+    "profile": "working",
+    "planar": false,
+    "big": true,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 8,
+    "sha256": "e798bdaddeac0a58c9a0b02d78ce77ee7e5e690b6b6178eae642898aff332d6b"
+  },
+  {
+    "file": "working-plan1-big0-end0-zip0.tiff",
+    "profile": "working",
+    "planar": true,
+    "big": false,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 1,
+    "sha256": "92ba9ccfe6c02bdc454c93e2480eda94c34cfdbb3f2ac1a81a0db894d2128494"
+  },
+  {
+    "file": "working-plan1-big0-end0-zip1.tiff",
+    "profile": "working",
+    "planar": true,
+    "big": false,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 6,
+    "sha256": "4ece66a0297f2afb1aaf47bda46d0718c9004d574d8bc51473b2814d0213d1a4"
+  },
+  {
+    "file": "working-plan1-big0-end1-zip0.tiff",
+    "profile": "working",
+    "planar": true,
+    "big": false,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 8,
+    "sha256": "1040fc148309ba09fb5b397e0c8cfc05d0349a95467bf1c168129d772b1d1c82"
+  },
+  {
+    "file": "working-plan1-big0-end1-zip1.tiff",
+    "profile": "working",
+    "planar": true,
+    "big": false,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 1,
+    "sha256": "e9f2706423aaae90b4e3cdf7bafa9c3e3586bcfc560fe562d946db337b8f4942"
+  },
+  {
+    "file": "working-plan1-big1-end0-zip0.tiff",
+    "profile": "working",
+    "planar": true,
+    "big": true,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 6,
+    "sha256": "154b4e4f0efdeb334d859d50079fd9954e9fa4eafde90999f63c688ec20c6b5b"
+  },
+  {
+    "file": "working-plan1-big1-end0-zip1.tiff",
+    "profile": "working",
+    "planar": true,
+    "big": true,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 8,
+    "sha256": "aaec5430865163a5b3faa2420bae28253c6c6287351e79d62d231cff1c95fa4d"
+  },
+  {
+    "file": "working-plan1-big1-end1-zip0.tiff",
+    "profile": "working",
+    "planar": true,
+    "big": true,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 1,
+    "sha256": "c3fa67718415b070fa070dcd5fba070965cf9e707de4bf88d335cf19d5ff5e59"
+  },
+  {
+    "file": "working-plan1-big1-end1-zip1.tiff",
+    "profile": "working",
+    "planar": true,
+    "big": true,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 6,
+    "sha256": "d07ecfd9a302530df9d3ced0c1f281ed87e800308bfca8a5fed5686664f21cc1"
+  },
+  {
+    "file": "matrix-plan0-big0-end0-zip0.tiff",
+    "profile": "matrix",
+    "planar": false,
+    "big": false,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 8,
+    "sha256": "0483d028c735b8650f14f49485265648b1c0eac0b6e33154100197642d0ab645"
+  },
+  {
+    "file": "matrix-plan0-big0-end0-zip1.tiff",
+    "profile": "matrix",
+    "planar": false,
+    "big": false,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 1,
+    "sha256": "10b7bbda847238728316b561198d68684d6a80e65b920296f2c8577482c995f9"
+  },
+  {
+    "file": "matrix-plan0-big0-end1-zip0.tiff",
+    "profile": "matrix",
+    "planar": false,
+    "big": false,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 6,
+    "sha256": "0e844ad88801dd445d439aad4e923f49e18a37e3dc94d66f631771ad6d32e268"
+  },
+  {
+    "file": "matrix-plan0-big0-end1-zip1.tiff",
+    "profile": "matrix",
+    "planar": false,
+    "big": false,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 8,
+    "sha256": "636c63871490f4c2fdf5a0b16dbaef6d15db5a1e03fa098b3e979112fb7c5796"
+  },
+  {
+    "file": "matrix-plan0-big1-end0-zip0.tiff",
+    "profile": "matrix",
+    "planar": false,
+    "big": true,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 1,
+    "sha256": "2e2d241248f98d1e70399974dcb3a90c2df96d5858bef3eb75a96a0a0a0b76c7"
+  },
+  {
+    "file": "matrix-plan0-big1-end0-zip1.tiff",
+    "profile": "matrix",
+    "planar": false,
+    "big": true,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 6,
+    "sha256": "c117896e34aa8379eed10486ee44848ddf286891568ed63c25f65c7a188880c1"
+  },
+  {
+    "file": "matrix-plan0-big1-end1-zip0.tiff",
+    "profile": "matrix",
+    "planar": false,
+    "big": true,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 8,
+    "sha256": "d2f16fcc1db64a3c99adccaa9e65cc85ee2f37ba2c91c6ee283df7db014cd03a"
+  },
+  {
+    "file": "matrix-plan0-big1-end1-zip1.tiff",
+    "profile": "matrix",
+    "planar": false,
+    "big": true,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 1,
+    "sha256": "faa62330d91ae9bb53e4ce6022e0493107e6381bfac750f4269fd194e3491ec6"
+  },
+  {
+    "file": "matrix-plan1-big0-end0-zip0.tiff",
+    "profile": "matrix",
+    "planar": true,
+    "big": false,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 6,
+    "sha256": "a3234cfc827a3c05b7e7c7850530709a4aa55a80d8760578c14bd6d5385e6864"
+  },
+  {
+    "file": "matrix-plan1-big0-end0-zip1.tiff",
+    "profile": "matrix",
+    "planar": true,
+    "big": false,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 8,
+    "sha256": "e712f0f176aa7dd1de936bed6f72aecd10ed8dfeed7ffbcb208bf8682aabaac5"
+  },
+  {
+    "file": "matrix-plan1-big0-end1-zip0.tiff",
+    "profile": "matrix",
+    "planar": true,
+    "big": false,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 1,
+    "sha256": "4d185848dbed5bf13a833dd93fcf2da454b5609a4ed02427830c4690cad2cfc2"
+  },
+  {
+    "file": "matrix-plan1-big0-end1-zip1.tiff",
+    "profile": "matrix",
+    "planar": true,
+    "big": false,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 6,
+    "sha256": "99c52a3020187101103ba9882f70e88b8f09872e71f2fec0fe1fd4287eedb2c3"
+  },
+  {
+    "file": "matrix-plan1-big1-end0-zip0.tiff",
+    "profile": "matrix",
+    "planar": true,
+    "big": true,
+    "endian": "<",
+    "compressed": false,
+    "orientation": 8,
+    "sha256": "4d859290e02ac6dcb898eefa12e87a40d0a96814d3810a52ff256ffdce95d558"
+  },
+  {
+    "file": "matrix-plan1-big1-end0-zip1.tiff",
+    "profile": "matrix",
+    "planar": true,
+    "big": true,
+    "endian": "<",
+    "compressed": true,
+    "orientation": 1,
+    "sha256": "9d6d6f0c203bf40334503c07482e7520d3218e0d4238fc3c1fdb6893668ed22a"
+  },
+  {
+    "file": "matrix-plan1-big1-end1-zip0.tiff",
+    "profile": "matrix",
+    "planar": true,
+    "big": true,
+    "endian": ">",
+    "compressed": false,
+    "orientation": 6,
+    "sha256": "1e0ea79294d9ec9f39b37ead42fa181bb362e11772ccb09a7e8b81badc3ed67c"
+  },
+  {
+    "file": "matrix-plan1-big1-end1-zip1.tiff",
+    "profile": "matrix",
+    "planar": true,
+    "big": true,
+    "endian": ">",
+    "compressed": true,
+    "orientation": 8,
+    "sha256": "a7b934a9a30ef02e503fd20095a38339a47335ce345dba097b07d8de86855f27"
+  }
+]

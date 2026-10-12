@@ -3,6 +3,125 @@ use crate::files::{ExportOptions, export, load_project, open, save_project};
 use image::{ImageBuffer, ImageFormat};
 
 #[test]
+fn tiff_rgb_float_associated_hdr_planar_icc_projects_independent_outputs() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixtures = base.join("tests/fixtures/tiff-rgb-associated");
+    let root = base.join("qa-output/tiff-rgb-associated");
+    std::fs::create_dir_all(&root).unwrap();
+    let cases: Vec<serde_json::Value> =
+        serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(cases.len(), 48);
+    for (index, case) in cases.into_iter().enumerate() {
+        let name = case["file"].as_str().unwrap();
+        let path = fixtures.join(name);
+        let before = std::fs::read(&path).unwrap();
+        let imported = open(&path).unwrap();
+        assert!(
+            imported
+                .notes
+                .iter()
+                .any(|n| n.contains("RGB TIFF의 연관 알파")),
+            "{name}: {:?}",
+            imported.notes
+        );
+        let document = imported.document;
+        let native = document.layers[0].precision.as_ref().unwrap();
+        if index == 0 {
+            let generic = image::open(&path).unwrap().to_rgba32f();
+            assert!(
+                generic
+                    .pixels()
+                    .zip(native.pixels())
+                    .any(|(g, n)| n[3] > 0. && n[3] < 1. && g[0] != n[0]),
+                "original generic decoder must reproduce still-associated RGB"
+            );
+        }
+        std::fs::write(
+            root.join(format!("{name}.f32")),
+            native
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        let composite = crate::precision::composite(&document);
+        std::fs::write(
+            root.join(format!("{name}.comp.f32")),
+            composite
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        let project = root.join(format!("{name}.rphoto"));
+        save_project(&document, &project).unwrap();
+        let restored = load_project(&project).unwrap();
+        assert_eq!(restored.source_icc, document.source_icc);
+        assert_eq!(restored.source_metadata.xmp, document.source_metadata.xmp);
+        assert_eq!(
+            restored.layers[0]
+                .precision
+                .as_ref()
+                .unwrap()
+                .as_raw()
+                .iter()
+                .map(|v| v.to_bits())
+                .collect::<Vec<_>>(),
+            native
+                .as_raw()
+                .iter()
+                .map(|v| v.to_bits())
+                .collect::<Vec<_>>()
+        );
+        for (ext, format) in [("tiff", ImageFormat::Tiff), ("exr", ImageFormat::OpenExr)] {
+            let output = root.join(format!("{name}-working.{ext}"));
+            export(
+                &restored,
+                &output,
+                format,
+                &ExportOptions {
+                    tiff_depth: 3,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            assert_eq!(
+                crate::precision::composite(&open(&output).unwrap().document),
+                composite
+            );
+        }
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+}
+
+#[test]
+fn tiff_rgb_float_associated_invalid_alpha_or_unassociation_overflow_rejected() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("qa-output/tiff-rgb-associated/errors");
+    std::fs::create_dir_all(&root).unwrap();
+    let path = root.join("bad.tiff");
+    for (color, alpha) in [
+        (1., -0.1),
+        (1., 1.1),
+        (f32::NAN, 0.5),
+        (1., f32::INFINITY),
+        (f32::MAX, f32::MIN_POSITIVE),
+    ] {
+        let mut encoder = tiff::encoder::TiffEncoder::new(File::create(&path).unwrap()).unwrap();
+        let mut image = encoder
+            .new_image::<tiff::encoder::colortype::RGBA32Float>(1, 1)
+            .unwrap();
+        image
+            .encoder()
+            .write_tag(Tag::ExtraSamples, &[1u16][..])
+            .unwrap();
+        image.write_data(&[color, 1., 2., alpha]).unwrap();
+        assert!(open(&path).is_err());
+    }
+}
+
+#[test]
 fn tiff_gray_alpha_float_planar_associated_original_bits_projects_outputs() {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"));
     let fixtures = base.join("tests/fixtures/tiff-gray-alpha");
