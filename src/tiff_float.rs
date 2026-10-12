@@ -28,22 +28,28 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         .map_err(|e| e.to_string())?
         .with_limits(limits);
     let color = decoder.colortype().map_err(|e| e.to_string())?;
-    let (gray, channels) = match color {
-        tiff::ColorType::Gray(32) => (true, 1),
+    let (gray, channels, bits) = match color {
+        tiff::ColorType::Gray(32) => (true, 1, 32),
         tiff::ColorType::Multiband {
             bit_depth: 32,
             num_samples: 2,
-        } => (true, 2),
-        tiff::ColorType::RGBA(32) => (false, 4),
+        } => (true, 2, 32),
+        tiff::ColorType::RGBA(bits @ (8 | 16 | 32)) => (false, 4, bits),
         _ => return Ok(None),
     };
     let formats = decoder
         .find_tag_unsigned_vec::<u16>(Tag::SampleFormat)
         .map_err(|e| e.to_string())?;
-    if !formats
-        .as_deref()
-        .is_some_and(|values| !values.is_empty() && values.iter().all(|v| *v == 3))
-    {
+    let formats_ok = if bits == 32 {
+        formats
+            .as_deref()
+            .is_some_and(|v| !v.is_empty() && v.iter().all(|v| *v == 3))
+    } else {
+        formats
+            .as_deref()
+            .is_none_or(|v| !v.is_empty() && v.iter().all(|v| *v == 1))
+    };
+    if !formats_ok {
         return Ok(None);
     }
     let associated = if channels > 1 {
@@ -93,17 +99,20 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     let layout = decoder
         .read_image_to_buffer(&mut decoded)
         .map_err(|e| e.to_string())?;
-    let DecodingResult::F32(values) = decoded else {
-        return Err("TIFF의 float32 픽셀 형식이 일치하지 않습니다.".into());
+    let (values, sample_bytes) = match &decoded {
+        DecodingResult::U8(v) if bits == 8 => (v.len(), 1),
+        DecodingResult::U16(v) if bits == 16 => (v.len(), 2),
+        DecodingResult::F32(v) if bits == 32 && v.iter().all(|v| v.is_finite()) => (v.len(), 4),
+        _ => return Err("TIFF의 샘플 형식 또는 부동소수점 값이 잘못되었습니다.".into()),
     };
-    if values.len() * 4 < layout.complete_len || values.iter().any(|v| !v.is_finite()) {
+    if values * sample_bytes < layout.complete_len {
         return Err("TIFF의 픽셀 크기 또는 부동소수점 값이 잘못되었습니다.".into());
     }
     let row_stride = layout
         .row_stride
         .ok_or("회색조 TIFF의 행 배치가 잘못되었습니다")?
         .get()
-        / 4;
+        / sample_bytes;
     if layout.planes != 1 && layout.planes != channels {
         return Err("회색조 TIFF의 평면 수가 색상 채널과 일치하지 않습니다.".into());
     }
@@ -115,7 +124,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
             .plane_stride
             .ok_or("회색조 TIFF의 평면 간격이 없습니다")?
             .get()
-            / 4
+            / sample_bytes
     } else {
         1
     };
@@ -125,26 +134,27 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         let alpha = if channels == 1 {
             1.
         } else {
-            *values
-                .get(index + component_stride * (channels - 1))
+            sample(&decoded, index + component_stride * (channels - 1))
                 .ok_or("TIFF의 알파 평면이 잘렸습니다")?
         };
         if !(0. ..=1.).contains(&alpha) {
             return Err("TIFF의 알파 값이 0–1 범위를 벗어났습니다.".into());
         }
-        *target = Rgba([0., 0., 0., alpha]);
+        *target = Rgba([0., 0., 0., alpha as f32]);
         for channel in 0..3 {
-            let native = *values
-                .get(index + if gray { 0 } else { channel * component_stride })
-                .ok_or("TIFF의 색상 평면이 잘렸습니다")?;
+            let native = sample(
+                &decoded,
+                index + if gray { 0 } else { channel * component_stride },
+            )
+            .ok_or("TIFF의 색상 평면이 잘렸습니다")?;
             let value = if associated {
                 if alpha == 0. {
                     0.
                 } else {
-                    (f64::from(native) / f64::from(alpha)) as f32
+                    (native / alpha) as f32
                 }
             } else {
-                native
+                native as f32
             };
             if !value.is_finite() {
                 return Err("TIFF의 연관 알파 복원 값이 float32 범위를 초과합니다.".into());
@@ -152,7 +162,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
             target[channel] = value;
         }
     }
-    drop(values);
+    drop(decoded);
     let pixels = if let Some(profile) = source_icc.as_deref() {
         if !gray {
             crate::color_management::apply(DynamicImage::ImageRgba32F(pixels), profile, &mut notes)
@@ -179,20 +189,28 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     };
     let mut dynamic = DynamicImage::ImageRgba32F(pixels);
     dynamic.apply_orientation(orientation);
-    notes.push(
-        if gray {
-            "32비트 회색조 TIFF의 음수·HDR 값을 RGB 작업 버퍼에 유지합니다."
-        } else {
-            "32비트 RGB TIFF의 연관 알파를 분리하고 음수·HDR 값을 유지합니다."
-        }
-        .into(),
-    );
+    notes.push(if gray {
+        "32비트 회색조 TIFF의 음수·HDR 값을 RGB 작업 버퍼에 유지합니다.".into()
+    } else {
+        format!(
+            "{bits}비트 RGB TIFF의 연관 알파를 32비트 작업 버퍼로 분리해 분수·HDR 값을 유지합니다."
+        )
+    });
     Ok(Some(Decoded {
         pixels: dynamic,
         notes,
         source_icc,
         source_metadata,
     }))
+}
+
+fn sample(data: &DecodingResult, index: usize) -> Option<f64> {
+    match data {
+        DecodingResult::U8(v) => v.get(index).map(|v| f64::from(*v) / 255.),
+        DecodingResult::U16(v) => v.get(index).map(|v| f64::from(*v) / 65535.),
+        DecodingResult::F32(v) => v.get(index).map(|v| f64::from(*v)),
+        _ => None,
+    }
 }
 
 fn asset(

@@ -908,3 +908,13 @@ NumPy/tifffile의 독립48입력2448픽셀(없음/작업/자체 XYZ행렬+gamma2
 fmt/clippy release all-targets·TIFF16검사·전체503통과/0실패/1제외(49.42초)·release 빌드 성공. 기존 TIFF52/Predictor3의24·RGB연관48/GRAY연관96·Windows라이선스308/528/18 독립 검사 통과. 직전130커밋5191e9dbd24e7c9886ba9240c1b180272ba35d18의 GitHub main 일치 확인. 입력의32비트 작업층 유지이며8/16층에 적용한 모든 HDR 보정의 자동 판별·모니터/전체ICC·전체 목표는 남는다. 다음132는 정수 RGB TIFF 연관 알파의 float 복원이다.
 
 131 정리:14675생성/오래된 캐시 파일1441995827바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+## 132. RGB UINT8/16 연관 알파의 float 복원
+
+132에서는 기존 일반 정수 TIFF 디코더가 연관 RGB를 그대로 반환하는 것을 첫 실제 입력으로 재현했다. 명시된 RGBA8/16 associated 알파와 UINT/기본 SampleFormat만 선택하고 기존 일반/비연관/태그 생략 경로는 유지한다. 제한된 원래 샘플 버퍼를 직접 조회하며 배율·알파 분리를 f64로 계산해32비트 작업층에 유지한다. 원래 정수로 재반올림하지 않아 분수/HDR값을 유지하며 정수 알파의 정확한 정규화 float 비트·ICC 적용 전 분리·원본 ICC/XMP·방향이 유지된다. 같은 샘플 조회로 기존32float/GRAY 경로도 처리하며 비유한 값·전체 평면·형식/행·평면 간격 검사는 유지했다.
+
+NumPy/tifffile의 독립96UINT8/16입력4896픽셀(두 정밀도×프로파일없음/작업/자체XYZ+gamma×붙은/별도평면×classic/BigTIFF×양쪽 바이트 순서×raw/Deflate,방향1/6/8)을 SHA-256과 고정했다. alpha0색0·작은/분수/최대 알파·HDR복원비를 검사했다. 독립 uint/배율/알파 분리/ICC 행렬·곡선 max SDR절대/HDR상대0.000087949239<0.0008. 정규화 알파·작업/프로파일 없음 RGB 비트·원본 ICC/XMP·v13프로젝트 EXR자산과 자동32TIFF/EXR을 tifffile/OpenCV로 정확 비교했다. 재현 코드 src/tiff_float_tests.rs, tests/fixtures/generate_tiff_integer_associated.py, tests/fixtures/verify_tiff_integer_associated.py. 관계없는 app.rs 줄끝만 바뀐 것은 내용 동등성을 확인한 뒤 원래 바이트로 복원했다.
+
+fmt/clippy release all-targets·전체504통과/0실패/1제외(36.86초)·release 빌드 성공. 기존48RGB float/96GRAY-alpha/80GRAY TIFF·자동 TIFF24·30ICC/라이선스308/528/18 독립 검사 통과. 직전131커밋2dcc9690c1b85dc8e7e7f41ad9ff1a65714691c6의 GitHub main 일치 확인. 회색 UINT 알파·흰색 기준 회색 알파/전체 TIFF·ICC/메타데이터·전체 목표를 유지한다. 다음133은 회색 UINT 알파다.
+
+132 정리:15155생성/오래된 캐시 파일1443406887바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.

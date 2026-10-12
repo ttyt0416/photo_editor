@@ -3,6 +3,91 @@ use crate::files::{ExportOptions, export, load_project, open, save_project};
 use image::{ImageBuffer, ImageFormat};
 
 #[test]
+fn tiff_integer_rgb_associated_float_ratios_hdr_icc_planar_project_auto_tiff() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixtures = base.join("tests/fixtures/tiff-integer-associated");
+    let root = base.join("qa-output/tiff-integer-associated");
+    std::fs::create_dir_all(&root).unwrap();
+    let cases: Vec<serde_json::Value> =
+        serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(cases.len(), 96);
+    for (index, case) in cases.into_iter().enumerate() {
+        let name = case["file"].as_str().unwrap();
+        let path = fixtures.join(name);
+        let before = std::fs::read(&path).unwrap();
+        let imported = open(&path).unwrap();
+        assert!(
+            imported
+                .notes
+                .iter()
+                .any(|n| n.contains("32비트 작업 버퍼로 분리"))
+        );
+        let document = imported.document;
+        assert_eq!(document.layers[0].bit_depth, 32);
+        let pixels = document.layers[0].precision.as_ref().unwrap();
+        assert!(pixels.pixels().any(|p| p.0[..3].iter().any(|v| *v > 1.)));
+        if index == 0 {
+            let generic = image::open(&path).unwrap().to_rgba32f();
+            assert!(
+                generic
+                    .pixels()
+                    .zip(pixels.pixels())
+                    .any(|(g, p)| p[3] > 0. && p[3] < 1. && g[0] != p[0]),
+                "generic integer adapter must reproduce associated pixels"
+            );
+        }
+        std::fs::write(
+            root.join(format!("{name}.f32")),
+            pixels
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        let composite = crate::precision::composite(&document);
+        std::fs::write(
+            root.join(format!("{name}.comp.f32")),
+            composite
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+        save_project(&document, &root.join(format!("{name}.rphoto"))).unwrap();
+        let restored = load_project(&root.join(format!("{name}.rphoto"))).unwrap();
+        assert_eq!(
+            restored.layers[0]
+                .precision
+                .as_ref()
+                .unwrap()
+                .as_raw()
+                .iter()
+                .map(|v| v.to_bits())
+                .collect::<Vec<_>>(),
+            pixels
+                .as_raw()
+                .iter()
+                .map(|v| v.to_bits())
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(restored.source_icc, document.source_icc);
+        assert_eq!(restored.source_metadata.xmp, document.source_metadata.xmp);
+        for (extension, format) in [("tiff", ImageFormat::Tiff), ("exr", ImageFormat::OpenExr)] {
+            let output = root.join(format!("{name}-working.{extension}"));
+            export(&restored, &output, format, &Default::default()).unwrap();
+            assert_eq!(open(&output).unwrap().document.layers[0].bit_depth, 32);
+            assert_eq!(
+                crate::precision::composite(&open(&output).unwrap().document),
+                composite
+            );
+        }
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+}
+
+#[test]
 fn tiff_rgb_float_associated_hdr_planar_icc_projects_independent_outputs() {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"));
     let fixtures = base.join("tests/fixtures/tiff-rgb-associated");
