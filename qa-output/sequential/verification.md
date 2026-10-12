@@ -928,3 +928,13 @@ NumPy/tifffile 독립256입력13056픽셀(8/16×프로파일없음/선형/gamma1
 fmt/clippy release all-targets·전체505통과/0실패/1제외(34.98초)·release 빌드 성공. 기존UINT RGB96/float RGB48/GRAY-alpha96/GRAY80/자동TIFF24/Windows라이선스308/528/18 독립 검사 통과. 직전132커밋0b99d6ec83472348fc35c22a9b3deafffcfbe28d의 GitHub main 일치 확인. 흰색 기준 회색 알파/추가 TIFF·전체ICC/메타데이터·전체 목표는 유지한다. 다음134는8/16/32회색/알파 TIFF 저장이다.
 
 133 정리:16435생성/오래된 캐시 파일1446530532바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+## 134. 네이티브 Gray+Alpha TIFF 저장·실제 옵션
+
+회색조 옵션은 기본 끄기이며 공통 ExportOptions/미리보기 옵션 키·실제 체크박스에 연결한다. unsigned8/16·float32의 네이티브2샘플 ColorType과 알파 정의를 사용하며 정수 수평 예측은2채널 간격을 적용한다. ICC 포함은 작업 GRAY 원문을 사용하고 끄면 기록하지 않는다. 기존 RGBA 저장 경로/메타데이터·원자적 교체/옵션 오류 보호는 유지한다. 중성 RGB는 원래 f32 샘플을 그대로 유지하고 컬러는 현재 작업 RGB0.2126/0.7152/0.0722수치를 f64로 계산한다. 정수 범위 제한은 계산 뒤에 적용하며 ICC 선형 광도/Photoshop 외관 일치를 주장하지 않는다.
+
+중성/컬러×8/16/32×6압축/사용 가능 예측×classic/BigTIFF×ICC포함/끄기240출력12240픽셀을 검사했다. 최대/음수 f32·-0·HDR/분수 알파·float 정확 비트·정수알파·프로파일/프로젝트 원문/CRC·2샘플/검정 기준/알파태그를 확인했다. 독립 Python LZW/Deflate/PackBits·수평/float 바이트 평면 역변환·휘도 수식과 정확 float 비트가 일치한다. 실제 옵션 토글/설명 표시/원본·이력 불변도 headless 클릭으로 검사했다. src/tiff_output.rs, tests/fixtures/verify_tiff_gray_outputs.py에 재현 코드를 보관한다. 새 필드는 전체 옵션 키의 비교에 포함되고 실제 미리보기는 같은 공통 인코더로 파일을 생성한다.
+
+fmt/clippy release all-targets·전체506통과/0실패/1제외(35.50초)·release 빌드 성공. 기존RGB TIFF52/Predictor3의24·GRAY UINT알파256/UINT RGB96/자동TIFF24·Windows라이선스308/528/18 독립 검사 통과. 직전133커밋fb294ebb3ff2146dcf1dc1d1f2cee514ee1586af의 GitHub main 일치 확인. 전체 ICC·추가 TIFF/Photoshop·메타데이터/전체 목표는 유지한다. 다음135는 흰색 기준 회색 알파 입력이다.
+
+134 정리:16918생성/오래된 캐시 파일1448566926바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.

@@ -7,7 +7,40 @@ use tiff::encoder::{
     Compression, DeflateLevel, Predictor, Rational, TiffEncoder, TiffKind, TiffValue,
     colortype::{ColorType, RGBA8, RGBA16, RGBA32Float},
 };
-use tiff::tags::{ExtraSamples, ResolutionUnit, Tag};
+use tiff::tags::{ExtraSamples, PhotometricInterpretation, ResolutionUnit, SampleFormat, Tag};
+
+macro_rules! gray_alpha_integer {
+    ($name:ident,$sample:ty,$bits:expr) => {
+        struct $name;
+        impl ColorType for $name {
+            type Inner = $sample;
+            const TIFF_VALUE: PhotometricInterpretation = PhotometricInterpretation::BlackIsZero;
+            const BITS_PER_SAMPLE: &'static [u16] = &[$bits; 2];
+            const SAMPLE_FORMAT: &'static [SampleFormat] = &[SampleFormat::Uint; 2];
+            fn horizontal_predict(row: &[$sample], result: &mut Vec<$sample>) {
+                result.extend_from_slice(&row[..2]);
+                result.extend(
+                    row[2..]
+                        .iter()
+                        .zip(row)
+                        .map(|(value, previous)| value.wrapping_sub(*previous)),
+                );
+            }
+        }
+    };
+}
+gray_alpha_integer!(GrayAlpha8, u8, 8);
+gray_alpha_integer!(GrayAlpha16, u16, 16);
+struct GrayAlpha32;
+impl ColorType for GrayAlpha32 {
+    type Inner = f32;
+    const TIFF_VALUE: PhotometricInterpretation = PhotometricInterpretation::BlackIsZero;
+    const BITS_PER_SAMPLE: &'static [u16] = &[32; 2];
+    const SAMPLE_FORMAT: &'static [SampleFormat] = &[SampleFormat::IEEEFP; 2];
+    fn horizontal_predict(_: &[f32], _: &mut Vec<f32>) {
+        unreachable!()
+    }
+}
 pub const COMPRESSION_LABELS: &[&str] = &[
     "없음",
     "LZW",
@@ -69,7 +102,7 @@ where
     [C::Inner]: TiffValue,
 {
     let mut image = encoder.new_image::<C>(size[0], size[1]).map_err(err)?;
-    // RGBA ColorTypes already include alpha; set its interpretation without adding a fifth sample.
+    // Each ColorType already includes alpha; declare it without adding a sample.
     image
         .encoder()
         .write_tag(
@@ -100,7 +133,14 @@ where
     if options.include_icc {
         image
             .encoder()
-            .write_tag(Tag::IccProfile, crate::color_management::srgb_profile())
+            .write_tag(
+                Tag::IccProfile,
+                if options.tiff_grayscale {
+                    crate::color_management::gray_profile()
+                } else {
+                    crate::color_management::srgb_profile()
+                },
+            )
             .map_err(err)?;
     }
     if let Some(xmp) = xmp {
@@ -119,6 +159,49 @@ fn encode<W: Write + Seek, K: TiffKind>(
     encoder = configure(encoder, options);
     let size = [doc.width, doc.height];
     let xmp = crate::xmp_output::prepare(doc, options.include_xmp)?;
+    if options.tiff_grayscale {
+        let pixels = crate::precision::composite(doc);
+        if pixels.as_raw().iter().any(|v| !v.is_finite()) {
+            return Err("TIFF 출력에 비정상 부동소수점 값이 있습니다.".into());
+        }
+        // Keep neutral float samples exactly. Colored inputs use the existing
+        // working RGB luma policy; compute before limiting integer output.
+        let values: Vec<f32> = pixels
+            .pixels()
+            .flat_map(|p| {
+                let gray = if p[0] == p[1] && p[1] == p[2] {
+                    p[0]
+                } else {
+                    (0.2126 * f64::from(p[0]) + 0.7152 * f64::from(p[1]) + 0.0722 * f64::from(p[2]))
+                        as f32
+                };
+                [gray, p[3]]
+            })
+            .collect();
+        return match depth(doc, options) {
+            8 => image::<_, _, GrayAlpha8>(
+                &mut encoder,
+                size,
+                &values
+                    .iter()
+                    .map(|v| (f64::from(*v).clamp(0., 1.) * 255.).round() as u8)
+                    .collect::<Vec<_>>(),
+                options,
+                xmp.as_deref(),
+            ),
+            16 => image::<_, _, GrayAlpha16>(
+                &mut encoder,
+                size,
+                &values
+                    .iter()
+                    .map(|v| (f64::from(*v).clamp(0., 1.) * 65535.).round() as u16)
+                    .collect::<Vec<_>>(),
+                options,
+                xmp.as_deref(),
+            ),
+            _ => image::<_, _, GrayAlpha32>(&mut encoder, size, &values, options, xmp.as_deref()),
+        };
+    }
     match depth(doc, options) {
         8 => image::<_, _, RGBA8>(
             &mut encoder,
@@ -174,6 +257,138 @@ pub fn save(doc: &Document, path: &Path, options: &ExportOptions) -> Result<(), 
 mod tests {
     use super::*;
     use crate::precision;
+    #[test]
+    fn grayscale_tiff_uint_float_alpha_hdr_all_compressions_profiles_projects() {
+        let root =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("qa-output/tiff-gray-output");
+        std::fs::create_dir_all(&root).unwrap();
+        let mut cases = vec![];
+        for neutral in [false, true] {
+            let pixels = image::Rgba32FImage::from_fn(17, 3, |x, y| {
+                let value = if x == 3 {
+                    f32::MAX
+                } else if x == 4 {
+                    -f32::MAX
+                } else if x == 8 {
+                    -0.0
+                } else {
+                    (x as f32 - 8.) / 4.
+                };
+                image::Rgba([
+                    value,
+                    if neutral { value } else { y as f32 / 2. },
+                    if neutral { value } else { x as f32 / 8. },
+                    if x == 0 {
+                        0.
+                    } else if x == 1 {
+                        0.125
+                    } else if x == 2 {
+                        0.33333334
+                    } else {
+                        1.
+                    },
+                ])
+            });
+            let doc = precision::document(
+                format!("gray{neutral}"),
+                image::DynamicImage::ImageRgba32F(pixels),
+            )
+            .unwrap();
+            let source = doc.layers[0].precision.clone();
+            let composite = precision::composite(&doc);
+            std::fs::write(
+                root.join(format!("source{neutral}.f32")),
+                composite
+                    .as_raw()
+                    .iter()
+                    .flat_map(|v| v.to_le_bytes())
+                    .collect::<Vec<_>>(),
+            )
+            .unwrap();
+            for bits in [8, 16, 32] {
+                for compression in 0..COMPRESSION_LABELS.len() {
+                    for big in [false, true] {
+                        for predictor in [false, true] {
+                            if predictor && !(1..=4).contains(&compression) {
+                                continue;
+                            }
+                            for icc in [false, true] {
+                                let name = format!(
+                                    "n{neutral}-d{bits}-c{compression}-big{big}-p{predictor}-icc{icc}.tiff"
+                                );
+                                let options = ExportOptions {
+                                    tiff_grayscale: true,
+                                    tiff_depth: if bits == 8 {
+                                        1
+                                    } else if bits == 16 {
+                                        2
+                                    } else {
+                                        3
+                                    },
+                                    tiff_compression: compression,
+                                    tiff_big: big,
+                                    tiff_float_predictor: predictor && bits == 32,
+                                    tiff_predictor: predictor && bits != 32,
+                                    include_icc: icc,
+                                    ..Default::default()
+                                };
+                                crate::files::export(
+                                    &doc,
+                                    &root.join(&name),
+                                    image::ImageFormat::Tiff,
+                                    &options,
+                                )
+                                .unwrap();
+                                let imported =
+                                    crate::files::open(&root.join(&name)).unwrap().document;
+                                let actual = precision::composite(&imported);
+                                assert!(actual.pixels().all(|p| p[0].to_bits() == p[1].to_bits()
+                                    && p[0].to_bits() == p[2].to_bits()));
+                                assert_eq!(imported.source_icc.is_some(), icc);
+                                if icc {
+                                    assert_eq!(
+                                        imported.source_icc.as_deref().unwrap().as_slice(),
+                                        crate::color_management::gray_profile()
+                                    );
+                                }
+                                if bits == 32 && neutral {
+                                    assert_eq!(
+                                        actual
+                                            .as_raw()
+                                            .iter()
+                                            .map(|v| v.to_bits())
+                                            .collect::<Vec<_>>(),
+                                        composite
+                                            .as_raw()
+                                            .iter()
+                                            .map(|v| v.to_bits())
+                                            .collect::<Vec<_>>()
+                                    );
+                                }
+                                let project = root.join(format!("{name}.rphoto"));
+                                crate::files::save_project(&imported, &project).unwrap();
+                                assert_eq!(
+                                    precision::composite(
+                                        &crate::files::load_project(&project).unwrap()
+                                    ),
+                                    actual
+                                );
+                                cases.push(serde_json::json!({"file":name,"neutral":neutral,"bits":bits,"compression":compression,"big":big,"predictor":predictor,"icc":icc}));
+                            }
+                        }
+                    }
+                }
+            }
+            assert_eq!(doc.layers[0].precision, source);
+            assert_eq!(precision::composite(&doc), composite);
+        }
+        assert_eq!(cases.len(), 240);
+        std::fs::write(
+            root.join("manifest.json"),
+            serde_json::to_vec_pretty(&cases).unwrap(),
+        )
+        .unwrap();
+    }
     #[test]
     fn automatic_tiff_preserves_native_eight_sixteen_float_hdr_and_mixed_precision() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("qa-output/tiff-auto");

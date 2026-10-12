@@ -3675,6 +3675,25 @@ mod tests {
         assert!(!app.export_options.tiff_float_predictor);
         click(&mut app, &ctx, &mut clock, "BigTIFF");
         assert!(app.export_options.tiff_big);
+        let original = app.tab().unwrap().editor.document.clone();
+        click(&mut app, &ctx, &mut clock, "회색조");
+        assert!(app.export_options.tiff_grayscale);
+        assert!(
+            frame(
+                &mut app,
+                &ctx,
+                &mut clock,
+                vec![],
+                "회색조로 변환하며 투명도와 선택한 정밀도를 유지합니다."
+            )
+            .is_some()
+        );
+        click(&mut app, &ctx, &mut clock, "회색조");
+        assert!(!app.export_options.tiff_grayscale);
+        assert_eq!(
+            crate::precision::composite(&app.tab().unwrap().editor.document),
+            crate::precision::composite(&original)
+        );
         assert_eq!(app.export_options.tiff_resolution, 72);
         assert_eq!(app.tab().unwrap().editor.history().count(), 0);
         assert!(app.message.is_none());
@@ -12687,6 +12706,8 @@ impl PhotoEditor {
                     ui.label("속도가 낮을수록 저장 시간이 늘어날 수 있습니다. HDR/음수 RGB는 SDR 범위로 변환합니다.");
                 }
                 if format==image::ImageFormat::Tiff {
+                    ui.checkbox(&mut self.export_options.tiff_grayscale,"회색조");
+                    if self.export_options.tiff_grayscale {ui.label("회색조로 변환하며 투명도와 선택한 정밀도를 유지합니다.");}
                     egui::ComboBox::from_id_salt("tiff-depth").selected_text(crate::tiff_output::DEPTH_LABELS[self.export_options.tiff_depth]).show_ui(ui,|ui|{for (i,label) in crate::tiff_output::DEPTH_LABELS.iter().enumerate(){ui.selectable_value(&mut self.export_options.tiff_depth,i,*label);}});
                     egui::ComboBox::from_id_salt("tiff-compression").selected_text(crate::tiff_output::COMPRESSION_LABELS[self.export_options.tiff_compression]).show_ui(ui,|ui|{for (i,label) in crate::tiff_output::COMPRESSION_LABELS.iter().enumerate(){ui.selectable_value(&mut self.export_options.tiff_compression,i,*label);}});
                     let float=crate::tiff_output::depth(&self.tab().unwrap().editor.document,&self.export_options)==32;
