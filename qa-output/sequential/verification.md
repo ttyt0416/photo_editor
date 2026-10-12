@@ -1,6 +1,6 @@
 # 순차 구현 검증 기록 — 2026-10-12
 
-현재까지 순차 구현 기록의 1–24/26–119번 기능을 구현하고 자동 검사했으며, 25번에서 참고 README의 46개 항목을 대응했다. 전체 개발 계획의 완료를 뜻하지 않는다. 원래 범위와 Windows 전용 결정은 DEVELOPMENT_CHECKLIST.md에 유지한다.
+현재까지 순차 구현 기록의 1–24/26–120번 기능을 구현하고 자동 검사했으며, 25번에서 참고 README의 46개 항목을 대응했다. 전체 개발 계획의 완료를 뜻하지 않는다. 원래 범위와 Windows 전용 결정은 DEVELOPMENT_CHECKLIST.md에 유지한다.
 
 검증 예제/로그 경로는 검사로 재현하는 생성 위치다. 2026-10-12 사용자 요청에 따라 부산물을 삭제했고, 이후에도 독립 검사를 마친 생성 이미지·프로젝트·로그/Python 캐시는 정리한다. 작성한 이 기록과 재현 코드·기준 입력·실행 파일은 보존한다.
 
@@ -8,7 +8,7 @@
 
 - `cargo fmt --check`: 성공.
 - `cargo clippy --all-targets --offline -- -D warnings`: 성공.
-- `cargo test --offline`: 478개 통과, 실패 0, 수동 성능 진단 1개 제외(총 479개).
+- `cargo test --offline`: 480개 통과, 실패 0, 수동 성능 진단 1개 제외(총 481개).
 - `cargo build --offline`, `cargo build --release --offline`: 성공. 두 실행 파일을 갱신했다.
 - `python tests/fixtures/verify_compressed_psd_outputs.py`: 8/16/32비트 × PSD/PSB × 무압축/RLE/ZIP/예측 24개 파일의 레이어/마스크/행 길이/예측/합성 이미지 확인.
 - `python tests/fixtures/verify_hdr_outputs.py`: 일반/RLE 행의 RGBE 픽셀·알파 배경 합성·음수 변환·최대 표현 값 확인.
@@ -16,7 +16,7 @@
 - Pillow 12.1.0: Rust PCX 출력을 독립 디코딩해 기대 RGB 픽셀과 일치 확인.
 - PNG 10단계 × 6개 필터 × 8/16비트 = 120개 조합의 픽셀·알파·정밀도 확인.
 
-release 실행 파일 SHA-256: `ee3230d913a45b5533d6d065f129ad97021f63ef153fa4b87f6f0dd2b3b58ae5`
+release 실행 파일 SHA-256: `91fd7d1ba8be95ca18d49cca6b4e88064eb3dd237c7d9ef2220f8f7d89968aa3`
 
 ## 기능과 예제 위치
 
@@ -793,3 +793,13 @@ EXIF/XMP가 있는 문서만 v13 metadata/source.exif·source.xmp를 저장하�
 48PNG/JPEG/WebP/1680픽셀(8방향×두 EXIF 바이트 순서·Make/Unicode XMP·PNG 압축 XMP8종), 큰12KB 이상 XMP를 가진 tiny TIFF1종의 원문/CRC와 별도 Pillow 방향 RGBA/프로젝트 크기·v13 자산 원문·재입력/문서 이력 공유를 비교했다. EXIF/XMP 각각의 누락/손상/초과/버전 오류·원자적 저장/임의 바이트 보존·메타데이터 없는 v8도 검사했다. 재현 코드: src/source_metadata_tests.rs, tests/fixtures/verify_source_metadata_projects.py.
 
 전체478통과/0실패/1제외(49.16초), fmt/clippy·개발/release 빌드 성공. 기존 ICC8프로젝트·SVG20정규화/16자산·라이선스308/528/18 독립 검사도 통과했다. 잘못 지정한 SVG 독립 검사 파일명 때문에 검사 명령이 종료된 뒤 실제 verify_svg_normalized_outputs.py/verify_svg_asset_outputs.py를 실행해 통과하고 빌드를 완료했다. 생성 부산물은 정리한다. 직전118커밋bf2810d92466215d130027b419d2d812bbf1aded의 GitHub main 원격 일치를 확인했다. 다음120은 PNG/JPEG/WebP EXIF 출력 선택/방향·치수 갱신이며 TIFF 원본 EXIF/추가 코덱·확장 XMP/IPTC·전체 메타데이터 편집/출력은 남음.
+
+## 120. PNG/JPEG/WebP EXIF 출력·기존 방향/치수 갱신
+
+PNG/JPEG/WebP의 촬영 EXIF 포함 선택(기본 포함)을 추가하고 옵션 전체의 미리보기 키/실제 headless 토글/취소·이력 유지·TIFF에서 해당 옵션 숨김을 확인했다. PNG/WebP 무손실의 기존 EXIF API와 JPEG APP1을 쓰고 손실 WebP는 기존 VP8X/ICC/ALPH/VP8 원문을 유지하며 EXIF를 마지막에 붙인다.
+
+원본 TIFF 형식 EXIF의 출력 사본만 수정한다. 기존 Orientation은1, IFD0 ImageWidth/ImageLength 및 ExifIFD PixelX/YDimension은 현재 크기로 갱신하며 SHORT 범위를 넘는 값은 기존4바이트 슬롯을 LONG으로 바꾼다. 원본 썸네일 IFD 연결만 해제하고 자산 길이/불투명 Make·썸네일 원문/오프셋을 유지한다. 새 태그를 임의 생성하거나 프로젝트 원문을 덮어쓰지 않는다. 잘못된 header/offset/type/순환/크기와 JPEG APP1 한도 오류는 기존 출력을 유지하며 포함 옵션을 끄면 사진을 저장할 수 있다.
+
+258출력25542픽셀(8방향×두 바이트 순서·실제 가져오기/크기9×11 편집/이력·PNG/JPEG/무손실/손실WebP·ICC/EXIF선택 + native PNG16 쌍), 129포함/제외 쌍의 정확 PNG IDAT/JPEG 비APP1/WebP VP8/VP8L/ALPH 원문·프로젝트 CRC/원본 공유와 별도 Pillow EXIF/방향/치수/Make/불투명 원문을 비교했다. PNG/WebP RGBA와 native PNG16은 별도 디코더와 정확 일치한다. JPEG는 decoder IDCT 차이 허용2단위 안에서 최대2이며, EXIF 포함/제외의 압축 데이터와 각 디코더의 픽셀은 정확 동일하다. 16개의 넓은70000×80000 EXIF 슬롯을 별도 Pillow로 확인했다(대형 사진 렌더 성능 검증이 아닌 태그 검사). 재현 코드: src/exif_output_tests.rs, tests/fixtures/verify_exif_output_files.py.
+
+전체480통과/0실패/1제외(51.37초), fmt/clippy·개발/release 빌드 성공. 기존 원본 EXIF/XMP49입력·WebP ICC32출력·공통 ICC18출력·라이선스308/528/18 독립 검사도 통과했다. 생성 부산물은 정리한다. 직전119커밋7c05b9652ec309c18ce1de0301fcf269c1c21144의 GitHub main 원격 일치를 확인했다. 다음121은 PNG/JPEG/WebP/TIFF XMP 출력/방향·치수 갱신이며 TIFF/추가 EXIF 구조·확장 XMP/IPTC·전체 메타데이터 목표는 남음.

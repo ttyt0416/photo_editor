@@ -177,3 +177,5 @@ JPEG XL 예제6종은 [libjxl/conformance](https://github.com/libjxl/conformance
 순차118 `verify_source_icc_projects.py`는 자체8PNG/JPEG/TIFF/WebP/JP2 native/P3/잘못된 프로파일 입력의 독립 원문과 프로젝트v12 원문/크기/CRC/플래그를 정확 비교한다. 작업 출력 프로파일과 원본 프로파일을 구분하고 프로파일 없는 v8 구조도 확인한다. 오류 프로젝트와 생성 입력/출력은 검사 후 정리하고 재현 코드/기준 입력은 유지한다.
 
 순차119 `verify_source_metadata_projects.py`는 자체49입력의 PNG chunk CRC/압축 XMP·JPEG APP1·WebP RIFF·TIFF XMP 원문 및 v13 EXIF/XMP/ICC 자산/CRC를 독립 비교한다. Pillow로48입력1680픽셀의8방향/두 바이트 순서·Make/Unicode를 정확 확인한다. 큰 TIFF XMP·이전 v8와 자산 오류도 검사하며 생성 파일은 검사 후 정리한다. 전체 촬영 메타데이터 편집/출력 완료를 뜻하지 않는다.
+
+순차120 `verify_exif_output_files.py`는 자체258출력25542픽셀/129포함·제외 쌍의 정확 압축 데이터·EXIF 방향/IFD0·ExifIFD치수/Make/불투명 원문·독립 픽셀/PNG16·프로젝트 CRC를 검사한다. JPEG 디코더 차이 최대2와 메타데이터 포함의 정확 압축 동일을 구분한다. 16넓은 치수 태그/SHORT→LONG도 별도 Pillow로 읽는다. 생성 출력은 정리하며 재현 코드를 유지한다. 전체 메타데이터/대형 성능 완료를 뜻하지 않는다.

@@ -1240,6 +1240,7 @@ pub const EXPORT_FORMATS: &[(ImageFormat, &str, &str)] = &[
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ExportOptions {
     pub include_icc: bool,
+    pub include_exif: bool,
     pub jp2_icc: bool,
     pub jp2_resolution_enabled: bool,
     pub jp2_resolution: u16,
@@ -1286,6 +1287,7 @@ impl Default for ExportOptions {
     fn default() -> Self {
         Self {
             include_icc: true,
+            include_exif: true,
             jp2_icc: false,
             jp2_resolution_enabled: false,
             jp2_resolution: 72,
@@ -1442,10 +1444,15 @@ pub fn export(
                 .map_err(error)
         });
     }
+    let exif = if matches!(format, ImageFormat::Png | ImageFormat::WebP) {
+        crate::exif_output::prepare(document, options.include_exif)?
+    } else {
+        None
+    };
     let image = document.composite();
     atomic_write(path, |file| {
         if format == ImageFormat::WebP {
-            return crate::webp_output::write(&image, file, options);
+            return crate::webp_output::write(&image, file, options, exif.as_deref());
         }
         if format == ImageFormat::Pnm {
             let mut rgb = image::RgbImage::new(image.width(), image.height());
@@ -1506,6 +1513,9 @@ pub fn export(
                     encoder
                         .set_icc_profile(crate::color_management::srgb_profile().to_vec())
                         .map_err(error)?;
+                }
+                if let Some(exif) = exif {
+                    encoder.set_exif_metadata(exif).map_err(error)?;
                 }
                 image.write_with_encoder(encoder).map_err(error)
             } else {

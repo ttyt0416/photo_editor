@@ -24,6 +24,7 @@ pub fn save(doc: &Document, path: &Path, options: &ExportOptions) -> Result<(), 
     }
     let w = u16::try_from(doc.width).map_err(|_| "JPEG의 가로는 65535px 이하여야 합니다.")?;
     let h = u16::try_from(doc.height).map_err(|_| "JPEG의 세로는 65535px 이하여야 합니다.")?;
+    let exif = crate::exif_output::prepare(doc, options.include_exif)?;
     let pixels = doc.composite();
     let rgb = image::RgbImage::from_fn(doc.width, doc.height, |x, y| {
         let p = pixels.get_pixel(x, y);
@@ -35,6 +36,9 @@ pub fn save(doc: &Document, path: &Path, options: &ExportOptions) -> Result<(), 
     });
     crate::files::atomic_write(path, |file| {
         let mut encoder = Encoder::new(file, options.quality);
+        if let Some(exif) = &exif {
+            encoder.add_exif_metadata(exif).map_err(|e| e.to_string())?;
+        }
         if options.include_icc {
             encoder
                 .add_icc_profile(crate::color_management::srgb_profile())

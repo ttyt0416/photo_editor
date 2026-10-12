@@ -5,12 +5,18 @@ pub fn write(
     image: &image::RgbaImage,
     file: &mut std::fs::File,
     options: &crate::files::ExportOptions,
+    exif: Option<&[u8]>,
 ) -> Result<(), String> {
     if options.webp_lossless {
         let mut encoder = image::codecs::webp::WebPEncoder::new_lossless(file);
         if options.include_icc {
             encoder
                 .set_icc_profile(crate::color_management::srgb_profile().to_vec())
+                .map_err(|e| e.to_string())?;
+        }
+        if let Some(exif) = exif {
+            encoder
+                .set_exif_metadata(exif.to_vec())
                 .map_err(|e| e.to_string())?;
         }
         return encoder
@@ -31,9 +37,15 @@ pub fn write(
     let encoded = webp::Encoder::from_rgba(image.as_raw(), image.width(), image.height())
         .encode_advanced(&config)
         .map_err(|e| format!("WebP 인코딩 실패: {e:?}"))?;
-    if options.include_icc {
-        file.write_all(&with_srgb(&encoded, image.width(), image.height())?)
-            .map_err(|e| e.to_string())
+    if options.include_icc || exif.is_some() {
+        file.write_all(&with_metadata(
+            &encoded,
+            image.width(),
+            image.height(),
+            options.include_icc,
+            exif,
+        )?)
+        .map_err(|e| e.to_string())
     } else {
         file.write_all(&encoded).map_err(|e| e.to_string())
     }
@@ -41,7 +53,13 @@ pub fn write(
 
 // Only the fresh, single-frame libwebp encoder output enters this wrapper.
 // Keep its ALPH/VP8 payload intact; ICCP follows VP8X per the WebP specification.
-fn with_srgb(encoded: &[u8], width: u32, height: u32) -> Result<Vec<u8>, String> {
+fn with_metadata(
+    encoded: &[u8],
+    width: u32,
+    height: u32,
+    icc: bool,
+    exif: Option<&[u8]>,
+) -> Result<Vec<u8>, String> {
     let invalid = || "WebP 인코더의 출력 구조가 잘못되었습니다.".to_owned();
     if encoded.len() < 20
         || &encoded[..4] != b"RIFF"
@@ -68,9 +86,21 @@ fn with_srgb(encoded: &[u8], width: u32, height: u32) -> Result<Vec<u8>, String>
     } else {
         return Err(invalid());
     };
-    extension[0] |= 0x20;
+    if icc {
+        extension[0] |= 0x20;
+    }
+    if exif.is_some() {
+        extension[0] |= 0x08;
+    }
     let profile = crate::color_management::srgb_profile();
-    let length = 30 + 8 + profile.len() + profile.len() % 2 + encoded.len() - start;
+    let length =
+        30 + if icc {
+            8 + profile.len() + profile.len() % 2
+        } else {
+            0
+        } + exif.map_or(0, |bytes| 8 + bytes.len() + bytes.len() % 2)
+            + encoded.len()
+            - start;
     let riff_length = u32::try_from(length - 8).map_err(|_| invalid())?;
     let mut result = Vec::with_capacity(length);
     result.extend_from_slice(b"RIFF");
@@ -78,13 +108,21 @@ fn with_srgb(encoded: &[u8], width: u32, height: u32) -> Result<Vec<u8>, String>
     result.extend_from_slice(b"WEBPVP8X");
     result.extend_from_slice(&10u32.to_le_bytes());
     result.extend_from_slice(&extension);
-    result.extend_from_slice(b"ICCP");
-    result.extend_from_slice(&(profile.len() as u32).to_le_bytes());
-    result.extend_from_slice(profile);
-    if profile.len() % 2 == 1 {
-        result.push(0);
+    fn chunk(result: &mut Vec<u8>, kind: &[u8; 4], data: &[u8]) {
+        result.extend_from_slice(kind);
+        result.extend_from_slice(&(data.len() as u32).to_le_bytes());
+        result.extend_from_slice(data);
+        if data.len() % 2 == 1 {
+            result.push(0);
+        }
+    }
+    if icc {
+        chunk(&mut result, b"ICCP", profile);
     }
     result.extend_from_slice(&encoded[start..]);
+    if let Some(exif) = exif {
+        chunk(&mut result, b"EXIF", exif);
+    }
     Ok(result)
 }
 

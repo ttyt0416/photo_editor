@@ -41,6 +41,7 @@ mod document;
 mod document_id;
 mod editing;
 mod effects;
+mod exif_output;
 mod export_preview;
 mod file_watch;
 mod files;

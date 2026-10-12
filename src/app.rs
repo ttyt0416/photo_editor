@@ -12625,6 +12625,9 @@ impl PhotoEditor {
                 if self.export_format < files::EXPORT_FORMATS.len() && matches!(format,image::ImageFormat::Png|image::ImageFormat::Jpeg|image::ImageFormat::Tiff|image::ImageFormat::WebP) {
                     ui.checkbox(&mut self.export_options.include_icc,"작업 sRGB 프로파일 포함");
                 }
+                if self.export_format < files::EXPORT_FORMATS.len() && matches!(format,image::ImageFormat::Png|image::ImageFormat::Jpeg|image::ImageFormat::WebP) {
+                    ui.checkbox(&mut self.export_options.include_exif,"촬영 EXIF 메타데이터 포함");
+                }
                 if format==image::ImageFormat::Jpeg {
                     egui::ComboBox::from_id_salt("jpeg-sampling").selected_text(crate::jpeg_output::SAMPLING_LABELS[self.export_options.jpeg_sampling]).show_ui(ui,|ui|{for (i,label) in crate::jpeg_output::SAMPLING_LABELS.iter().enumerate(){ui.selectable_value(&mut self.export_options.jpeg_sampling,i,*label);}});
                     ui.label("4:4:4는 색상 경계를 더 선명하게 보존하고 4:2:0은 보통 파일이 작습니다.");

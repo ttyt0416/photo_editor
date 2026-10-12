@@ -64,6 +64,13 @@ fn icc_output_native_checkbox_formats_toggle_preview_key_cancel_and_history() {
         click(&mut app, &ctx, &mut clock, "작업 sRGB 프로파일 포함");
         assert!(!app.export_options.include_icc);
         assert_ne!(app.export_options, original);
+        if format != image::ImageFormat::Tiff {
+            assert!(app.export_options.include_exif);
+            click(&mut app, &ctx, &mut clock, "촬영 EXIF 메타데이터 포함");
+            assert!(!app.export_options.include_exif);
+        } else {
+            assert!(frame(&mut app, &ctx, &mut clock, vec![], "촬영 EXIF 메타데이터 포함").is_none());
+        }
         click(&mut app, &ctx, &mut clock, "취소");
         assert!(!app.export_dialog);
         assert_eq!(app.tab().unwrap().editor.history().count(), 0);
