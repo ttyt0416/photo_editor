@@ -16,14 +16,16 @@ pub const COMPRESSION_LABELS: &[&str] = &[
     "Deflate 최대",
     "PackBits",
 ];
-pub const DEPTH_LABELS: &[&str] = &["자동 (8/16비트)", "8비트", "16비트", "32비트 부동소수점"];
+pub const DEPTH_LABELS: &[&str] = &["자동 (8/16/32비트)", "8비트", "16비트", "32비트 부동소수점"];
 pub fn depth(doc: &Document, options: &ExportOptions) -> u8 {
     match options.tiff_depth {
         1 => 8,
         2 => 16,
         3 => 32,
         _ => {
-            if doc.layers.iter().any(|l| l.bit_depth > 8) {
+            if doc.layers.iter().any(|l| l.bit_depth == 32) {
+                32
+            } else if doc.layers.iter().any(|l| l.bit_depth > 8) {
                 16
             } else {
                 8
@@ -172,6 +174,126 @@ pub fn save(doc: &Document, path: &Path, options: &ExportOptions) -> Result<(), 
 mod tests {
     use super::*;
     use crate::precision;
+    #[test]
+    fn automatic_tiff_preserves_native_eight_sixteen_float_hdr_and_mixed_precision() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("qa-output/tiff-auto");
+        std::fs::create_dir_all(&root).unwrap();
+        let mut cases = vec![];
+        for bits in [8, 16, 32] {
+            let source = image::Rgba32FImage::from_fn(17, 3, |x, y| {
+                image::Rgba([
+                    if bits == 32 {
+                        (x as f32 - 8.) / 4.
+                    } else {
+                        x as f32 / 16.
+                    },
+                    if bits == 32 {
+                        y as f32 + 2.5
+                    } else {
+                        y as f32 / 2.
+                    },
+                    x as f32 / 24.,
+                    if x == 0 {
+                        0.
+                    } else if x == 1 {
+                        0.125
+                    } else {
+                        1.
+                    },
+                ])
+            });
+            let input = match bits {
+                8 => image::DynamicImage::ImageRgba8(precision::preview(&source)),
+                16 => image::DynamicImage::ImageRgba16(precision::image16(&source)),
+                _ => image::DynamicImage::ImageRgba32F(source),
+            };
+            let doc = precision::document(format!("native{bits}"), input).unwrap();
+            let pixels = precision::composite(&doc);
+            std::fs::write(
+                root.join(format!("source{bits}.f32")),
+                pixels
+                    .as_raw()
+                    .iter()
+                    .flat_map(|v| v.to_le_bytes())
+                    .collect::<Vec<_>>(),
+            )
+            .unwrap();
+            for compression in [0, 1, 3, 5] {
+                for big in [false, true] {
+                    let name = format!("auto{bits}-c{compression}-big{big}.tiff");
+                    let options = ExportOptions {
+                        tiff_compression: compression,
+                        tiff_big: big,
+                        tiff_float_predictor: bits == 32 && (1..=4).contains(&compression),
+                        tiff_predictor: bits != 32 && (1..=4).contains(&compression),
+                        ..Default::default()
+                    };
+                    // Auto must choose the precision needed before validating prediction.
+                    crate::files::export(
+                        &doc,
+                        &root.join(&name),
+                        image::ImageFormat::Tiff,
+                        &options,
+                    )
+                    .unwrap();
+                    let restored = crate::files::open(&root.join(&name)).unwrap().document;
+                    assert_eq!(restored.layers[0].bit_depth, bits, "{name}");
+                    let actual = precision::composite(&restored);
+                    if bits == 32 {
+                        assert_eq!(
+                            actual
+                                .as_raw()
+                                .iter()
+                                .map(|v| v.to_bits())
+                                .collect::<Vec<_>>(),
+                            pixels
+                                .as_raw()
+                                .iter()
+                                .map(|v| v.to_bits())
+                                .collect::<Vec<_>>()
+                        );
+                    } else {
+                        assert!(
+                            actual
+                                .as_raw()
+                                .iter()
+                                .zip(pixels.as_raw())
+                                .all(|(a, b)| (*a - *b).abs() <= 1. / ((1u32 << bits) - 1) as f32)
+                        );
+                    }
+                    cases.push(serde_json::json!({"file":name,"bits":bits,"compression":compression,"big":big}));
+                }
+            }
+        }
+        let mut mixed = Document::new(3, 2, true).unwrap();
+        mixed.layers[0].bit_depth = 32;
+        mixed.layers[0].precision = Some(std::sync::Arc::new(image::Rgba32FImage::from_pixel(
+            3,
+            2,
+            image::Rgba([2., -0.25, 0.5, 1.]),
+        )));
+        mixed.layers[0].visible = false;
+        crate::files::export(
+            &mixed,
+            &root.join("hidden32.tiff"),
+            image::ImageFormat::Tiff,
+            &Default::default(),
+        )
+        .unwrap();
+        assert_eq!(
+            crate::files::open(&root.join("hidden32.tiff"))
+                .unwrap()
+                .document
+                .layers[0]
+                .bit_depth,
+            32
+        );
+        std::fs::write(
+            root.join("manifest.json"),
+            serde_json::to_vec_pretty(&cases).unwrap(),
+        )
+        .unwrap();
+    }
     fn document() -> Document {
         precision::document(
             "TIFF HDR".into(),
@@ -312,7 +434,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             crate::files::open(&path).unwrap().document.layers[0].bit_depth,
-            16
+            32
         );
     }
     #[test]
@@ -342,6 +464,7 @@ mod tests {
             ExportOptions {
                 tiff_float_predictor: true,
                 tiff_compression: 1,
+                tiff_depth: 2,
                 ..Default::default()
             },
             ExportOptions {

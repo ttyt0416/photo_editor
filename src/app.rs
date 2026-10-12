@@ -3621,8 +3621,37 @@ mod tests {
             .iter()
             .position(|f| f.0 == image::ImageFormat::Tiff)
             .unwrap();
+        {
+            let doc = &mut app.tab_mut().unwrap().editor.document;
+            doc.layers[0].precision = Some(Arc::new(image::Rgba32FImage::from_pixel(
+                doc.width,
+                doc.height,
+                image::Rgba([2.25, -0.125, 0.5, 1.]),
+            )));
+            doc.layers[0].bit_depth = 32;
+        }
+        assert_eq!(app.export_options.tiff_depth, 0);
+        for _ in 0..3 {
+            frame(
+                &mut app,
+                &ctx,
+                &mut clock,
+                vec![],
+                "HDR 밝기와 음수 RGB를 부동소수점으로 보존합니다.",
+            );
+        }
+        assert!(
+            frame(
+                &mut app,
+                &ctx,
+                &mut clock,
+                vec![],
+                "HDR 밝기와 음수 RGB를 부동소수점으로 보존합니다."
+            )
+            .is_some()
+        );
         app.export_options.tiff_predictor = true;
-        click(&mut app, &ctx, &mut clock, "자동 (8/16비트)");
+        click(&mut app, &ctx, &mut clock, "자동 (8/16/32비트)");
         click(&mut app, &ctx, &mut clock, "32비트 부동소수점");
         assert_eq!(app.export_options.tiff_depth, 3);
         assert!(!app.export_options.tiff_predictor);
@@ -12660,7 +12689,7 @@ impl PhotoEditor {
                 if format==image::ImageFormat::Tiff {
                     egui::ComboBox::from_id_salt("tiff-depth").selected_text(crate::tiff_output::DEPTH_LABELS[self.export_options.tiff_depth]).show_ui(ui,|ui|{for (i,label) in crate::tiff_output::DEPTH_LABELS.iter().enumerate(){ui.selectable_value(&mut self.export_options.tiff_depth,i,*label);}});
                     egui::ComboBox::from_id_salt("tiff-compression").selected_text(crate::tiff_output::COMPRESSION_LABELS[self.export_options.tiff_compression]).show_ui(ui,|ui|{for (i,label) in crate::tiff_output::COMPRESSION_LABELS.iter().enumerate(){ui.selectable_value(&mut self.export_options.tiff_compression,i,*label);}});
-                    let float=self.export_options.tiff_depth==3;
+                    let float=crate::tiff_output::depth(&self.tab().unwrap().editor.document,&self.export_options)==32;
                     let prediction=(1..=4).contains(&self.export_options.tiff_compression);
                     if !prediction {self.export_options.tiff_predictor=false;self.export_options.tiff_float_predictor=false;ui.label("예측은 LZW·Deflate 압축에서 사용합니다.");}
                     if float {self.export_options.tiff_predictor=false;ui.label("HDR 밝기와 음수 RGB를 부동소수점으로 보존합니다.");}
@@ -12694,7 +12723,7 @@ impl PhotoEditor {
                     ui.label("0은 압축 없음, 9는 최대 압축입니다. 모든 수준에서 픽셀과 알파를 유지합니다.");
                 }
                 if let Some(tab)=self.tab() && tab.editor.document.layers.iter().any(|l|l.bit_depth>8) {
-                    ui.label(if jp2 {if crate::jpeg2000_output::depth(&self.tab().unwrap().editor.document,&self.export_options)==16 {"16비트 정수로 저장합니다. HDR/음수 값은 변환되고 원본은 프로젝트에 보존됩니다."}else{"8비트 정수로 저장합니다. 원본 정밀도는 프로젝트에 보존됩니다."}}else if pcx {"PCX는 8비트 RGB로 저장합니다. 원본 정밀도는 프로젝트 저장에 보존하세요."}else if svg {"SVG의 사진 요소는 8비트 PNG로 저장합니다. 원본 정밀도는 프로젝트 저장에 보존하세요."}else if matches!(format,image::ImageFormat::OpenExr|image::ImageFormat::Hdr){"32비트 부동소수점·HDR 값으로 저장합니다."}else if format==image::ImageFormat::Avif && self.export_options.avif_depth==10 {"10비트 AVIF로 변환합니다. 원본 정밀도는 프로젝트에 보존하세요."}else if format==image::ImageFormat::Tiff && self.export_options.tiff_depth==3 {"32비트 부동소수점 TIFF로 저장합니다."}else if format==image::ImageFormat::Tiff && self.export_options.tiff_depth==1 {"8비트 TIFF로 변환합니다. 원본 정밀도는 프로젝트에 보존하세요."}else if matches!(format,image::ImageFormat::Png|image::ImageFormat::Tiff|image::ImageFormat::Farbfeld){"16비트로 저장합니다. 범위를 벗어난 HDR 값은 변환됩니다."}else{"이 형식의 현재 출력은 8비트입니다. 원본 정밀도는 프로젝트 저장에 보존하세요."});
+                    ui.label(if jp2 {if crate::jpeg2000_output::depth(&self.tab().unwrap().editor.document,&self.export_options)==16 {"16비트 정수로 저장합니다. HDR/음수 값은 변환되고 원본은 프로젝트에 보존됩니다."}else{"8비트 정수로 저장합니다. 원본 정밀도는 프로젝트에 보존됩니다."}}else if pcx {"PCX는 8비트 RGB로 저장합니다. 원본 정밀도는 프로젝트 저장에 보존하세요."}else if svg {"SVG의 사진 요소는 8비트 PNG로 저장합니다. 원본 정밀도는 프로젝트 저장에 보존하세요."}else if matches!(format,image::ImageFormat::OpenExr|image::ImageFormat::Hdr){"32비트 부동소수점·HDR 값으로 저장합니다."}else if format==image::ImageFormat::Avif && self.export_options.avif_depth==10 {"10비트 AVIF로 변환합니다. 원본 정밀도는 프로젝트에 보존하세요."}else if format==image::ImageFormat::Tiff && crate::tiff_output::depth(&tab.editor.document,&self.export_options)==32 {"32비트 부동소수점 TIFF로 저장합니다."}else if format==image::ImageFormat::Tiff && self.export_options.tiff_depth==1 {"8비트 TIFF로 변환합니다. 원본 정밀도는 프로젝트에 보존하세요."}else if matches!(format,image::ImageFormat::Png|image::ImageFormat::Tiff|image::ImageFormat::Farbfeld){"16비트로 저장합니다. 범위를 벗어난 HDR 값은 변환됩니다."}else{"이 형식의 현재 출력은 8비트입니다. 원본 정밀도는 프로젝트 저장에 보존하세요."});
                 }
                 if pcx { ui.label("PCX는 8비트 RGB/RLE로 출력하며 투명 영역은 흰색으로 합성합니다. 크기 제한: 가로 65534px·세로 65536px."); }
                 if format==image::ImageFormat::Hdr {ui.label("HDR 밝기를 RGBE로 저장합니다. 알파는 선택한 배경색으로 합성하고 음수 RGB는 0으로 변환합니다. ICC/감마 변환은 자동 적용하지 않습니다.");}
