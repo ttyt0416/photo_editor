@@ -58,6 +58,7 @@ mod jpeg2000_icc;
 mod jpeg2000_input;
 mod jpeg2000_output;
 mod jpeg2000_xmp;
+mod jpeg_iptc;
 mod jpeg_output;
 mod jxl_color;
 mod jxl_input;

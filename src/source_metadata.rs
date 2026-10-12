@@ -159,6 +159,8 @@ impl Metadata {
         let mut metadata = Self::from_bytes(exif, xmp, notes);
         if format == Some(image::ImageFormat::Tiff) {
             crate::tiff_iptc::remember(path, &mut metadata, notes);
+        } else if format == Some(image::ImageFormat::Jpeg) {
+            crate::jpeg_iptc::remember(path, &mut metadata, notes);
         }
         metadata
     }
