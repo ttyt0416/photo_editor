@@ -836,3 +836,12 @@ JP2 출력에는 기본 포함/끄기·실제 headless 토글/미리보기 옵�
 Python Brotli1.1.0의 자체 품질0/5/11×window10/22/24·18압축 기준을 SHA-256/복원 원문·길이로 기록했다. 16MiB+5로 확장되는 작은 입력도 보존했다. 18JXL720000픽셀(이미지 앞/뒤·일반/확장/끝까지 brob·두 TIFF 바이트 순서/오프셋0/6·한글·72KB XML),36PNG/18쌍 정확 IDAT·원래 방향8/PNG1/200² 치수·Maker·프로젝트v13 원문/CRC를 독립 비교했다. 잘린 스트림/후행 바이트/large-window/손상/과도한 확장·일반+압축 중복 양방향·알 수 없는 brob에서도 픽셀을 유지했다. 재현 코드: src/jxl_metadata_tests.rs, tests/fixtures/generate_jxl_compressed_metadata.py, tests/fixtures/verify_jxl_compressed_metadata.py.
 
 전체491통과/0실패/1제외(80.83초), fmt/clippy·개발/release 빌드 성공. 기존12JXL 메타데이터 입력9432784픽셀·공식6JXL 해시/기준·라이선스 검사 통과. 라이선스 검사 단독 실행은 이전 작업 출력 정리로 단축키 QA 파일이 없어 종료되었고 전체 테스트 생성 후 재실행해 통과했다. 생성 출력은 정리한다. 직전123커밋39b8c425f039c3cd4785a4070a91de28dee48ec0의 GitHub main 일치를 확인했다. 다음125는 JXL 원본 ICC 보관이며 전체 ICC 변환/출력·TIFF EXIF·확장 XMP/IPTC·전체 목표는 유지한다.
+## 125. JPEG XL 실제 내장 ICC 원문/프로젝트 보존
+
+잠금 jxl-oxide0.12.6의 original_icc를 읽어 복사 전에16MiB 한도를 확인한다. enum 색상 정의의 렌더링 프로파일을 원본으로 합성하지 않는다. 파일 열기의 기존 공통 source_icc 보관 안내/공유 이력/버퍼 예산·조건부 v12/EXIF·XMP동반 v13 자산을 재사용하며 픽셀 변환/렌더링 상태는 바꾸지 않는다. 프로젝트를 다시 열 때 원본 ICC를 적용하지 않는다.
+
+같은 고정 libjxl/conformance 커밋b1d0f990의 bench_oriented_brg와 grayscale 원본/ICC·float 기준을 설명 파일의 SHA로 공개 객체에서 받아 tests/fixtures/jxl-icc에 기록했다. upstream README의 CC0/테스트 재현 허용과 기존 BSD 고지를 확인했다. 4입력686000픽셀(원래 입력과 EXIF/XMP를 동반한 컨테이너)의 정확한 original.icc SHA/프로젝트 자산·CRC/이력 공유·원본/자체 방향·독립 float를 비교했다. ICC-only v12/동반v13과 실제 want_icc=false 입력의 v8을 확인했다.
+
+GRAY의 original.icc·decoder rendered.icc·reference.icc는 서로 다르다. 원시 픽셀을 다른 기준 색 공간과 바로 비교하지 않고 실제 렌더링 ICC의 sRGB parametric curve와 선형 기준 ICC를 각각 해석해 비교했다. peak0.0014725167/RMS가 corpus0.004/0.0001 조건 안에 들며 RGB도 기준 오차 안에 든다. 이 결과를 전체 JXL/ICC 색 관리 완료로 표시하지 않는다. 첫 테스트의 grayscale_jpeg가 ICC 없음이라는 가정과 원래 bench가 메타데이터 없음이라는 가정은 실제 헤더/박스를 보고 수정했다. 대문자 README 표 이름으로 받은404 경로도 실제 소문자 경로 목록을 확인해 고쳤다. 재현 코드: src/jxl_icc_tests.rs, tests/fixtures/fetch_jxl_icc_references.py, tests/fixtures/verify_jxl_icc_projects.py.
+
+전체492통과/0실패/1제외(82.60초), fmt/clippy·개발/release 빌드 성공. 기존12JXL EXIF/XMP·18Brotli JXL/36PNG·공식6기준·라이선스308/528/18 독립 검사 통과. 생성 출력은 정리한다. 직전124커밋c95f6c3f2f991a551f2da780da2eae44237ee759의 GitHub main 일치를 확인했다. 다음126은 JXL 렌더링 ICC의 작업 sRGB 연결이며 전체 ICC/HDR/출력·TIFF EXIF·확장 XMP/IPTC·전체 목표는 유지한다.

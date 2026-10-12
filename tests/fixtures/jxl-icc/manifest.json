@@ -1,0 +1,88 @@
+{
+  "repository": "https://github.com/libjxl/conformance",
+  "commit": "b1d0f990b03e57bf6d137c365cd5dc8b470b9191",
+  "license": "../jxl/LICENSE",
+  "source_license": "CC0; upstream testcases README permits testing reproduction",
+  "files": {
+    "bench_oriented_brg/input.jxl": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/bench_oriented_brg/input.jxl",
+      "size": 184341,
+      "sha256": "e223fed907c6238622b2b6ec1c80609050c9d2db4d759cf3ca6f0db304cbb82a"
+    },
+    "bench_oriented_brg/test.json": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/bench_oriented_brg/test.json",
+      "size": 772,
+      "sha256": "529b351888a633f8b8687ebc317cbeb67bbe2c26c79b725815342c3a2aa6dce2"
+    },
+    "bench_oriented_brg/original.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/6603ae12a4ac1ac742cacd887e9b35552a12c354ff25a00cae069ad4b932e6cc",
+      "size": 2712,
+      "sha256": "6603ae12a4ac1ac742cacd887e9b35552a12c354ff25a00cae069ad4b932e6cc",
+      "original_size": 2712,
+      "original_sha256": "6603ae12a4ac1ac742cacd887e9b35552a12c354ff25a00cae069ad4b932e6cc"
+    },
+    "bench_oriented_brg/reference.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/6603ae12a4ac1ac742cacd887e9b35552a12c354ff25a00cae069ad4b932e6cc",
+      "size": 2712,
+      "sha256": "6603ae12a4ac1ac742cacd887e9b35552a12c354ff25a00cae069ad4b932e6cc",
+      "original_size": 2712,
+      "original_sha256": "6603ae12a4ac1ac742cacd887e9b35552a12c354ff25a00cae069ad4b932e6cc"
+    },
+    "bench_oriented_brg/reference_image.npy.zlib": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/eac8c30907e41e53a73a0c002bc39e998e0ceb021bd523f5bff4580b455579e6",
+      "size": 3223188,
+      "sha256": "86d557652d8c9dc7ca422102bc6d2dd1e3614ad0426997484571a89d7521b6c5",
+      "original_size": 3636080,
+      "original_sha256": "eac8c30907e41e53a73a0c002bc39e998e0ceb021bd523f5bff4580b455579e6"
+    },
+    "grayscale/input.jxl": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/grayscale/input.jxl",
+      "size": 1069,
+      "sha256": "78fbbba852e99946d187dcf0bcbd7fb0e7c22be2f0852523aaae6ed91e7e3c39"
+    },
+    "grayscale/test.json": {
+      "url": "https://raw.githubusercontent.com/libjxl/conformance/b1d0f990b03e57bf6d137c365cd5dc8b470b9191/testcases/grayscale/test.json",
+      "size": 635,
+      "sha256": "a67ad16783c258356f84e802961504f08509cc78da4e41df807d6ed7b02027f2"
+    },
+    "grayscale/original.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/3f62598dfd40d6642ca5fd962559bb6615af15448a57a3972a4089c109e62fbd",
+      "size": 912,
+      "sha256": "3f62598dfd40d6642ca5fd962559bb6615af15448a57a3972a4089c109e62fbd",
+      "original_size": 912,
+      "original_sha256": "3f62598dfd40d6642ca5fd962559bb6615af15448a57a3972a4089c109e62fbd"
+    },
+    "grayscale/reference.icc": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/57363d9ec00043fe6e3f40b1c3e0cc4676773011fd0818710fb26545002ac27d",
+      "size": 328,
+      "sha256": "57363d9ec00043fe6e3f40b1c3e0cc4676773011fd0818710fb26545002ac27d",
+      "original_size": 328,
+      "original_sha256": "57363d9ec00043fe6e3f40b1c3e0cc4676773011fd0818710fb26545002ac27d"
+    },
+    "grayscale/reference_image.npy.zlib": {
+      "url": "https://storage.googleapis.com/jxl-conformance/objects/59162e158e042dc44710eb4d334cea78135399613461079582d963fe79251b68",
+      "size": 87910,
+      "sha256": "5c70b5237b435a361795e1f8c8d04a7c1f101c282d6c268bd433d15b7bdf4a30",
+      "original_size": 160080,
+      "original_sha256": "59162e158e042dc44710eb4d334cea78135399613461079582d963fe79251b68"
+    }
+  },
+  "cases": {
+    "bench_oriented_brg": {
+      "shape": [
+        1,
+        500,
+        606,
+        3
+      ]
+    },
+    "grayscale": {
+      "shape": [
+        1,
+        200,
+        200,
+        1
+      ]
+    }
+  }
+}

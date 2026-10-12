@@ -30,6 +30,14 @@ pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
         }
     };
     crate::document::validate_size(image.width(), image.height())?;
+    let source_icc = image.original_icc().and_then(|profile| {
+        if profile.len() <= crate::source_metadata::MAX_BYTES {
+            Some(profile.to_vec())
+        } else {
+            metadata_notes.push("JPEG XL 원본 ICC가 보관 예산을 초과했습니다.".into());
+            None
+        }
+    });
     let metadata = &image.image_header().metadata;
     let alpha = metadata.ec_info.iter().find(|e| e.is_alpha());
     let associated = alpha.and_then(|a| a.alpha_associated()).unwrap_or(false);
@@ -144,10 +152,14 @@ pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
     Ok(crate::codecs::Decoded {
         pixels,
         notes,
-        source_icc: None,
+        source_icc,
         source_metadata,
     })
 }
+
+#[cfg(test)]
+#[path = "jxl_icc_tests.rs"]
+mod icc_tests;
 
 #[cfg(test)]
 mod tests {
