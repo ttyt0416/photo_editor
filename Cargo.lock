@@ -2544,6 +2544,7 @@ dependencies = [
  "avif-decode",
  "avif-parse",
  "base64",
+ "brotli-decompressor",
  "data-url",
  "eframe",
  "flate2",

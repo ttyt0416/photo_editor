@@ -106,7 +106,21 @@ pub fn open(
     let mut seen = [false; 2];
     if !raw {
         let result = (|| -> io::Result<()> {
-            while let Some(BoxHeader { kind, span, body }) = header(&mut file, length)? {
+            while let Some(BoxHeader {
+                mut kind,
+                span,
+                body,
+            }) = header(&mut file, length)?
+            {
+                let mut size = span.end - body;
+                let compressed = &kind == b"brob";
+                if compressed {
+                    if size < 4 {
+                        return Err(invalid());
+                    }
+                    file.read_exact(&mut kind)?;
+                    size -= 4;
+                }
                 if matches!(&kind, b"Exif" | b"xml ") {
                     let index = usize::from(&kind == b"xml ");
                     if seen[index] {
@@ -117,16 +131,26 @@ pub fn open(
                         ));
                     } else {
                         seen[index] = true;
-                        let size = span.end - body;
-                        if size
-                            > (crate::source_metadata::MAX_BYTES + if index == 0 { 4 } else { 0 })
-                                as u64
-                        {
+                        let limit =
+                            crate::source_metadata::MAX_BYTES + if index == 0 { 4 } else { 0 };
+                        if size > limit as u64 {
                             notes
                                 .push("JPEG XL 원본 메타데이터가 보관 예산을 초과했습니다.".into());
                         } else {
                             let mut bytes = vec![0; size as usize];
                             file.read_exact(&mut bytes)?;
+                            if compressed {
+                                match decompress(&bytes, limit) {
+                                    Ok(decoded) => bytes = decoded,
+                                    Err(error) => {
+                                        notes.push(format!(
+                                            "JPEG XL 압축 메타데이터 보관을 생략했습니다: {error}"
+                                        ));
+                                        file.seek(SeekFrom::Start(span.end))?;
+                                        continue;
+                                    }
+                                }
+                            }
                             if index == 0 {
                                 if let Some(exif) = exif(&bytes) {
                                     assets[index] = Some(exif.to_vec());
@@ -137,15 +161,6 @@ pub fn open(
                                 assets[index] = Some(bytes);
                             }
                         }
-                    }
-                } else if &kind == b"brob" && span.end - body >= 4 {
-                    let mut compressed_kind = [0; 4];
-                    file.read_exact(&mut compressed_kind)?;
-                    if matches!(&compressed_kind, b"Exif" | b"xml ") {
-                        notes.push("JPEG XL의 Brotli 압축 EXIF/XMP 보관은 아직 지원하지 않습니다. 원본 파일을 함께 보관하세요.".into());
-                        let index = usize::from(&compressed_kind == b"xml ");
-                        seen[index] = true;
-                        assets[index] = None;
                     }
                 }
                 file.seek(SeekFrom::Start(span.end))?;
@@ -177,6 +192,46 @@ fn exif(bytes: &[u8]) -> Option<&[u8]> {
     let offset = u32::from_be_bytes(bytes.get(..4)?.try_into().ok()?) as usize;
     let tiff = bytes.get(4usize.checked_add(offset)?..)?;
     matches!(tiff.get(..4), Some(b"II\x2a\0" | b"MM\0\x2a")).then_some(tiff)
+}
+
+fn decompress(bytes: &[u8], limit: usize) -> Result<Vec<u8>, String> {
+    use brotli_decompressor::{BrotliDecompressStream, BrotliResult, BrotliState, StandardAlloc};
+    // RFC 7932's window is at most 2^24. Disable the library's optional large
+    // window extension as well as capping the decoded metadata byte count.
+    let mut state = BrotliState::new_strict(
+        StandardAlloc::default(),
+        StandardAlloc::default(),
+        StandardAlloc::default(),
+    );
+    let mut input = bytes.len();
+    let mut at = 0;
+    let mut total = 0;
+    let mut result = Vec::new();
+    let mut buffer = [0; 4096];
+    loop {
+        let previous = at;
+        let mut output = buffer.len();
+        let mut written = 0;
+        let status = BrotliDecompressStream(
+            &mut input,
+            &mut at,
+            bytes,
+            &mut output,
+            &mut written,
+            &mut buffer,
+            &mut total,
+            &mut state,
+        );
+        if written > limit.saturating_sub(result.len()) {
+            return Err("복원한 메타데이터가 보관 예산을 초과합니다.".into());
+        }
+        result.extend_from_slice(&buffer[..written]);
+        match status {
+            BrotliResult::ResultSuccess if input == 0 => return Ok(result),
+            BrotliResult::NeedsMoreOutput if written != 0 || at != previous => {}
+            _ => return Err("Brotli 메타데이터가 손상되었거나 미지원 압축 구조입니다.".into()),
+        }
+    }
 }
 
 #[cfg(test)]

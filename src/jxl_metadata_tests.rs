@@ -280,3 +280,178 @@ fn jxl_partial_codestream_unknown_boxes_and_bounded_invalid_metadata_keep_pixels
     assert!(!filtered.windows(4).any(|w| w == b"xml " || w == b"abcd"));
     assert!(filtered.windows(4).any(|w| w == b"jxlp"));
 }
+
+#[test]
+fn jxl_brotli_exif_xmp_windows_quality_placement_projects_and_normalized_png() {
+    let root = root().join("compressed");
+    std::fs::create_dir_all(&root).unwrap();
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/jxl-metadata");
+    let manifest: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
+    let raw = raw("grayscale_jpeg");
+    let original =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/jxl/grayscale_jpeg/input.jxl");
+    let baseline = crate::files::open(&original).unwrap().document;
+    let expected = crate::precision::composite(&baseline);
+    let mut cases = vec![];
+    for case in manifest["cases"].as_array().unwrap() {
+        let exif_br = std::fs::read(fixtures.join(case["exif"].as_str().unwrap())).unwrap();
+        let xmp_br = std::fs::read(fixtures.join(case["xmp"].as_str().unwrap())).unwrap();
+        let expected_exif = source_exif(case["little"].as_bool().unwrap());
+        assert_eq!(
+            decompress(&xmp_br, source_xmp().len()).unwrap(),
+            source_xmp()
+        );
+        assert!(decompress(&xmp_br, source_xmp().len() - 1).is_err());
+        for before in [false, true] {
+            let mut bytes = container();
+            if !before {
+                bytes.extend(boxed(b"jxlc", &raw, 0));
+            }
+            bytes.extend(boxed(
+                b"brob",
+                &[b"Exif".as_slice(), &exif_br].concat(),
+                u8::from(before),
+            ));
+            bytes.extend(boxed(
+                b"brob",
+                &[b"xml ".as_slice(), &xmp_br].concat(),
+                if before { 1 } else { 2 },
+            ));
+            if before {
+                bytes.extend(boxed(b"jxlc", &raw, 0));
+            }
+            let name = format!("q{}-w{}-b{before}.jxl", case["quality"], case["window"]);
+            let path = root.join(&name);
+            std::fs::write(&path, &bytes).unwrap();
+            let opened = crate::files::open(&path).unwrap();
+            assert!(
+                !opened
+                    .notes
+                    .iter()
+                    .any(|n| n.contains("압축 메타데이터 보관을 생략"))
+            );
+            let doc = opened.document;
+            assert_eq!(crate::precision::composite(&doc), expected);
+            assert_eq!(
+                doc.source_metadata.exif.as_ref().unwrap().as_slice(),
+                expected_exif
+            );
+            assert_eq!(
+                doc.source_metadata.xmp.as_ref().unwrap().as_slice(),
+                source_xmp()
+            );
+            let source = doc.source_metadata.xmp.clone().unwrap();
+            save_project(&doc, &root.join(format!("{name}.rphoto"))).unwrap();
+            let project = load_project(&root.join(format!("{name}.rphoto"))).unwrap();
+            assert_eq!(crate::precision::composite(&project), expected);
+            assert_eq!(project.source_metadata.exif, doc.source_metadata.exif);
+            assert_eq!(project.source_metadata.xmp, doc.source_metadata.xmp);
+            let mut compressed = None;
+            for include in [false, true] {
+                let png = root.join(format!("{name}-{include}.png"));
+                crate::files::export(
+                    &doc,
+                    &png,
+                    image::ImageFormat::Png,
+                    &crate::files::ExportOptions {
+                        include_exif: include,
+                        include_xmp: include,
+                        ..Default::default()
+                    },
+                )
+                .unwrap();
+                let restored = crate::files::open(&png).unwrap().document;
+                assert_eq!(restored.source_metadata.exif.is_some(), include);
+                assert_eq!(restored.source_metadata.xmp.is_some(), include);
+                let pixels = crate::precision::composite(&restored);
+                if let Some(baseline) = &compressed {
+                    assert_eq!(&pixels, baseline);
+                } else {
+                    compressed = Some(pixels);
+                }
+            }
+            assert!(Arc::ptr_eq(
+                &source,
+                doc.source_metadata.xmp.as_ref().unwrap()
+            ));
+            assert_eq!(std::fs::read(&path).unwrap(), bytes);
+            cases.push(serde_json::json!({"file":name,"quality":case["quality"],"window":case["window"],"before":before,"little":case["little"],"exif_fixture":case["exif"],"xmp_fixture":case["xmp"]}));
+        }
+    }
+    assert_eq!(cases.len(), 18);
+    std::fs::write(
+        root.join("manifest.json"),
+        serde_json::to_vec_pretty(&cases).unwrap(),
+    )
+    .unwrap();
+}
+
+#[test]
+fn jxl_brotli_truncation_trailing_expansion_large_window_duplicate_and_unknown_keep_pixels() {
+    let root = root().join("compressed-errors");
+    std::fs::create_dir_all(&root).unwrap();
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/jxl-metadata");
+    let encoded = std::fs::read(fixtures.join("q5-w22-xmp.br")).unwrap();
+    let mut trailing = encoded.clone();
+    trailing.push(0);
+    let bomb = std::fs::read(fixtures.join("over-budget.br")).unwrap();
+    let raw = raw("grayscale_jpeg");
+    let expected = crate::jxl_input::read(
+        &Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/jxl/grayscale_jpeg/input.jxl"),
+    )
+    .unwrap()
+    .pixels;
+    for (index, encoded) in [
+        encoded[..encoded.len() - 1].to_vec(),
+        trailing,
+        bomb,
+        vec![0x11, 30],
+        vec![255; 4],
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        assert!(decompress(&encoded, crate::source_metadata::MAX_BYTES).is_err());
+        let bytes = [
+            container(),
+            boxed(b"brob", &[b"xml ".as_slice(), &encoded].concat(), 0),
+            boxed(b"jxlc", &raw, 0),
+        ]
+        .concat();
+        let path = root.join(format!("invalid-{index}.jxl"));
+        std::fs::write(&path, &bytes).unwrap();
+        let decoded = crate::jxl_input::read(&path).unwrap();
+        assert_eq!(decoded.pixels, expected);
+        assert!(decoded.source_metadata.xmp.is_none());
+        assert!(
+            decoded
+                .notes
+                .iter()
+                .any(|n| n.contains("압축 메타데이터 보관을 생략"))
+        );
+    }
+    let compressed = boxed(b"brob", &[b"xml ".as_slice(), &encoded].concat(), 0);
+    let plain = boxed(b"xml ", &source_xmp(), 0);
+    for (index, boxes) in [[plain.clone(), compressed.clone()], [compressed, plain]]
+        .into_iter()
+        .enumerate()
+    {
+        let bytes = [container(), boxes.concat(), boxed(b"jxlc", &raw, 0)].concat();
+        let path = root.join(format!("duplicate-{index}.jxl"));
+        std::fs::write(&path, &bytes).unwrap();
+        let decoded = crate::jxl_input::read(&path).unwrap();
+        assert_eq!(decoded.pixels, expected);
+        assert!(decoded.source_metadata.xmp.is_none());
+        assert!(decoded.notes.iter().any(|n| n.contains("여러 XMP")));
+    }
+    let bytes = [
+        container(),
+        boxed(b"brob", b"jumbnot valid Brotli", 0),
+        boxed(b"jxlc", &raw, 0),
+    ]
+    .concat();
+    let path = root.join("unknown.jxl");
+    std::fs::write(&path, &bytes).unwrap();
+    assert_eq!(crate::jxl_input::read(&path).unwrap().pixels, expected);
+}

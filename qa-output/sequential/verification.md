@@ -829,3 +829,10 @@ JP2 출력에는 기본 포함/끄기·실제 headless 토글/미리보기 옵�
 고정 libjxl6기준을 감싼12입력9432784픽셀(메타데이터 앞/뒤·EXIF 두 바이트 순서/오프셋0/6·72KB XML·고정밀/HDR·독립/연관 알파·회색), 정확한 decoder float/코드스트림/이력·프로젝트 v13/원문/CRC를 독립 비교했다. 문서 합성은 기존대로 alpha0 픽셀의 RGB를0으로 정규화하며 숨은 원본 색을 가진 decoder 출력은 별도 저장/비교한다. Python 검사에서 처음 합성 값을 원시 기준과 비교해 투명 숨은 색 차이가 나온 뒤 이 두 경로를 분리해 정확 일치 확인했다. 검사 중 전체 테스트가 기준 출력을 재작성할 때 읽은 잘린 zlib 결과도 전체 테스트 종료 후 재검증했다. 분할 jxlp와 알 수 없는100KB 박스/3바이트 읽기·잘린 꼬리/큰 자산/미지원 압축 입력에서도 기존 픽셀과 원본을 확인했다. 재현 코드: src/jxl_metadata_tests.rs, tests/fixtures/verify_jxl_metadata_files.py.
 
 전체489통과/0실패/1제외(74.04초), fmt/clippy·개발/release 빌드 성공. decoder/합성 분리 기록 추가 후 해당12입력 검사를 다시 실행해 통과(48.09초). 기존 공식6JXL 원문 해시/독립 기준·일반 촬영 메타데이터49입력·JP2XMP128출력·라이선스308/528/18 검사 통과. 생성 출력은 정리한다. 직전122커밋4839fc94034fefc40db21cf1dcc3392570f1eca7의 GitHub main 일치를 확인했다. 다음124는 Brotli 압축 메타데이터이며 TIFF EXIF·확장 XMP/IPTC·JXL ICC/출력·전체 목표는 남음.
+## 124. JPEG XL Brotli EXIF/XMP의 제한된 복원/원문 보존
+
+기존 jxl-oxide의 전이 의존성으로 잠금·고지된 brotli-decompressor5.0.3을 직접 사용한다. 새 패키지 다운로드/버전 교체 없이 Cargo root 의존성만 추가했고 Windows closure308/고지528/선언18을 다시 확인했다. brob의 원래 Exif/xml 타입을 확인해 공통 중복/예산 검사에 연결하며 압축 바이트·복원 결과를 제한한다. public 스트리밍 API의 new_strict로 RFC7932 window한도24를 유지하고 4096바이트 출력 단위·정확한 종료/미소모 바이트를 검사한다. 픽셀 디코더에 보조 압축 데이터가 들어가지 않으며 오류가 유효한 첫 화면을 막지 않는다.
+
+Python Brotli1.1.0의 자체 품질0/5/11×window10/22/24·18압축 기준을 SHA-256/복원 원문·길이로 기록했다. 16MiB+5로 확장되는 작은 입력도 보존했다. 18JXL720000픽셀(이미지 앞/뒤·일반/확장/끝까지 brob·두 TIFF 바이트 순서/오프셋0/6·한글·72KB XML),36PNG/18쌍 정확 IDAT·원래 방향8/PNG1/200² 치수·Maker·프로젝트v13 원문/CRC를 독립 비교했다. 잘린 스트림/후행 바이트/large-window/손상/과도한 확장·일반+압축 중복 양방향·알 수 없는 brob에서도 픽셀을 유지했다. 재현 코드: src/jxl_metadata_tests.rs, tests/fixtures/generate_jxl_compressed_metadata.py, tests/fixtures/verify_jxl_compressed_metadata.py.
+
+전체491통과/0실패/1제외(80.83초), fmt/clippy·개발/release 빌드 성공. 기존12JXL 메타데이터 입력9432784픽셀·공식6JXL 해시/기준·라이선스 검사 통과. 라이선스 검사 단독 실행은 이전 작업 출력 정리로 단축키 QA 파일이 없어 종료되었고 전체 테스트 생성 후 재실행해 통과했다. 생성 출력은 정리한다. 직전123커밋39b8c425f039c3cd4785a4070a91de28dee48ec0의 GitHub main 일치를 확인했다. 다음125는 JXL 원본 ICC 보관이며 전체 ICC 변환/출력·TIFF EXIF·확장 XMP/IPTC·전체 목표는 유지한다.
