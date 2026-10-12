@@ -9,7 +9,7 @@ import argparse
 import struct
 import numpy as np
 import tifffile
-from icc_reference import tags, matrix, encode_srgb
+from icc_reference import tags, curve, matrix, encode_srgb
 os.environ.setdefault('OPENCV_IO_ENABLE_OPENEXR', '1')
 import cv2
 
@@ -17,32 +17,36 @@ BASE = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser()
 parser.add_argument('--inputs-only', action='store_true')
 parser.add_argument('--planar-float32', action='store_true')
+parser.add_argument('--planar-integer', action='store_true')
 args = parser.parse_args()
 inputs_only, planar_float32 = args.inputs_only, args.planar_float32
-folder = 'tiff-rgb-planar-float' if planar_float32 else 'tiff-layout'
+planar_integer = args.planar_integer
+assert not (planar_float32 and planar_integer)
+folder = 'tiff-rgb-planar-integer' if planar_integer else 'tiff-rgb-planar-float' if planar_float32 else 'tiff-layout'
 FIXTURES = BASE/'tests/fixtures'/folder
 OUTPUT = BASE/'qa-output'/folder
 cases = json.loads((FIXTURES/'manifest.json').read_text())
-assert len(cases) == (144 if planar_float32 else 864)
+assert len(cases) == (192 if planar_integer else 144 if planar_float32 else 864)
 destination = matrix(tags((BASE/'data/color/srgb.icc').read_bytes()))
 references = {}
 maximum = 0
 for case in cases:
     case.setdefault('bits', 32)
     case.setdefault('white', False)
+    case.setdefault('associated', False)
     case.setdefault('planar', True)
     name = case['file']
     data = (FIXTURES/name).read_bytes()
     assert hashlib.sha256(data).hexdigest() == case['sha256']
     bits, channels = case['bits'], case['channels']
     itemsize = bits//8
-    kind = 'u4' if bits == 32 and not planar_float32 else f'f{itemsize}'
+    kind = f'u{itemsize}' if planar_integer else 'u4' if bits == 32 and not planar_float32 else f'f{itemsize}'
     with tifffile.TiffFile(FIXTURES/name) as file:
         page = file.pages[0]
         assert page.imagewidth == 17 and page.imagelength == 19
         assert page.is_tiled == case['tiled'] and file.is_bigtiff == case['big']
-        assert page.bitspersample == bits and int(page.sampleformat) == (1 if kind == 'u4' else 3)
-        assert int(page.predictor) == ((2 if kind == 'u4' else 3) if case['predicted'] else 1)
+        assert page.bitspersample == bits and int(page.sampleformat) == (1 if kind.startswith('u') else 3)
+        assert int(page.predictor) == ((2 if kind.startswith('u') else 3) if case['predicted'] else 1)
         assert int(page.planarconfig) == (2 if case['planar'] else 1)
         if channels in (2, 4): assert int(page.extrasamples[0]) == (1 if case['associated'] else 2)
         offsets, lengths = page.dataoffsets, page.databytecounts
@@ -60,7 +64,7 @@ for case in cases:
                 raw = zlib.decompress(data[offsets[chunk]:offsets[chunk]+lengths[chunk]])
                 rows = len(raw)//(chunkwidth*count*itemsize)
                 assert rows == (16 if case['tiled'] else min(7, 19-y))
-                if case['predicted'] and kind != 'u4':
+                if case['predicted'] and not kind.startswith('u'):
                     # Sum each channel's differenced bytes over the entire shuffled row.
                     encoded = np.frombuffer(raw, 'u1').reshape(rows, -1, count)
                     accumulated = np.cumsum(encoded, axis=1, dtype='u8').astype('u1').reshape(rows, itemsize, chunkwidth*count)
@@ -69,7 +73,7 @@ for case in cases:
                 else:
                     values = np.frombuffer(raw, case['endian']+kind).reshape(rows, chunkwidth, count)
                     if case['predicted']:
-                        values = np.cumsum(values, axis=1, dtype='u8').astype('u4')
+                        values = np.cumsum(values, axis=1, dtype='u8').astype(kind)
                 actualheight, actualwidth = min(rows, 19-y), min(chunkwidth, 17-x)
                 image[y:y+actualheight, x:x+actualwidth] = values[:actualheight, :actualwidth]
                 chunk += 1
@@ -78,7 +82,7 @@ for case in cases:
     stored = np.concatenate(planes, axis=2).astype('f8')
     key = (bits, channels, case['white'], case['associated'])
     if key not in references:
-        assert not case['predicted'] and not case['tiled'] and (planar_float32 or not case['planar'])
+        assert not case['predicted'] and not case['tiled'] and (planar_integer or planar_float32 or not case['planar'])
         with tifffile.TiffFile(FIXTURES/name) as file:
             baseline = file.asarray().astype('f8')
         if channels == 1: baseline = baseline[:, :, None]
@@ -88,6 +92,38 @@ for case in cases:
     else:
         np.testing.assert_array_equal(stored.view('u8'), references[key].view('u8'), err_msg=name)
     if inputs_only: continue
+    if planar_integer:
+        maximum_integer = (1<<bits)-1
+        rgba = np.concatenate([stored[:,:,:3], stored[:,:,3:4] if channels==4 else np.full((19,17,1), maximum_integer)],axis=2).astype(kind)
+        if case['profile'] == 'matrix':
+            parsed = tags(profile)
+            decoded = np.stack([curve(parsed[k],rgba[:,:,i].astype('f8')/maximum_integer) for i,k in enumerate(['rTRC','gTRC','bTRC'])],axis=2)
+            linear = decoded @ (np.linalg.inv(destination) @ matrix(parsed)).T
+            target = tags((BASE/'data/color/srgb.icc').read_bytes())
+            g,a,b,c,d = np.array(struct.unpack_from('>5i',target['rTRC'],12))/65536
+            expected = np.where(linear<c*d, linear/c, (np.maximum(linear,0)**(1/g)-b)/a)
+            rgba[:,:,:3] = np.rint(np.clip(expected,0,1)*maximum_integer).astype(kind)
+        if case['orientation'] in (6,8): rgba = np.rot90(rgba,-1 if case['orientation']==6 else 1)
+        actual = np.fromfile(OUTPUT/(name+'.rgba'), '<'+kind).reshape(rgba.shape)
+        error = np.abs(actual[:,:,:3].astype('i4')-rgba[:,:,:3].astype('i4')).max()
+        assert error <= 1, (name,error)
+        maximum = max(maximum,error)
+        np.testing.assert_array_equal(actual[:,:,3],rgba[:,:,3])
+        if case['profile'] != 'matrix': np.testing.assert_array_equal(actual,rgba)
+        with zipfile.ZipFile(OUTPUT/(name+'.rphoto')) as project:
+            assert project.testzip() is None
+            manifest = json.loads(project.read('manifest.json'))
+            assert manifest['version'] == 13 and manifest['layers'][0]['bit_depth'] == bits
+            assert project.read('metadata/source.xmp') == xmp
+            if profile is not None: assert project.read('metadata/source.icc') == profile
+            decoded = cv2.imdecode(np.frombuffer(project.read(f"layers/{manifest['layers'][0]['id']}.png"),dtype='u1'),cv2.IMREAD_UNCHANGED)
+            np.testing.assert_array_equal(decoded[:,:,[2,1,0,3]],actual)
+        composite = actual.copy()
+        composite[actual[:,:,3] == 0] = 0
+        with tifffile.TiffFile(OUTPUT/(name+'-working.tiff')) as file:
+            assert file.pages[0].tags[34675].value == (BASE/'data/color/srgb.icc').read_bytes()
+            np.testing.assert_array_equal(file.asarray(),composite)
+        continue
     if kind == 'u4': stored /= 4294967295.
     alpha = stored[:, :, -1] if channels in (2, 4) else np.ones((19, 17))
     native = stored[:, :, :1 if channels < 3 else 3]
@@ -134,5 +170,5 @@ for case in cases:
     decoded = cv2.imread(str(OUTPUT/(name+'-working.exr')), cv2.IMREAD_UNCHANGED)
     assert decoded is not None
     np.testing.assert_array_equal(decoded[:, :, [2, 1, 0, 3]].copy().view('u4'), composite.view('u4'))
-assert len(references) == (3 if planar_float32 else 27)
-print(f'TIFF chunk layouts: {len(cases)} pinned inputs/{len(cases)*323} pixels, '+('float32 RGB planar ICC/alpha' if planar_float32 else 'float16/64+UINT32/gray+RGB/alpha+white')+f', prediction+off/19x17 partial tiles+multirow strips/both endian/classic+BigTIFF; independent zlib/cumsum/chunk crop +{len(references)} tifffile native baselines; '+('inputs verified' if inputs_only else f'ICC error {maximum:.8g}<0.0008; exact identity/alpha/project metadata+CRC/OpenCV EXR/TIFF bits verified'))
+assert len(references) == (4 if planar_integer else 3 if planar_float32 else 27)
+print(f'TIFF chunk layouts: {len(cases)} pinned inputs/{len(cases)*323} pixels, '+('UINT8/16 RGB planar native depth/ICC/alpha' if planar_integer else 'float32 RGB planar ICC/alpha' if planar_float32 else 'float16/64+UINT32/gray+RGB/alpha+white')+f', prediction+off/19x17 partial tiles+multirow strips/both endian/classic+BigTIFF; independent zlib/cumsum/chunk crop +{len(references)} tifffile native baselines; '+('inputs verified' if inputs_only else f'ICC error {maximum:g} <=1 integer unit; exact alpha/project PNG/source ICC+XMP+CRC/depth/working TIFF' if planar_integer else f'ICC error {maximum:.8g}<0.0008; exact identity/alpha/project metadata+CRC/OpenCV EXR/TIFF bits verified'))

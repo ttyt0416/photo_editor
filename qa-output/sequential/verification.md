@@ -1063,3 +1063,14 @@ RGB/회색조8·16비트도 행렬/TRC f64 계산과 실제 serialized 작업ICC
 fmt/clippy release all-targets·전체527통과/0실패/1제외(58.56초)·release 빌드 성공. 직전144 커밋445c77f338e121da85e379f00729b44ebc49c501을 기준으로 진행했다. 다음146은UINT8/16 RGB 분리평면, 이후TIFF 촬영EXIF/ICC구조/확장XMP/IPTC와 기존전체목표를 유지한다.
 
 145 정리:33833생성/오래된 캐시 파일1518974279바이트 삭제·최신release363산출물 모두fresh/실제파일 존재 확인·임시검증기록 및 새 빈 임시파일3개 삭제.
+
+
+## 146. RGB 정수 TIFF 전체 분리 평면과 원래 비트 깊이
+
+명시적RGB/RGBA unsigned8·16의PlanarConfiguration2를 전체 평면API로 읽어 nativeRGBA8/16 버퍼에 복원한다. 3색의알파는 최대값, 4색의비연관알파/숨은색은 원래정수값을 유지한다. 공통정밀ICC/원래ICC·XMP/방향을 연결해 프로젝트깊이/PNG층/자동TIFF8·16을 보존한다. 연관alpha는 기존f64 분리→float32 경로를 유지한다. 미정의alpha와마지막색/alpha평면의손상을 명시적오류로처리한다.
+
+독립IFD/NumPy 작성기192입력62016픽셀(2깊이×RGB/RGBA×3ICC×strip/tile×두TIFF구조×바이트순서×Deflate예측없음/Predictor2)을 SHA로 고정했다. 17×19부분16타일·7행스트립·0/1/최대/분수정수alpha·서로다른RGB패턴·방향1/6/8을 포함한다. 각입력의기존read_image API가첫323샘플만반환함을직접재현했다. 독립 zlib/NumPy 누적합/타일자르기와4tifffile 기준이 원시모든평면과일치한다. 원문ICC/XMP/프로젝트CRC/정확PNG층/깊이/alpha/identity/작업TIFF픽셀이일치하고 실제작업ICC 수식의차이는최대1정수단계다. 열기/이력/복원/작업TIFF 다시열기는Rust에서확인했다.
+
+fmt/clippy release all-targets·전체529통과/0실패/1제외(63.45초)·독립새192/float32평면144/고정밀타일864/연관정수96/공통ICC30 회귀통과. release 빌드 성공. 직전145커밋81092afa93b5ef16a14802cb0bbf8a1b273e1b8a의GitHub main 일치확인. 추가색/샘플·전체TIFF·촬영EXIF/확장XMP/IPTC·ICC구조/LUT/모니터와기존전체목표를 유지한다. 다음147은TIFF 촬영EXIF다.
+
+146 정리:34415생성/오래된캐시 파일1521410192바이트 삭제·최신release363산출물 모두fresh/실제파일 존재 확인·검증기록과빈임시파일3개삭제.

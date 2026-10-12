@@ -43,7 +43,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
             num_samples: 2,
         } => (true, 2, bits),
         tiff::ColorType::RGBA(bits @ (8 | 16 | 32 | 64)) => (false, 4, bits),
-        tiff::ColorType::RGB(bits @ (16 | 32 | 64)) => (false, 3, bits),
+        tiff::ColorType::RGB(bits @ (8 | 16 | 32 | 64)) => (false, 3, bits),
         _ => return Ok(None),
     };
     let formats = decoder
@@ -63,7 +63,15 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     if !formats_ok {
         return Ok(None);
     }
-    if (channels == 1 && bits == 16 || channels == 3 && bits != 32) && !floating {
+    let planar = decoder
+        .find_tag_unsigned::<u16>(Tag::PlanarConfiguration)
+        .map_err(|e| e.to_string())?
+        == Some(2);
+    let separated_integer_rgb = !gray && unsigned && matches!(bits, 8 | 16) && planar;
+    if (channels == 1 && bits == 16 || channels == 3 && bits != 32)
+        && !floating
+        && !separated_integer_rgb
+    {
         return Ok(None);
     }
     let white_native = gray
@@ -80,22 +88,19 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         {
             Some([1]) => true,
             Some([2]) => false,
-            _ if !gray => return Ok(None),
+            _ if !gray && !separated_integer_rgb => return Ok(None),
             _ => return Err("TIFF의 추가 채널이 알파로 정의되지 않았습니다.".into()),
         }
     } else {
         false
     };
-    let separated_float_rgb = !gray
-        && floating
-        && bits == 32
-        && decoder
-            .find_tag_unsigned::<u16>(Tag::PlanarConfiguration)
-            .map_err(|e| e.to_string())?
-            == Some(2);
+    let separated_float_rgb = !gray && floating && bits == 32 && planar;
     if !gray
         && !associated
-        && !(floating && matches!(bits, 16 | 64) || unsigned && bits == 32 || separated_float_rgb)
+        && !(floating && matches!(bits, 16 | 64)
+            || unsigned && bits == 32
+            || separated_float_rgb
+            || separated_integer_rgb)
     {
         return Ok(None);
     }
@@ -203,6 +208,43 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     } else {
         1
     };
+    if separated_integer_rgb && !associated {
+        macro_rules! native_planes {
+            ($data:expr, $maximum:expr, $variant:ident) => {{
+                let mut pixels = image::ImageBuffer::new(width, height);
+                for (x, y, target) in pixels.enumerate_pixels_mut() {
+                    let index = y as usize * row_stride + x as usize;
+                    let mut rgba = [0, 0, 0, $maximum];
+                    for (channel, value) in rgba.iter_mut().enumerate().take(channels) {
+                        *value = *$data
+                            .get(index + channel * component_stride)
+                            .ok_or("TIFF의 정수 색상 또는 알파 평면이 잘렸습니다")?;
+                    }
+                    *target = image::Rgba(rgba);
+                }
+                DynamicImage::$variant(pixels)
+            }};
+        }
+        let mut dynamic = match &decoded {
+            DecodingResult::U8(data) => native_planes!(data, 255, ImageRgba8),
+            DecodingResult::U16(data) => native_planes!(data, 65535, ImageRgba16),
+            _ => return Err("RGB TIFF의 정수 평면 형식이 잘못되었습니다".into()),
+        };
+        drop(decoded);
+        if let Some(profile) = source_icc.as_deref() {
+            dynamic = crate::color_management::apply(dynamic, profile, &mut notes);
+        }
+        dynamic.apply_orientation(orientation);
+        notes.push(format!(
+            "{bits}비트 RGB TIFF의 분리 평면을 모두 읽어 정수 색과 알파를 유지합니다."
+        ));
+        return Ok(Some(Decoded {
+            pixels: dynamic,
+            notes,
+            source_icc,
+            source_metadata,
+        }));
+    }
     let mut pixels = Rgba32FImage::new(width, height);
     for (x, y, target) in pixels.enumerate_pixels_mut() {
         let index = y as usize * row_stride + x as usize * if separate { 1 } else { channels };

@@ -3,6 +3,114 @@ use crate::files::{ExportOptions, export, load_project, open, save_project};
 use image::{ImageBuffer, ImageFormat};
 
 #[test]
+fn tiff_integer_rgb_all_planes_native_depth_icc_projects_and_outputs() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixtures = base.join("tests/fixtures/tiff-rgb-planar-integer");
+    let root = base.join("qa-output/tiff-rgb-planar-integer");
+    std::fs::create_dir_all(&root).unwrap();
+    let cases: Vec<serde_json::Value> =
+        serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(cases.len(), 192);
+    for case in cases {
+        let bits = case["bits"].as_u64().unwrap() as u8;
+        let name = case["file"].as_str().unwrap();
+        let path = fixtures.join(name);
+        let original = std::fs::read(&path).unwrap();
+        let mut decoder = Decoder::new(BufReader::new(File::open(&path).unwrap())).unwrap();
+        let first = decoder.read_image().unwrap();
+        let first_len = match first {
+            DecodingResult::U8(v) => v.len(),
+            DecodingResult::U16(v) => v.len(),
+            _ => panic!("native integer plane expected"),
+        };
+        assert_eq!(
+            first_len, 323,
+            "the old read_image API only returns the first plane"
+        );
+        let native = read(&path).unwrap().unwrap().pixels;
+        assert_eq!(crate::precision::bit_depth(&native), bits);
+        let bytes = if bits == 8 {
+            native.to_rgba8().as_raw().clone()
+        } else {
+            native
+                .to_rgba16()
+                .as_raw()
+                .iter()
+                .flat_map(|v| v.to_le_bytes())
+                .collect()
+        };
+        std::fs::write(root.join(format!("{name}.rgba")), bytes).unwrap();
+        let imported = open(&path).unwrap();
+        assert!(
+            imported.notes.iter().any(|n| n.contains("분리 평면")),
+            "{name}: {:?}",
+            imported.notes
+        );
+        let mut editor = crate::document::Editor::new(imported.document, false);
+        assert_eq!(editor.document.layers[0].bit_depth, bits);
+        let expected = crate::precision::composite(&editor.document);
+        editor.edit("rename", |d| d.layers[0].name = "renamed".into());
+        editor.undo();
+        editor.redo();
+        let project = root.join(format!("{name}.rphoto"));
+        save_project(&editor.document, &project).unwrap();
+        let restored = load_project(&project).unwrap();
+        assert_eq!(restored.layers[0].bit_depth, bits);
+        assert_eq!(restored.source_icc, editor.document.source_icc);
+        assert_eq!(
+            restored.source_metadata.xmp,
+            editor.document.source_metadata.xmp
+        );
+        assert_eq!(crate::precision::composite(&restored), expected);
+        let output = root.join(format!("{name}-working.tiff"));
+        export(&restored, &output, ImageFormat::Tiff, &Default::default()).unwrap();
+        assert_eq!(
+            crate::precision::composite(&open(&output).unwrap().document),
+            expected
+        );
+        assert_eq!(std::fs::read(path).unwrap(), original);
+    }
+}
+
+#[test]
+fn tiff_integer_rgb_missing_alpha_and_truncated_later_planes_rejected() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = base.join("qa-output/tiff-rgb-planar-integer-invalid");
+    std::fs::create_dir_all(&root).unwrap();
+    for bits in [8, 16] {
+        for channels in [3, 4] {
+            let path = base.join(format!("tests/fixtures/tiff-rgb-planar-integer/d{bits}-c{channels}-none-t0-b0-e0-pred0.tiff"));
+            let original = std::fs::read(&path).unwrap();
+            let mut decoder = Decoder::new(BufReader::new(File::open(&path).unwrap())).unwrap();
+            let offsets = decoder
+                .find_tag_unsigned_vec::<u64>(Tag::StripOffsets)
+                .unwrap()
+                .unwrap();
+            let truncated = root.join(format!("last-plane-d{bits}-c{channels}.tiff"));
+            std::fs::write(
+                &truncated,
+                &original[..*offsets.last().unwrap() as usize + 1],
+            )
+            .unwrap();
+            assert!(open(&truncated).is_err());
+            if channels == 4 {
+                let mut invalid = original.clone();
+                let count = u16::from_le_bytes(invalid[8..10].try_into().unwrap()) as usize;
+                let entry = (0..count)
+                    .map(|i| 10 + i * 12)
+                    .find(|i| u16::from_le_bytes(invalid[*i..*i + 2].try_into().unwrap()) == 338)
+                    .unwrap();
+                invalid[entry..entry + 2].copy_from_slice(&65000u16.to_le_bytes());
+                let missing = root.join(format!("undefined-alpha-d{bits}.tiff"));
+                std::fs::write(&missing, invalid).unwrap();
+                assert!(open(&missing).is_err());
+            }
+            assert_eq!(std::fs::read(path).unwrap(), original);
+        }
+    }
+}
+
+#[test]
 fn tiff_half_gray_rgb_alpha_white_planar_icc_projects() {
     tiff_extended_float_cases("tiff-half", 16);
 }
