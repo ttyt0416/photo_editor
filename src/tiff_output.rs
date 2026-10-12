@@ -61,6 +61,7 @@ fn image<W: Write + Seek, K: TiffKind, C: ColorType>(
     size: [u32; 2],
     data: &[C::Inner],
     options: &ExportOptions,
+    xmp: Option<&[u8]>,
 ) -> Result<(), String>
 where
     [C::Inner]: TiffValue,
@@ -100,6 +101,12 @@ where
             .write_tag(Tag::IccProfile, crate::color_management::srgb_profile())
             .map_err(err)?;
     }
+    if let Some(xmp) = xmp {
+        image
+            .encoder()
+            .write_tag(Tag::Unknown(700), xmp)
+            .map_err(err)?;
+    }
     image.write_data(data).map_err(err)
 }
 fn encode<W: Write + Seek, K: TiffKind>(
@@ -109,20 +116,28 @@ fn encode<W: Write + Seek, K: TiffKind>(
 ) -> Result<(), String> {
     encoder = configure(encoder, options);
     let size = [doc.width, doc.height];
+    let xmp = crate::xmp_output::prepare(doc, options.include_xmp)?;
     match depth(doc, options) {
-        8 => image::<_, _, RGBA8>(&mut encoder, size, doc.composite().as_raw(), options),
+        8 => image::<_, _, RGBA8>(
+            &mut encoder,
+            size,
+            doc.composite().as_raw(),
+            options,
+            xmp.as_deref(),
+        ),
         16 => image::<_, _, RGBA16>(
             &mut encoder,
             size,
             crate::precision::image16(&crate::precision::composite(doc)).as_raw(),
             options,
+            xmp.as_deref(),
         ),
         _ => {
             let pixels = crate::precision::composite(doc);
             if pixels.as_raw().iter().any(|v| !v.is_finite()) {
                 return Err("TIFF 출력에 비정상 부동소수점 값이 있습니다.".into());
             }
-            image::<_, _, RGBA32Float>(&mut encoder, size, pixels.as_raw(), options)
+            image::<_, _, RGBA32Float>(&mut encoder, size, pixels.as_raw(), options, xmp.as_deref())
         }
     }
 }

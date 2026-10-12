@@ -82,6 +82,7 @@ mod transform;
 mod vector;
 mod webp_output;
 mod workspace;
+mod xmp_output;
 
 use eframe::egui;
 

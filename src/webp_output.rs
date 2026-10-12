@@ -6,7 +6,29 @@ pub fn write(
     file: &mut std::fs::File,
     options: &crate::files::ExportOptions,
     exif: Option<&[u8]>,
+    xmp: Option<&[u8]>,
 ) -> Result<(), String> {
+    if options.webp_lossless && xmp.is_some() {
+        let mut encoded = vec![];
+        image::codecs::webp::WebPEncoder::new_lossless(&mut encoded)
+            .write_image(
+                image.as_raw(),
+                image.width(),
+                image.height(),
+                image::ExtendedColorType::Rgba8,
+            )
+            .map_err(|e| e.to_string())?;
+        return file
+            .write_all(&with_metadata(
+                &encoded,
+                image.width(),
+                image.height(),
+                options.include_icc,
+                exif,
+                xmp,
+            )?)
+            .map_err(|e| e.to_string());
+    }
     if options.webp_lossless {
         let mut encoder = image::codecs::webp::WebPEncoder::new_lossless(file);
         if options.include_icc {
@@ -37,13 +59,14 @@ pub fn write(
     let encoded = webp::Encoder::from_rgba(image.as_raw(), image.width(), image.height())
         .encode_advanced(&config)
         .map_err(|e| format!("WebP 인코딩 실패: {e:?}"))?;
-    if options.include_icc || exif.is_some() {
+    if options.include_icc || exif.is_some() || xmp.is_some() {
         file.write_all(&with_metadata(
             &encoded,
             image.width(),
             image.height(),
             options.include_icc,
             exif,
+            xmp,
         )?)
         .map_err(|e| e.to_string())
     } else {
@@ -59,6 +82,7 @@ fn with_metadata(
     height: u32,
     icc: bool,
     exif: Option<&[u8]>,
+    xmp: Option<&[u8]>,
 ) -> Result<Vec<u8>, String> {
     let invalid = || "WebP 인코더의 출력 구조가 잘못되었습니다.".to_owned();
     if encoded.len() < 20
@@ -79,7 +103,16 @@ fn with_metadata(
         }
         extension.copy_from_slice(&encoded[20..30]);
         30
-    } else if &encoded[12..16] == b"VP8 " {
+    } else if matches!(&encoded[12..16], b"VP8 " | b"VP8L") {
+        if &encoded[12..16] == b"VP8L" {
+            if encoded.len() < 25 || encoded[20] != 0x2f {
+                return Err(invalid());
+            }
+            let bits = u32::from_le_bytes(encoded[21..25].try_into().unwrap());
+            if bits & (1 << 28) != 0 {
+                extension[0] |= 0x10;
+            }
+        }
         extension[4..7].copy_from_slice(&(width - 1).to_le_bytes()[..3]);
         extension[7..10].copy_from_slice(&(height - 1).to_le_bytes()[..3]);
         12
@@ -92,6 +125,9 @@ fn with_metadata(
     if exif.is_some() {
         extension[0] |= 0x08;
     }
+    if xmp.is_some() {
+        extension[0] |= 0x04;
+    }
     let profile = crate::color_management::srgb_profile();
     let length =
         30 + if icc {
@@ -99,6 +135,7 @@ fn with_metadata(
         } else {
             0
         } + exif.map_or(0, |bytes| 8 + bytes.len() + bytes.len() % 2)
+            + xmp.map_or(0, |bytes| 8 + bytes.len() + bytes.len() % 2)
             + encoded.len()
             - start;
     let riff_length = u32::try_from(length - 8).map_err(|_| invalid())?;
@@ -122,6 +159,9 @@ fn with_metadata(
     result.extend_from_slice(&encoded[start..]);
     if let Some(exif) = exif {
         chunk(&mut result, b"EXIF", exif);
+    }
+    if let Some(xmp) = xmp {
+        chunk(&mut result, b"XMP ", xmp);
     }
     Ok(result)
 }

@@ -803,3 +803,13 @@ PNG/JPEG/WebP의 촬영 EXIF 포함 선택(기본 포함)을 추가하고 옵션
 258출력25542픽셀(8방향×두 바이트 순서·실제 가져오기/크기9×11 편집/이력·PNG/JPEG/무손실/손실WebP·ICC/EXIF선택 + native PNG16 쌍), 129포함/제외 쌍의 정확 PNG IDAT/JPEG 비APP1/WebP VP8/VP8L/ALPH 원문·프로젝트 CRC/원본 공유와 별도 Pillow EXIF/방향/치수/Make/불투명 원문을 비교했다. PNG/WebP RGBA와 native PNG16은 별도 디코더와 정확 일치한다. JPEG는 decoder IDCT 차이 허용2단위 안에서 최대2이며, EXIF 포함/제외의 압축 데이터와 각 디코더의 픽셀은 정확 동일하다. 16개의 넓은70000×80000 EXIF 슬롯을 별도 Pillow로 확인했다(대형 사진 렌더 성능 검증이 아닌 태그 검사). 재현 코드: src/exif_output_tests.rs, tests/fixtures/verify_exif_output_files.py.
 
 전체480통과/0실패/1제외(51.37초), fmt/clippy·개발/release 빌드 성공. 기존 원본 EXIF/XMP49입력·WebP ICC32출력·공통 ICC18출력·라이선스308/528/18 독립 검사도 통과했다. 생성 부산물은 정리한다. 직전119커밋7c05b9652ec309c18ce1de0301fcf269c1c21144의 GitHub main 원격 일치를 확인했다. 다음121은 PNG/JPEG/WebP/TIFF XMP 출력/방향·치수 갱신이며 TIFF/추가 EXIF 구조·확장 XMP/IPTC·전체 메타데이터 목표는 남음.
+
+## 121. PNG/JPEG/WebP/TIFF XMP 출력·기존 방향/치수 갱신
+
+촬영 XMP 포함 선택(기본 포함)을4형식에 연결하고 실제 headless 토글/취소·미리보기 옵션 키·문서 이력/원본 불변을 확인했다. UTF-8 XML 원문의 기존 tiff:Orientation은1, tiff:ImageWidth/ImageLength와 exif:PixelX/YDimension은 작업 크기로 바꾼다. 네임스페이스 URI로 속성·요소·CDATA·qualified rdf:value·빈 요소·긴 속성 공백을 찾아 원래 접두어/알 수 없는 속성·한글·주석·패킷 구조를 유지한다. 원본 자산은 변경하지 않고 출력에서 xmp:Thumbnails를 제거한다. URI 방향 값/중복 rdf:value/비정상 RDF 구조의 오류를 실제 실패 검사로 재현하고 거부하도록 수정했다. 미지원 인코딩·손상 XML·확장 XMP 참조·JPEG APP1 초과는 기존 파일을 보존하고 포함 옵션을 끄면 저장할 수 있다.
+
+PNG는 IHDR 뒤 iTXt/CRC, JPEG는 APP1 식별자, WebP는 VP8X XMP 플래그/XMP 청크·기존 ALPH/VP8/VP8L, TIFF는 태그700(classic/BigTIFF)에 기록한다. [Adobe XMP 명세](https://developer.adobe.com/xmp/docs/xmp-specifications/), [TIFF 속성](https://developer.adobe.com/xmp/docs/xmp-namespaces/tiff/), [EXIF 속성](https://developer.adobe.com/xmp/docs/xmp-namespaces/exif/), [WebP 컨테이너](https://developers.google.com/speed/webp/docs/riff_container)를 확인했다. 의존성/외부 코드를 추가하지 않았다.
+
+384출력38016픽셀(6XML형태·PNG8/16·JPEG·무손실/손실WebP·TIFF8/16/32·ICC/EXIF/XMP 옵션), 192포함/제외 쌍의 압축 데이터·알파/16비트/float HDR 픽셀·독립 XML 속성/구조·CRC/RIFF/APP1/IFD·프로젝트 자산을 비교했다. JPEG의 독립 디코더 차이 최대2단위를 기록했으며 포함/제외 압축 데이터는 정확 동일하다. 재현 코드: src/xmp_output_tests.rs, tests/fixtures/verify_xmp_output_files.py.
+
+전체483통과/0실패/1제외(48.51초), fmt/clippy·개발/release 빌드 성공. 기존 EXIF258출력·원본 메타데이터49입력·WebP ICC32출력·라이선스308/528/18 독립 검사 통과. 생성 출력은 정리한다. 다음122는 JP2 원본 XMP 보존/출력이며 TIFF EXIF·확장 XMP/IPTC·추가 코덱·전체 편집/색 관리/실제 창 검증은 남음.

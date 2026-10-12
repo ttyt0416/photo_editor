@@ -1241,6 +1241,7 @@ pub const EXPORT_FORMATS: &[(ImageFormat, &str, &str)] = &[
 pub struct ExportOptions {
     pub include_icc: bool,
     pub include_exif: bool,
+    pub include_xmp: bool,
     pub jp2_icc: bool,
     pub jp2_resolution_enabled: bool,
     pub jp2_resolution: u16,
@@ -1288,6 +1289,7 @@ impl Default for ExportOptions {
         Self {
             include_icc: true,
             include_exif: true,
+            include_xmp: true,
             jp2_icc: false,
             jp2_resolution_enabled: false,
             jp2_resolution: 72,
@@ -1449,10 +1451,21 @@ pub fn export(
     } else {
         None
     };
+    let xmp = if matches!(format, ImageFormat::Png | ImageFormat::WebP) {
+        crate::xmp_output::prepare(document, options.include_xmp)?
+    } else {
+        None
+    };
     let image = document.composite();
     atomic_write(path, |file| {
         if format == ImageFormat::WebP {
-            return crate::webp_output::write(&image, file, options, exif.as_deref());
+            return crate::webp_output::write(
+                &image,
+                file,
+                options,
+                exif.as_deref(),
+                xmp.as_deref(),
+            );
         }
         if format == ImageFormat::Pnm {
             let mut rgb = image::RgbImage::new(image.width(), image.height());
@@ -1508,7 +1521,11 @@ pub fn export(
                 .nth(options.png_filter)
                 .unwrap();
                 use image::ImageEncoder;
-                let mut encoder = PngEncoder::new_with_quality(file, compression, filter);
+                let mut encoder = PngEncoder::new_with_quality(
+                    crate::xmp_output::PngWriter::new(file, xmp.as_deref()),
+                    compression,
+                    filter,
+                );
                 if options.include_icc {
                     encoder
                         .set_icc_profile(crate::color_management::srgb_profile().to_vec())
