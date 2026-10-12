@@ -2,6 +2,121 @@ use crate::source_metadata::{MAX_BYTES, Metadata};
 use std::{collections::BTreeMap, io::Read, path::Path, sync::Arc};
 const SIGNATURE: &[u8] = b"http://ns.adobe.com/xmp/extension/\0";
 const NOTE: &str = "http://ns.adobe.com/xmp/note/";
+pub(crate) const CHUNK_BYTES: usize = 65533 - (SIGNATURE.len() + 32 + 4 + 4);
+
+pub(crate) struct Packets {
+    pub basic: Vec<u8>,
+    pub extended: Option<ExtendedPacket>,
+}
+pub(crate) struct ExtendedPacket {
+    pub bytes: Vec<u8>,
+    guid: String,
+}
+impl ExtendedPacket {
+    pub(crate) fn chunk(&self, index: usize, part: &[u8]) -> Vec<u8> {
+        let mut data = SIGNATURE.to_vec();
+        data.extend(self.guid.as_bytes());
+        data.extend((self.bytes.len() as u32).to_be_bytes());
+        data.extend(((index * CHUNK_BYTES) as u32).to_be_bytes());
+        data.extend(part);
+        data
+    }
+}
+pub(crate) fn prepare_output(
+    doc: &crate::document::Document,
+    include: bool,
+) -> Result<Option<Packets>, String> {
+    if !include {
+        return Ok(None);
+    }
+    let Some(extended) = &doc.source_metadata.xmp_extended else {
+        return crate::xmp_output::prepare(doc, true).map(|basic| {
+            basic.map(|basic| Packets {
+                basic,
+                extended: None,
+            })
+        });
+    };
+    let basic = doc
+        .source_metadata
+        .xmp
+        .as_deref()
+        .ok_or("확장 XMP의 기본 원문이 없습니다")?;
+    let guid = doc
+        .source_metadata
+        .xmp_extended_guid
+        .as_deref()
+        .ok_or("확장 XMP의 식별자가 없습니다")?;
+    if !valid(extended, guid, Some(basic)) {
+        return Err("확장 XMP 원문·기본 연결·MD5가 일치하지 않습니다".into());
+    }
+    let bytes = crate::xmp_output::normalize_extended(extended, [doc.width, doc.height])?;
+    let guid = format!("{:x}", md5::compute(&bytes)).to_ascii_uppercase();
+    let basic = crate::xmp_output::normalize_extended(basic, [doc.width, doc.height])?;
+    let basic = replace_guid(&basic, &guid)?;
+    if !valid(&bytes, &guid, Some(&basic)) {
+        return Err("출력 확장 XMP 연결 검증 실패".into());
+    }
+    Ok(Some(Packets {
+        basic,
+        extended: Some(ExtendedPacket { bytes, guid }),
+    }))
+}
+fn replace_guid(bytes: &[u8], guid: &str) -> Result<Vec<u8>, String> {
+    let text = std::str::from_utf8(bytes).map_err(|e| e.to_string())?;
+    let xml = roxmltree::Document::parse(text).map_err(|e| e.to_string())?;
+    let mut patches = vec![];
+    for node in xml.descendants().filter(|n| n.is_element()) {
+        for attr in node.attributes() {
+            if attr.namespace() == Some(NOTE) && attr.name() == "HasExtendedXMP" {
+                let range = attr.range();
+                let raw = &text[range.clone()];
+                let eq = raw.find('=').ok_or("확장 XMP 속성 범위 오류")?;
+                let tail = &raw[eq + 1..];
+                let trimmed = tail.trim_start();
+                let quote = *trimmed
+                    .as_bytes()
+                    .first()
+                    .ok_or("확장 XMP 속성 범위 오류")?;
+                if !matches!(quote, b'\'' | b'"') || raw.as_bytes().last() != Some(&quote) {
+                    return Err("확장 XMP 속성 범위 오류".into());
+                }
+                let at = range.start + eq + 1 + tail.len() - trimmed.len() + 1;
+                patches.push((at..range.end - 1, guid.to_owned()));
+            }
+        }
+        if node.has_tag_name((NOTE, "HasExtendedXMP")) {
+            let children = node.children().filter(|n| n.is_text()).collect::<Vec<_>>();
+            if children.is_empty() {
+                return Err("확장 XMP 식별자 텍스트가 없습니다".into());
+            }
+            for (index, child) in children.iter().enumerate() {
+                let range = child.range();
+                let raw = &text[range.clone()];
+                let value = if index != 0 {
+                    String::new()
+                } else if raw.starts_with("<![CDATA[") && raw.ends_with("]]>") {
+                    format!("<![CDATA[{guid}]]>")
+                } else {
+                    guid.to_owned()
+                };
+                patches.push((range, value));
+            }
+        }
+    }
+    patches.sort_by_key(|(range, _)| range.start);
+    if patches.windows(2).any(|p| p[0].0.end > p[1].0.start) {
+        return Err("확장 XMP 식별자 범위가 겹칩니다".into());
+    }
+    let mut result = text.to_owned();
+    for (range, value) in patches.into_iter().rev() {
+        result.replace_range(range, &value);
+    }
+    if result.len() > MAX_BYTES || basic_guid(Some(result.as_bytes()))? != guid {
+        return Err("출력 확장 XMP 식별자 오류".into());
+    }
+    Ok(result.into_bytes())
+}
 
 fn basic_guid(bytes: Option<&[u8]>) -> Result<String, String> {
     let text = std::str::from_utf8(bytes.ok_or("확장 XMP의 기본 패킷이 없습니다")?)
@@ -141,6 +256,177 @@ mod tests {
     use super::*;
 
     #[test]
+    fn extended_jpeg_output_options_chunks_reimport_pixels_and_source_assets() {
+        let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let fixtures = base.join("tests/fixtures/jpeg-extended-xmp");
+        let root = base.join("qa-output/jpeg-extended-output");
+        std::fs::create_dir_all(&root).unwrap();
+        let cases: Vec<serde_json::Value> =
+            serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap())
+                .unwrap();
+        let mut manifest = vec![];
+        for case in cases {
+            let name = case["file"].as_str().unwrap();
+            let original = std::fs::read(fixtures.join(name)).unwrap();
+            let opened = crate::files::open(&fixtures.join(name)).unwrap();
+            let doc = opened.document;
+            let metadata = doc.source_metadata.clone();
+            for progressive in [false, true] {
+                let mut baseline = None;
+                for include in [false, true] {
+                    let output_name = format!("{name}-p{progressive}-x{include}.jpg");
+                    let output = root.join(&output_name);
+                    let options = crate::files::ExportOptions {
+                        include_xmp: include,
+                        jpeg_progressive: progressive,
+                        quality: 93,
+                        ..Default::default()
+                    };
+                    crate::files::export(&doc, &output, image::ImageFormat::Jpeg, &options)
+                        .unwrap();
+                    let imported = crate::files::open(&output).unwrap();
+                    let pixels = crate::precision::composite(&imported.document);
+                    if let Some(baseline) = &baseline {
+                        assert_eq!(&pixels, baseline);
+                    } else {
+                        baseline = Some(pixels);
+                    }
+                    assert_eq!(
+                        imported.document.source_metadata.xmp_extended.is_some(),
+                        include
+                    );
+                    if include {
+                        let packets = prepare_output(&doc, true).unwrap().unwrap();
+                        let extended = packets.extended.unwrap();
+                        assert_eq!(
+                            imported
+                                .document
+                                .source_metadata
+                                .xmp
+                                .as_deref()
+                                .unwrap()
+                                .as_slice(),
+                            packets.basic
+                        );
+                        assert_eq!(
+                            imported
+                                .document
+                                .source_metadata
+                                .xmp_extended
+                                .as_deref()
+                                .unwrap()
+                                .as_slice(),
+                            extended.bytes
+                        );
+                        let project = root.join(format!("{output_name}.rphoto"));
+                        crate::files::save_project(&imported.document, &project).unwrap();
+                        assert_eq!(
+                            crate::files::load_project(&project)
+                                .unwrap()
+                                .source_metadata
+                                .xmp_extended,
+                            imported.document.source_metadata.xmp_extended
+                        );
+                    }
+                    manifest.push(serde_json::json!({"file":output_name,"source":name,"include":include,"progressive":progressive}));
+                }
+            }
+            assert_eq!(doc.source_metadata.xmp, metadata.xmp);
+            assert_eq!(doc.source_metadata.xmp_extended, metadata.xmp_extended);
+            assert_eq!(
+                doc.source_metadata.xmp_extended_guid,
+                metadata.xmp_extended_guid
+            );
+            assert_eq!(std::fs::read(fixtures.join(name)).unwrap(), original);
+        }
+        std::fs::write(
+            root.join("manifest.json"),
+            serde_json::to_vec_pretty(&manifest).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(manifest.len(), 80);
+    }
+
+    #[test]
+    fn output_normalizes_both_packets_regenerates_guid_preserves_unknown_and_atomic_failure() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("qa-output/jpeg-extended-geometry");
+        std::fs::create_dir_all(&root).unwrap();
+        let packet=b"<x xmlns:t='http://ns.adobe.com/tiff/1.0/' xmlns:e='http://ns.adobe.com/exif/1.0/' t:Orientation='8' t:ImageWidth='5' t:ImageLength='3'><!--keep--><e:PixelXDimension>5</e:PixelXDimension><e:PixelYDimension><![CDATA[3]]></e:PixelYDimension><unknown attr='preserve'>opaque</unknown></x>".to_vec();
+        let guid = format!("{:x}", md5::compute(&packet)).to_ascii_uppercase();
+        for element in [false, true] {
+            let basic = if element {
+                format!("<x xmlns:n='{NOTE}' xmlns:t='http://ns.adobe.com/tiff/1.0/' t:Orientation='6' t:ImageWidth='5' t:ImageLength='3'><n:HasExtendedXMP><![CDATA[{guid}]]></n:HasExtendedXMP><!--basic--></x>").into_bytes()
+            } else {
+                format!("<x xmlns:n='{NOTE}' xmlns:t='http://ns.adobe.com/tiff/1.0/' t:Orientation='6' t:ImageWidth='5' t:ImageLength='3' n:HasExtendedXMP = '{guid}'><!--basic--></x>").into_bytes()
+            };
+            let mut doc = crate::document::Document::from_image(
+                "Geometry".into(),
+                image::RgbaImage::from_pixel(9, 11, image::Rgba([71, 129, 201, 255])),
+            );
+            doc.source_metadata = Metadata::from_bytes(None, Some(basic.clone()), &mut vec![]);
+            doc.source_metadata.xmp_extended = Some(Arc::new(packet.clone()));
+            doc.source_metadata.xmp_extended_guid = Some(guid.clone());
+            let name = format!("element{element}");
+            std::fs::write(root.join(format!("{name}-source-basic.xmp")), &basic).unwrap();
+            std::fs::write(root.join(format!("{name}-source-extended.xmp")), &packet).unwrap();
+            let output = prepare_output(&doc, true).unwrap().unwrap();
+            let extended = output.extended.unwrap();
+            assert_ne!(extended.guid, guid);
+            assert!(
+                std::str::from_utf8(&extended.bytes)
+                    .unwrap()
+                    .contains("<!--keep-->")
+            );
+            assert!(
+                std::str::from_utf8(&extended.bytes)
+                    .unwrap()
+                    .contains("attr='preserve'")
+            );
+            let path = root.join(format!("{name}.jpg"));
+            crate::files::export(&doc, &path, image::ImageFormat::Jpeg, &Default::default())
+                .unwrap();
+            let reopened = crate::files::open(&path).unwrap();
+            assert_eq!(
+                reopened
+                    .document
+                    .source_metadata
+                    .xmp_extended
+                    .as_deref()
+                    .unwrap()
+                    .as_slice(),
+                extended.bytes
+            );
+            assert_eq!(
+                reopened
+                    .document
+                    .source_metadata
+                    .xmp_extended_guid
+                    .as_deref(),
+                Some(extended.guid.as_str())
+            );
+            assert_eq!(
+                doc.source_metadata.xmp.as_deref().unwrap().as_slice(),
+                basic
+            );
+            assert_eq!(
+                doc.source_metadata
+                    .xmp_extended
+                    .as_deref()
+                    .unwrap()
+                    .as_slice(),
+                packet
+            );
+            let original = std::fs::read(&path).unwrap();
+            doc.source_metadata.xmp_extended_guid = Some("0".repeat(32));
+            assert!(
+                crate::files::export(&doc, &path, image::ImageFormat::Jpeg, &Default::default())
+                    .is_err()
+            );
+            assert_eq!(std::fs::read(&path).unwrap(), original);
+        }
+    }
+
+    #[test]
     fn extended_xmp_jpeg_chunks_guid_pixels_history_project_and_export_guard() {
         let base = Path::new(env!("CARGO_MANIFEST_DIR"));
         let fixtures = base.join("tests/fixtures/jpeg-extended-xmp");
@@ -202,18 +488,19 @@ mod tests {
                 metadata.xmp_extended_guid
             );
             assert_eq!(crate::precision::composite(&restored), pixels);
-            let output = root.join(format!("{name}-guard.jpg"));
+            let output = root.join(format!("{name}-guard.png"));
             std::fs::write(&output, b"existing output").unwrap();
             assert!(
                 crate::files::export(
                     &restored,
                     &output,
-                    image::ImageFormat::Jpeg,
+                    image::ImageFormat::Png,
                     &Default::default()
                 )
                 .is_err()
             );
             assert_eq!(std::fs::read(&output).unwrap(), b"existing output");
+            let output = root.join(format!("{name}-no-xmp.jpg"));
             crate::files::export(
                 &restored,
                 &output,

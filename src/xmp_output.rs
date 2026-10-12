@@ -14,7 +14,7 @@ pub fn prepare(
         return Ok(None);
     }
     if document.source_metadata.xmp_extended.is_some() {
-        return Err("확장 XMP 원문은 프로젝트에 보존합니다. 확장 패킷의 이미지 출력은 아직 지원하지 않으므로 XMP 포함 옵션을 꺼 주세요.".into());
+        return Err("이 형식은 확장 XMP 저장을 아직 지원하지 않습니다. JPEG로 저장하거나 XMP 포함 옵션을 꺼 주세요. 원문은 프로젝트에 보존됩니다.".into());
     }
     document
         .source_metadata
@@ -61,6 +61,14 @@ fn scalar<'a, 'b>(node: roxmltree::Node<'a, 'b>) -> Result<roxmltree::Node<'a, '
     scalar(target)
 }
 fn normalize(bytes: &[u8], size: [u32; 2]) -> Result<Vec<u8>, String> {
+    normalize_packet(bytes, size, false)
+}
+
+pub(crate) fn normalize_extended(bytes: &[u8], size: [u32; 2]) -> Result<Vec<u8>, String> {
+    normalize_packet(bytes, size, true)
+}
+
+fn normalize_packet(bytes: &[u8], size: [u32; 2], extended: bool) -> Result<Vec<u8>, String> {
     if bytes.len() > crate::source_metadata::MAX_BYTES {
         return Err(error());
     }
@@ -82,11 +90,12 @@ fn normalize(bytes: &[u8], size: [u32; 2]) -> Result<Vec<u8>, String> {
         {
             continue;
         }
-        if node.has_tag_name(("http://ns.adobe.com/xmp/note/", "HasExtendedXMP"))
-            || node.attributes().any(|a| {
-                a.namespace() == Some("http://ns.adobe.com/xmp/note/")
-                    && a.name() == "HasExtendedXMP"
-            })
+        if !extended
+            && (node.has_tag_name(("http://ns.adobe.com/xmp/note/", "HasExtendedXMP"))
+                || node.attributes().any(|a| {
+                    a.namespace() == Some("http://ns.adobe.com/xmp/note/")
+                        && a.name() == "HasExtendedXMP"
+                }))
         {
             return Err("확장 XMP 원문을 함께 출력하는 지원이 필요합니다. XMP 포함 옵션을 끄면 사진을 저장할 수 있습니다.".into());
         }

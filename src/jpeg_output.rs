@@ -25,7 +25,7 @@ pub fn save(doc: &Document, path: &Path, options: &ExportOptions) -> Result<(), 
     let w = u16::try_from(doc.width).map_err(|_| "JPEG의 가로는 65535px 이하여야 합니다.")?;
     let h = u16::try_from(doc.height).map_err(|_| "JPEG의 세로는 65535px 이하여야 합니다.")?;
     let exif = crate::exif_output::prepare(doc, options.include_exif)?;
-    let xmp = crate::xmp_output::prepare(doc, options.include_xmp)?;
+    let xmp = crate::jpeg_xmp_extended::prepare_output(doc, options.include_xmp)?;
     let pixels = doc.composite();
     let rgb = image::RgbImage::from_fn(doc.width, doc.height, |x, y| {
         let p = pixels.get_pixel(x, y);
@@ -39,10 +39,21 @@ pub fn save(doc: &Document, path: &Path, options: &ExportOptions) -> Result<(), 
         let mut encoder = Encoder::new(file, options.quality);
         if let Some(xmp) = &xmp {
             let mut data = b"http://ns.adobe.com/xap/1.0/\0".to_vec();
-            data.extend(xmp);
+            data.extend(&xmp.basic);
             encoder
                 .add_app_segment(1, data)
                 .map_err(|e| e.to_string())?;
+            if let Some(extended) = &xmp.extended {
+                for (index, part) in extended
+                    .bytes
+                    .chunks(crate::jpeg_xmp_extended::CHUNK_BYTES)
+                    .enumerate()
+                {
+                    encoder
+                        .add_app_segment(1, extended.chunk(index, part))
+                        .map_err(|e| e.to_string())?;
+                }
+            }
         }
         if let Some(exif) = &exif {
             encoder.add_exif_metadata(exif).map_err(|e| e.to_string())?;

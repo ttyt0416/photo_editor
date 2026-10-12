@@ -50,6 +50,6 @@ for case in cases:
         with Image.open(io.BytesIO(project.read(f'layers/{layer}.png'))) as image:actual=np.asarray(image.convert('RGBA'))
     with Image.open(BASE/'tests/fixtures/jpeg-iptc'/case['base']) as image:expected=np.asarray(ImageOps.exif_transpose(image).convert('RGBA'))
     assert np.abs(actual.astype('i4')-expected.astype('i4')).max()<=2
-    emitted=app1((OUTPUT/(name+'-guard.jpg')).read_bytes())
+    emitted=app1((OUTPUT/(name+'-no-xmp.jpg')).read_bytes())
     assert not any(p.startswith(SIG) or p.startswith(b'http://ns.adobe.com/xap/1.0/\0') for p in emitted)
 print('ExtendedXMP: 20 RGB/GRAY baseline/progressive JPEGs, single/UTF-8 split/reverse/225282-byte/before-basic chunks; independent APP1 coverage/MD5/namespaced basic GUID/XML, exact basic+extended+Photoshop project v15/CRC/depth, Pillow pixels within 2; XMP-disabled output has no dangling extension link.')
