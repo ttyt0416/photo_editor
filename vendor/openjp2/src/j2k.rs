@@ -4944,7 +4944,7 @@ fn opj_j2k_update_rates(
       .wrapping_mul((*(*l_image).comps).dy);
     l_size_pixel = (*l_image).numcomps.wrapping_mul((*(*l_image).comps).prec);
     l_sot_remove =
-      (opj_stream_tell(p_stream) - p_j2k.icc_rate_overhead).max(0) as OPJ_FLOAT32
+      (opj_stream_tell(p_stream) - p_j2k.rate_metadata_bytes).max(0) as OPJ_FLOAT32
         / (*l_cp).th.wrapping_mul((*l_cp).tw) as OPJ_FLOAT32;
     if (*l_cp).m_specific_param.m_enc.m_tp_on {
       l_tp_stride_func = Some(opj_j2k_get_tp_stride as fn(_: *mut opj_tcp_t) -> OPJ_FLOAT32)
@@ -10436,7 +10436,7 @@ impl opj_j2k {
       Self {
         m_is_decoder,
         m_specific_param: core::mem::zeroed(),
-        icc_rate_overhead: 0,
+        rate_metadata_bytes: 0,
         m_private_image: core::ptr::null_mut(),
         m_output_image: core::ptr::null_mut(),
         m_cp: core::mem::zeroed(),

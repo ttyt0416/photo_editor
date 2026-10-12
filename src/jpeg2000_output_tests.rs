@@ -753,3 +753,5 @@ fn jpeg2000_display_resolution_metadata_options_codestream_unchanged_source_and_
 }
 
 include!("jpeg2000_icc_output_tests.rs");
+
+include!("jpeg2000_metadata_rate_tests.rs");

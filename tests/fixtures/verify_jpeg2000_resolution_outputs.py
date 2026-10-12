@@ -26,11 +26,11 @@ for case in cases:
         horizontal=Fraction(hn,hd)*10**he*Fraction(254,10000)
         assert vertical==horizontal==case['ppi']
     else:assert b'res ' not in header
-    key=(case['gray'],case['lossless'],case['enabled']);baseline=baselines.setdefault(key,b[b'jp2c'])
+    key=(case['gray'],case['lossless']);baseline=baselines.setdefault(key,b[b'jp2c'])
     assert b[b'jp2c']==baseline,(case['file'],'resolution changed compressed pixels')
     raw=(OUT/(case['file']+'.j2k')).read_bytes()
-    assert raw==raw_baselines.setdefault(key[:2],raw)
+    assert raw==raw_baselines.setdefault(key,raw)
     native=np.fromfile(OUT/case['decoded'],dtype='<i4').reshape(11,17,case['channels'])
     np.testing.assert_array_equal(components(path),native,err_msg=case['file'])
 assert (OUT/'invalid.jp2').read_bytes()==b'original'
-print(f'JP2 resolution: {len(cases)} independent C OpenJPEG {version} exact 16-bit RGB/gray-alpha reads, exact ppi fractions 1/72/300/9600/65535, res /resd containment, disabled metadata, unchanged JP2 codestream for changing ppi values, raw J2K ignores metadata, original invalid output preserved')
+print(f'JP2 resolution: {len(cases)} independent C OpenJPEG {version} exact 16-bit RGB/gray-alpha reads, exact ppi fractions 1/72/300/9600/65535, res /resd containment, disabled metadata, unchanged JP2 codestream with metadata on/off or changing ppi values, raw J2K ignores metadata, original invalid output preserved')

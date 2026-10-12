@@ -1,6 +1,6 @@
 # 순차 구현 검증 기록 — 2026-10-12
 
-현재까지 순차 구현 기록의 1–24/26–115번 기능을 구현하고 자동 검사했으며, 25번에서 참고 README의 46개 항목을 대응했다. 전체 개발 계획의 완료를 뜻하지 않는다. 원래 범위와 Windows 전용 결정은 DEVELOPMENT_CHECKLIST.md에 유지한다.
+현재까지 순차 구현 기록의 1–24/26–116번 기능을 구현하고 자동 검사했으며, 25번에서 참고 README의 46개 항목을 대응했다. 전체 개발 계획의 완료를 뜻하지 않는다. 원래 범위와 Windows 전용 결정은 DEVELOPMENT_CHECKLIST.md에 유지한다.
 
 검증 예제/로그 경로는 검사로 재현하는 생성 위치다. 2026-10-12 사용자 요청에 따라 부산물을 삭제했고, 이후에도 독립 검사를 마친 생성 이미지·프로젝트·로그/Python 캐시는 정리한다. 작성한 이 기록과 재현 코드·기준 입력·실행 파일은 보존한다.
 
@@ -8,7 +8,7 @@
 
 - `cargo fmt --check`: 성공.
 - `cargo clippy --all-targets --offline -- -D warnings`: 성공.
-- `cargo test --offline`: 472개 통과, 실패 0, 수동 성능 진단 1개 제외(총 473개).
+- `cargo test --offline`: 473개 통과, 실패 0, 수동 성능 진단 1개 제외(총 474개).
 - `cargo build --offline`, `cargo build --release --offline`: 성공. 두 실행 파일을 갱신했다.
 - `python tests/fixtures/verify_compressed_psd_outputs.py`: 8/16/32비트 × PSD/PSB × 무압축/RLE/ZIP/예측 24개 파일의 레이어/마스크/행 길이/예측/합성 이미지 확인.
 - `python tests/fixtures/verify_hdr_outputs.py`: 일반/RLE 행의 RGBE 픽셀·알파 배경 합성·음수 변환·최대 표현 값 확인.
@@ -16,7 +16,7 @@
 - Pillow 12.1.0: Rust PCX 출력을 독립 디코딩해 기대 RGB 픽셀과 일치 확인.
 - PNG 10단계 × 6개 필터 × 8/16비트 = 120개 조합의 픽셀·알파·정밀도 확인.
 
-release 실행 파일 SHA-256: `87513a968f99d08a8bcd1f50aa2ecadb914fdac0d2703ecefe6318a5dd7e05e4`
+release 실행 파일 SHA-256: `7f970e37cd4ce7ba49a16d5c3f80cc05d5cfdb44434b90a97e49cd778908ae0c`
 
 ## 기능과 예제 위치
 
@@ -757,3 +757,11 @@ JP2 전용 작업 프로파일 포함 선택(기본 제외)을 연결하고 raw 
 자체32파일4896픽셀(RGB/회색 ×8/16비트 ×알파 ×무손실/손실 ×포함/제외), 독립 C OpenJPEG2.5.2 성분·정규화/투명색·정확 COLR 원문/D50/태그/CDEF·프로젝트 CRC를 비교했다. 16쌍의 codestream 및 C 원시 성분은 정확히 동일하다. 추가8개의129²/128타일 경계·4품질층 RPCL 조합도 정확 codestream/앱 픽셀/원본을 검사했다. 별도 LittleCMS는256회색 코드의 중성 sRGB를 정확 비교했다. headless 실제 JP2 토글/취소와 J2K 숨김·원본/이력 유지도 검사했다. 재현 코드: src/jpeg2000_icc_output_tests.rs, tests/fixtures/verify_jpeg2000_icc_output_files.py.
 
 전체472통과/0실패/1제외(48.97초), fmt/clippy·개발/release 빌드 성공. 기존 ICC 출력 독립 비교·308의존성/528원문/18선언 전용도 확인했다. 생성 부산물을 검사 후 정리한다. 실제 화면 조작은 하지 않았다. 다음116은 표시 해상도 헤더가 압축 품질을 바꾸는지 재현/보강한다. 사용자 승인으로 체크리스트 갱신/정리 후 커밋·푸시 확인을 반복 순서에 추가했다.
+
+## 116. JP2 선택 메타데이터의 압축 예산 보존
+
+해상도 정보 res/resd26바이트도 압축 예산을 소모하는 오류를 회귀 검사로 재현했다. 17×9 RGB8 무손실 파일은 최종 픽셀은 동일하지만3번째 품질층에서381채널 값(최대120)이 달랐다. private rate_metadata_bytes에 기존 ICC 추가분과26바이트를 합산해 메타데이터 포함/제외의 정확한 codestream/전체·중간 품질 복원을 유지한다. 기존 기본 출력과 raw J2K는 추가분0으로 유지하며 C ABI와 원래 고지는 바꾸지 않는다.
+
+96파일537696픽셀(RGB/회색·8/16비트·손실/무손실·ICC/해상도4조합·1×9/17×9/129×129·128타일·4품질층 RPCL), 독립 C OpenJPEG2.5.2의 전체 성분/정확 정규화 및288부분층 복원을 비교했다. 24그룹에서 모든 codestream/성분이 정확히 동일하며 ppi1/300/65535·ICC/CDEF/프로젝트 CRC/원본을 검사했다. 기존40해상도 검사의 그룹 키에서 포함 여부를 제거해 ppi변경과 포함/제외를 모두 정확 비교한다. 기존 ICC32파일 독립 비교도 통과했다. 재현 코드: src/jpeg2000_metadata_rate_tests.rs, tests/fixtures/verify_jpeg2000_metadata_rate_outputs.py.
+
+전체473통과/0실패/1제외(52.10초), fmt/clippy·개발/release 빌드 성공. 라이선스308/528/18 독립 검사도 통과했다. 처음 검사 명령에서 라이선스 검사 파일명을 잘못 지정해 종료된 뒤 실제 verify_windows_licenses.py를 실행해 통과하고 두 빌드를 완료했다. 생성 부산물은 정리한다. 첫 소스 기준 커밋 f7fba4e5e28fe603e7f100ad577ce31569c01fc7를 GitHub main에 푸시/원격 일치 확인했다. 다음117은 WebP 작업 ICC 출력이며 전체 색/메타데이터 목표는 유지한다.

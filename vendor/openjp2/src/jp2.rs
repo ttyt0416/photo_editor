@@ -1761,11 +1761,12 @@ pub(crate) fn opj_jp2_start_compress(
   if opj_jp2_exec(jp2, &mut procedure_list, stream, p_manager) == 0 {
     return 0i32;
   }
-  // ICC replaces the four-byte EnumCS value; its extra bytes are metadata,
-  // not compressed pixel payload. Keep rate allocation equal to EnumCS output.
-  jp2.j2k.icc_rate_overhead = if jp2.meth == 2 {
+  // Optional ICC and display-resolution bytes are metadata, not pixel payload.
+  // Keep rate allocation equal to the original EnumCS/no-resolution output.
+  let icc_bytes = if jp2.meth == 2 {
     jp2.color.icc_profile_len().saturating_sub(4) as OPJ_OFF_T
   } else { 0 };
+  jp2.j2k.rate_metadata_bytes = icc_bytes + if jp2.display_resolution_ppi.is_some() { 26 } else { 0 };
   opj_j2k_start_compress(&mut jp2.j2k, stream, p_image, p_manager)
 }
 

@@ -433,7 +433,7 @@ pub(crate) type opj_j2k_proc_list_t = super::function_list::ProcedureList<opj_j2
 
 #[derive(Clone)]
 pub(crate) struct opj_j2k {
-  pub icc_rate_overhead: OPJ_OFF_T,
+  pub rate_metadata_bytes: OPJ_OFF_T,
   pub m_is_decoder: OPJ_BOOL,
   pub m_specific_param: C2RustUnnamed_2,
   pub m_private_image: *mut opj_image_t,

@@ -24,3 +24,5 @@ openjp2 수정 전 독립 JP2 예제 디코딩이 Windows에서 프로세스를 
 순차94는 openjp2의 안전한 JP2 출력 해상도 설정과 res /resd 헤더 쓰기를 추가한다. C 매개변수/이미지 ABI와 기존 라이선스는 유지하며 None/기본값은 원래 출력을 유지한다. [변경 기록](openjp2/LOCAL_CHANGES.md).
 
 순차115는 openjp2의 ICC COLR 원문 복사·RGB/GRAY 알파 CDEF와 추가 ICC 헤더의 압축 예산을 보강한다. public C ABI/원래 고지는 유지한다. 포함/제외의 codestream/성분·독립 C 읽기·타일/품질층 회귀를 검사했다. [변경 기록](openjp2/LOCAL_CHANGES.md).
+
+순차116은 openjp2의 선택 표시 해상도26바이트도 ICC와 함께 압축 예산에서 제외해 품질층별 픽셀을 유지한다. 독립 C 전체/부분 품질 복원·모든 포함 조합의 정확 codestream 회귀를 검사했다. [변경 기록](openjp2/LOCAL_CHANGES.md).

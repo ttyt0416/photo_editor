@@ -169,3 +169,5 @@ JPEG XL 예제6종은 [libjxl/conformance](https://github.com/libjxl/conformance
 순차114 `verify_icc_output_files.py`는 자체18PNG/JPEG/TIFF/2754픽셀의 선택한 프로파일 원문·D50 PCS/태그 정렬/길이와 별도 ICC/IFD 추출·포함/제외 파일 간 픽셀 비트·프로젝트 CRC/크기를 비교한다. 배포 프로파일은 테스트 결과가 아닌 `data/color/srgb.icc` 앱 자산이며 기존 로컬 Pillow/LittleCMS 생성 프로파일을 사용하고 출처/고지를 함께 기록했다. 새 프로파일 자료를 다운로드하지 않았다. 생성 출력은 검사 후 정리한다.
 
 순차115 `verify_jpeg2000_icc_output_files.py`는 자체32JP2/4896픽셀의 RGB/GRAY 원문·D50/정렬/CDEF/독립 C 성분·정규화·프로젝트 CRC와16포함/제외 쌍의 정확 codestream/원시 성분 동일을 확인한다. 로컬 GRAY 자산256코드도 LittleCMS로 별도 비교한다. 기준 자산은 data/color에 보존하며 생성 출력은 검사 후 정리한다. 전체 JPEG2000/ICC 적합성 검증은 남음.
+
+순차116 `verify_jpeg2000_metadata_rate_outputs.py`는 자체96출력537696픽셀/24그룹의 정확 codestream·전체 C 성분·288부분 품질층, RGB/GRAY ICC/CDEF·ppi분수·8/16비트 정규화/프로젝트 CRC를 독립 비교한다. 기존 해상도 비교도 포함/제외를 같은 그룹으로 강화했다. 생성 출력은 정리하며 재현 코드/기준 입력은 유지한다.
