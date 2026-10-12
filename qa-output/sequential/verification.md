@@ -948,3 +948,13 @@ fmt/clippy release all-targets·전체506통과/0실패/1제외(35.50초)·relea
 fmt/clippy release all-targets·전체508통과/0실패/1제외(35.95초)·release 빌드 성공. 기존Gray출력240/GRAY UINT알파256/float GRAY알파96/GRAY80/UINT RGB96/라이선스308/528/18 독립 검사 통과. 직전134커밋5304884be4bcdc0daae965fc179bb5ef00750f91의 GitHub main 일치 확인. 전체 TIFF/ICC·추가 정밀도/EXIF/IPTC·전체 목표를 유지한다. 다음136은2/4비트 회색 TIFF 입력이다.
 
 135 정리:18838생성/오래된 캐시 파일1453361979바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+## 136. Gray2/4 TIFF 패킹·FillOrder·패딩
+
+잠금 일반 어댑터의2/4비트 회색 거부를 첫 실제 입력으로 재현했다. 제한된 TIFF 행/평면 버퍼에서 각 픽셀의 비트 위치를 읽고 FillOrder1/2·끝 패딩을 처리해 최대3/15를 정확한8비트 계단85/17로 확장한다. 기존 흰색 반전·방향/GRAY ICC·원문/프로젝트 경로를 유지한다. 행 간격/전체 데이터/평면 수와 비트 저장 순서를 확인한다.
+
+NumPy 비트 배열과 독립 Python classic/BigTIFF IFD 작성기로256입력13056픽셀(2/4×4프로파일×두TIFF구조×양쪽바이트순서×흰색/검정기준×MSB/LSB FillOrder×raw/Deflate,방향1/6/8)을 SHA와 고정했다. 17px행으로 끝 패딩을 포함한다. 독립 zlib·비트배열/계단값/GRAY곡선/sRGB·방향 수식과 실제 RGBA8의 최대차이0단위, alpha255/identity값·ICC/XMP·v13프로젝트/CRC·별도 Pillow PNG가 일치한다. 최초 비트 계단도 작성 수식과 다시 비교했다. src/tiff_float_tests.rs, tests/fixtures/generate_tiff_gray_packed.py, tests/fixtures/verify_tiff_gray_packed.py에 재현 코드를 보관한다.
+
+fmt/clippy release all-targets·전체509통과/0실패/1제외(36.18초)·release 빌드 성공. 기존white-alpha384/GRAY출력240/GRAY UINT알파256·30ICC·라이선스308/528/18 독립 검사 통과. 직전135커밋b5460b3876ebecc9174890b3046c4f0fa143ac79의 GitHub main 일치 확인. 전체 TIFF/추가 정밀도·색 구조/ICC·원본 촬영EXIF·확장XMP/IPTC·전체 목표는 유지하며 다음 번호는137이다.
+
+136 정리:19606생성/오래된 캐시 파일1455374921바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.

@@ -3,6 +3,45 @@ use crate::files::{ExportOptions, export, load_project, open, save_project};
 use image::{ImageBuffer, ImageFormat};
 
 #[test]
+fn tiff_gray_packed_two_four_bits_fillorder_padding_icc_orientation_projects() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let fixtures = base.join("tests/fixtures/tiff-gray-packed");
+    let root = base.join("qa-output/tiff-gray-packed");
+    std::fs::create_dir_all(&root).unwrap();
+    let cases: Vec<serde_json::Value> =
+        serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(cases.len(), 256);
+    for (index, case) in cases.into_iter().enumerate() {
+        let name = case["file"].as_str().unwrap();
+        let path = fixtures.join(name);
+        let before = std::fs::read(&path).unwrap();
+        if index == 0 {
+            assert!(image::open(&path).is_err());
+        }
+        let imported = open(&path).unwrap();
+        assert!(
+            imported
+                .notes
+                .iter()
+                .any(|n| n.contains("회색조 TIFF의 패킹을 풀어"))
+        );
+        let document = imported.document;
+        assert_eq!(document.layers[0].bit_depth, 8);
+        let pixels = document.composite();
+        std::fs::write(root.join(format!("{name}.rgba8")), pixels.as_raw()).unwrap();
+        save_project(&document, &root.join(format!("{name}.rphoto"))).unwrap();
+        let restored = load_project(&root.join(format!("{name}.rphoto"))).unwrap();
+        assert_eq!(restored.composite(), pixels);
+        assert_eq!(restored.source_icc, document.source_icc);
+        assert_eq!(restored.source_metadata.xmp, document.source_metadata.xmp);
+        let output = root.join(format!("{name}-working.png"));
+        export(&restored, &output, ImageFormat::Png, &Default::default()).unwrap();
+        assert_eq!(open(&output).unwrap().document.composite(), pixels);
+        assert_eq!(std::fs::read(path).unwrap(), before);
+    }
+}
+
+#[test]
 fn tiff_white_gray_alpha_uint_float_invert_unassociate_icc_planar_projects() {
     let base = Path::new(env!("CARGO_MANIFEST_DIR"));
     let fixtures = base.join("tests/fixtures/tiff-white-alpha");

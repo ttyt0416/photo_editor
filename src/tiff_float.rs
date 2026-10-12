@@ -29,6 +29,7 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         .with_limits(limits);
     let color = decoder.colortype().map_err(|e| e.to_string())?;
     let (gray, channels, bits) = match color {
+        tiff::ColorType::Gray(bits @ (2 | 4)) => (true, 1, bits),
         tiff::ColorType::Gray(32) => (true, 1, 32),
         tiff::ColorType::Multiband {
             bit_depth: bits @ (8 | 16 | 32),
@@ -100,6 +101,53 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
         decoder.read_image_to_buffer(&mut decoded)
     }
     .map_err(|e| e.to_string())?;
+    if bits < 8 {
+        let DecodingResult::U8(data) = decoded else {
+            return Err("회색조 TIFF의 패킹 형식이 잘못되었습니다.".into());
+        };
+        let stride = layout
+            .row_stride
+            .ok_or("회색조 TIFF의 패킹 행 간격이 없습니다")?
+            .get();
+        if data.len() < layout.complete_len
+            || stride < (width as usize * bits as usize).div_ceil(8)
+            || layout.planes != 1
+        {
+            return Err("회색조 TIFF의 패킹 데이터가 잘렸습니다.".into());
+        }
+        let order = decoder
+            .find_tag_unsigned::<u16>(Tag::FillOrder)
+            .map_err(|e| e.to_string())?
+            .unwrap_or(1);
+        if !matches!(order, 1 | 2) {
+            return Err("회색조 TIFF의 비트 저장 순서가 잘못되었습니다.".into());
+        }
+        let maximum = (1u8 << bits) - 1;
+        let packed = image::GrayImage::from_fn(width, height, |x, y| {
+            let bit = x as usize * bits as usize;
+            let value = data[y as usize * stride + bit / 8];
+            let value = if order == 2 {
+                value.reverse_bits()
+            } else {
+                value
+            };
+            image::Luma([((value >> (8 - bits - bit as u8 % 8)) & maximum) * (255 / maximum)])
+        });
+        let mut pixels = DynamicImage::ImageLuma8(packed);
+        if let Some(profile) = source_icc.as_deref() {
+            pixels = crate::color_management::apply(pixels, profile, &mut notes);
+        }
+        pixels.apply_orientation(orientation);
+        notes.push(format!(
+            "{bits}비트 회색조 TIFF의 패킹을 풀어 8비트 작업 버퍼에 유지합니다."
+        ));
+        return Ok(Some(Decoded {
+            pixels,
+            notes,
+            source_icc,
+            source_metadata,
+        }));
+    }
     let (values, sample_bytes) = match &decoded {
         DecodingResult::U8(v) if bits == 8 => (v.len(), 1),
         DecodingResult::U16(v) if bits == 16 => (v.len(), 2),
