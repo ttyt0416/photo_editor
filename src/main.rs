@@ -57,6 +57,7 @@ mod jpeg2000_output;
 mod jpeg2000_xmp;
 mod jpeg_output;
 mod jxl_input;
+mod jxl_metadata;
 mod panels;
 mod paths;
 mod pattern;

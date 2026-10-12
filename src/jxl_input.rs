@@ -1,14 +1,13 @@
 use image::{DynamicImage, ImageBuffer, Rgba32FImage};
 use jxl_oxide::{InitializeResult, JxlImage, image::BitDepth};
-use std::{fs::File, io::Read, path::Path};
+use std::{io::Read, path::Path};
 fn error(e: impl std::fmt::Display) -> String {
     format!("JPEG XL 파일을 열 수 없습니다: {e}")
 }
 pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
-    let mut file = File::open(path).map_err(error)?;
-    if file.metadata().map_err(error)?.len() > crate::document::MAX_PIXELS * 16 {
-        return Err("파일이 현재 메모리 예산을 초과합니다.".into());
-    }
+    let mut metadata_notes = vec![];
+    let (mut file, source_metadata) =
+        crate::jxl_metadata::open(path, &mut metadata_notes).map_err(error)?;
     let mut uninit = JxlImage::builder()
         .alloc_tracker(jxl_grid::AllocTracker::with_limit(
             (crate::document::MAX_PIXELS * 16) as usize,
@@ -39,6 +38,7 @@ pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
         .collect::<Vec<_>>();
     let mut notes=vec!["JPEG XL는 대표 이미지 한 장으로 엽니다. 애니메이션·추가 채널·레이어 편집은 아직 지원하지 않습니다.".into()];
     notes.push("JPEG XL의 출력 색상 프로파일은 현재 화면과 내보내기에 적용되지 않습니다.".into());
+    notes.extend(metadata_notes);
     if image.pixel_format().has_black() {
         image.request_color_encoding(jxl_oxide::EnumColourEncoding::srgb(
             jxl_oxide::RenderingIntent::Relative,
@@ -145,13 +145,14 @@ pub fn read(path: &Path) -> Result<crate::codecs::Decoded, String> {
         pixels,
         notes,
         source_icc: None,
-        source_metadata: Default::default(),
+        source_metadata,
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::File;
     fn boxed(kind: &[u8; 4], data: &[u8]) -> Vec<u8> {
         let mut result = ((data.len() + 8) as u32).to_be_bytes().to_vec();
         result.extend(kind);

@@ -822,3 +822,10 @@ JP2 출력에는 기본 포함/끄기·실제 headless 토글/미리보기 옵�
 128출력1074816픽셀(17×9/129²·RGB/회색8/16·알파·손실/무손실·ICC·300ppi·128타일/4품질층RPCL·XMP포함/제외),64쌍에서 XMP 직전까지 전체 파일 내용이 정확 동일하며 별도 C OpenJPEG2.5.2의256품질층/전체 성분·앱 float 정규화가 정확 일치한다. 독립 Python UUID/네임스페이스/72KB한글·불투명 주석·프로젝트 CRC/v13 원문, 기존 외부 기준 JP2를 감싼3가지 길이/원본/이력·중복 박스의 픽셀 유지도 확인했다. 재현 코드: src/jpeg2000_xmp_tests.rs, tests/fixtures/verify_jpeg2000_xmp_files.py.
 
 전체487통과/0실패/1제외(52.66초), fmt/clippy·개발/release 빌드 성공. 기존 JP2 ICC32출력·압축 예산96출력/288품질층·XMP384출력·라이선스308/528/18 독립 검사 통과. 테스트 작성 중 Editor 위치/생성 인자·레이어 이름 필드를 실제 API와 맞춰 수정한 뒤 전체 검증했다. 생성 출력은 정리한다. 직전121커밋ce2e9b494b178ae5f31bc7993ccfcf72d35782ee의 GitHub main 일치를 확인했다. 다음123은 JXL 원본 EXIF/XMP 보존이며 압축 자산·TIFF EXIF·확장 XMP/IPTC·전체 목표는 남음.
+## 123. JPEG XL 원본 EXIF/XMP·고정밀 픽셀/자체 방향 보존
+
+[libjxl decoder API](https://libjxl.readthedocs.io/en/latest/api_decoder.html)의 Exif/xml 박스와 EXIF 오프셋, codestream 방향 우선 정책을 확인했다. 이미지 앞뒤의 일반/확장/끝까지 박스를 탐색하고 원본 TIFF 시작 위치와 XML을 프로젝트v13/공유 이력에 연결한다. 픽셀 디코더에는 JXL/ftyp/jxlc/jxlp만 작은 읽기 버퍼로 전달한다. 기존 jxl-oxide의 보조 원문/압축 자산 Vec는 픽셀 alloc_tracker 밖에서 누적될 수 있어 보조 자산을 별도 제한된 탐색으로 분리한다. 중복/잘림/길이/16MiB 초과/잘못된 TIFF 오프셋과 현재 미지원 brob는 보관 실패를 알리고 유효한 픽셀을 유지한다. 의존성과 외부 코드 복사는 없다.
+
+고정 libjxl6기준을 감싼12입력9432784픽셀(메타데이터 앞/뒤·EXIF 두 바이트 순서/오프셋0/6·72KB XML·고정밀/HDR·독립/연관 알파·회색), 정확한 decoder float/코드스트림/이력·프로젝트 v13/원문/CRC를 독립 비교했다. 문서 합성은 기존대로 alpha0 픽셀의 RGB를0으로 정규화하며 숨은 원본 색을 가진 decoder 출력은 별도 저장/비교한다. Python 검사에서 처음 합성 값을 원시 기준과 비교해 투명 숨은 색 차이가 나온 뒤 이 두 경로를 분리해 정확 일치 확인했다. 검사 중 전체 테스트가 기준 출력을 재작성할 때 읽은 잘린 zlib 결과도 전체 테스트 종료 후 재검증했다. 분할 jxlp와 알 수 없는100KB 박스/3바이트 읽기·잘린 꼬리/큰 자산/미지원 압축 입력에서도 기존 픽셀과 원본을 확인했다. 재현 코드: src/jxl_metadata_tests.rs, tests/fixtures/verify_jxl_metadata_files.py.
+
+전체489통과/0실패/1제외(74.04초), fmt/clippy·개발/release 빌드 성공. decoder/합성 분리 기록 추가 후 해당12입력 검사를 다시 실행해 통과(48.09초). 기존 공식6JXL 원문 해시/독립 기준·일반 촬영 메타데이터49입력·JP2XMP128출력·라이선스308/528/18 검사 통과. 생성 출력은 정리한다. 직전122커밋4839fc94034fefc40db21cf1dcc3392570f1eca7의 GitHub main 일치를 확인했다. 다음124는 Brotli 압축 메타데이터이며 TIFF EXIF·확장 XMP/IPTC·JXL ICC/출력·전체 목표는 남음.
