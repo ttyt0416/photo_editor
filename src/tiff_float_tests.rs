@@ -23,6 +23,33 @@ fn tiff_extended_precision_tiled_edges_multirow_strips_and_prediction() {
 }
 
 #[test]
+fn tiff_float32_rgb_all_planes_tiles_prediction_and_alpha_projects() {
+    tiff_extended_float_cases("tiff-rgb-planar-float", 32);
+}
+
+#[test]
+fn tiff_float32_rgb_truncated_later_color_and_alpha_planes_rejected() {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = base.join("qa-output/tiff-rgb-planar-float-invalid");
+    std::fs::create_dir_all(&root).unwrap();
+    for channels in [3, 4] {
+        let source = base.join(format!(
+            "tests/fixtures/tiff-rgb-planar-float/c{channels}-a0-none-t0-b0-e0-pred0.tiff"
+        ));
+        let original = std::fs::read(&source).unwrap();
+        let mut decoder = Decoder::new(BufReader::new(File::open(&source).unwrap())).unwrap();
+        let offsets = decoder
+            .find_tag_unsigned_vec::<u64>(Tag::StripOffsets)
+            .unwrap()
+            .unwrap();
+        let path = root.join(format!("last-plane-c{channels}.tiff"));
+        std::fs::write(&path, &original[..*offsets.last().unwrap() as usize + 1]).unwrap();
+        assert!(open(&path).is_err());
+        assert_eq!(std::fs::read(source).unwrap(), original);
+    }
+}
+
+#[test]
 fn tiff_planar_tile_edge_dimensions_repeat_for_every_plane() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/tiff-layout");
     for bits in [16, 32, 64] {
@@ -58,14 +85,33 @@ fn tiff_extended_float_cases(folder: &str, bits: u8) {
     std::fs::create_dir_all(&root).unwrap();
     let cases: Vec<serde_json::Value> =
         serde_json::from_slice(&std::fs::read(fixtures.join("manifest.json")).unwrap()).unwrap();
-    assert_eq!(cases.len(), if bits == 0 { 864 } else { 432 });
+    assert_eq!(
+        cases.len(),
+        match folder {
+            "tiff-layout" => 864,
+            "tiff-rgb-planar-float" => 144,
+            _ => 432,
+        }
+    );
     for (index, case) in cases.into_iter().enumerate() {
         let bits = case["bits"].as_u64().unwrap_or(u64::from(bits));
         let name = case["file"].as_str().unwrap();
         let path = fixtures.join(name);
         let before = std::fs::read(&path).unwrap();
         if index == 0 {
-            assert!(image::open(&path).is_err());
+            if folder == "tiff-rgb-planar-float" {
+                let mut decoder = Decoder::new(BufReader::new(File::open(&path).unwrap())).unwrap();
+                let DecodingResult::F32(first_plane) = decoder.read_image().unwrap() else {
+                    panic!("expected float plane")
+                };
+                assert_eq!(
+                    first_plane.len(),
+                    323,
+                    "the old adapter's read_image API reads only one plane"
+                );
+            } else {
+                assert!(image::open(&path).is_err());
+            }
         }
         let imported = open(&path).unwrap();
         assert!(

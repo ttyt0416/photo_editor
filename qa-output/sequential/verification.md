@@ -1026,3 +1026,14 @@ NumPy uint32/tifffile432입력22032픽셀을 SHA로 고정했다.9구조×3프�
 최초 새320사례는 통과했으나 부정 검사에서 순환 프로파일의 파일명을 잘못 지정해 파일없음으로 실패했다. 실제 working 입력 경로로 수정 후 fmt/clippy release all-targets·전체521통과/0실패/1제외(54.97초)·release 빌드 성공. 독립 새320/기존팔레트240/타일864/white알파384/gray출력240/라이선스308/528/18 검사 통과. 직전141커밋9f220827431d9c7409d733db27c0bc22eb81962d의 GitHub main 일치 확인. 혼합 정밀도/샘플·팔레트 출력/TransferFunction/전체 TIFF·ICC·촬영EXIF/확장XMP/IPTC·기존 전체 목표를 유지한다. 다음143은float32 RGB 분리 평면이다.
 
 142 정리:32790생성/오래된 캐시 파일1513267328바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.
+
+
+## 143. Float32 RGB/RGBA 분리 평면
+
+명시적PlanarConfiguration2의RGB/RGBA32F를 제한된 전체 평면 API로 읽는다. RGB3의Alpha는1,RGBA의ExtraSamples2는원래alpha/숨은색을 유지하고ExtraSamples1는기존분리계산을 사용한다. 일반 붙은 평면의float32경로는 유지한다. 원래 어댑터의read_image API는 첫323샘플만 반환하는 것을 직접 재현했다. 이제 모든RGB평면·비연관알파·ICC/방향·원래ICC/XMP·프로젝트에 연결된다.
+
+독립IFD/NumPy144입력46512픽셀(3구조×3ICC×타일/스트립×두TIFF구조×바이트순서2×Deflate일반/FP예측3)을 SHA로 고정했다. 음수/1e8HDR/signed zero/minimumf32subnormal·0/-0/분수/1알파·부분타일/여러행 스트립·방향1/6/8을 포함한다. 독립 zlib/NumPy누적합/3tifffile 원시 기준과 모든 소스 평면이 일치한다. f64알파분리→f32·ICC 수식 오차0.000087975051<0.0008·정확identity/alpha/원문/프로젝트CRC·OpenCV EXR/작업TIFF32가 일치한다. 마지막색/알파평면 잘림은 오류로 처리한다. 공통타일 검증기에--planar-float32를 추가해 기존864기준도 재확인했다.
+
+fmt/clippy release all-targets·전체523통과/0실패/1제외(59.69초)·release 빌드 성공. 독립새144/타일864/UINT32의432/팔레트알파320/라이선스308/528/18 검사 통과. 직전142커밋87910c16d5fa66cfacee3b04898c4787e1751ee3의 GitHub main 일치 확인. 공통SDR float ICC 정확도·UINT8/16 RGB평면·전체TIFF/ICC/촬영EXIF/확장XMP/IPTC·기존 전체 목표를 유지한다. 다음144는 공통SDR float RGB ICC 정밀도다.
+
+143 정리:33512생성/오래된 캐시 파일1517853163바이트 삭제·최신 release363산출물 모두 fresh/파일 존재 확인·임시 검증 기록 삭제.

@@ -86,7 +86,17 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     } else {
         false
     };
-    if !gray && !associated && !(floating && matches!(bits, 16 | 64) || unsigned && bits == 32) {
+    let separated_float_rgb = !gray
+        && floating
+        && bits == 32
+        && decoder
+            .find_tag_unsigned::<u16>(Tag::PlanarConfiguration)
+            .map_err(|e| e.to_string())?
+            == Some(2);
+    if !gray
+        && !associated
+        && !(floating && matches!(bits, 16 | 64) || unsigned && bits == 32 || separated_float_rgb)
+    {
         return Ok(None);
     }
     let (width, height) = decoder.dimensions().map_err(|e| e.to_string())?;
@@ -263,7 +273,9 @@ pub fn read(path: &Path) -> Result<Option<Decoded>, String> {
     };
     let mut dynamic = DynamicImage::ImageRgba32F(pixels);
     dynamic.apply_orientation(orientation);
-    notes.push(if bits == 32 && unsigned {
+    notes.push(if separated_float_rgb && !associated {
+        "32비트 RGB TIFF의 분리 평면을 모두 읽어 작업 색과 알파를 유지합니다.".into()
+    } else if bits == 32 && unsigned {
         "32비트 정수 TIFF를 최대값 4294967295로 정규화해 32비트 float 작업 버퍼로 변환합니다. 일부 정수 단계는 반올림됩니다.".into()
     } else if bits == 64 {
         "64비트 부동소수점 TIFF를 32비트 작업 버퍼로 변환합니다. 정밀도와 매우 작은 값은 반올림되며 32비트 표현 범위를 넘는 색상은 오류로 처리합니다.".into()
